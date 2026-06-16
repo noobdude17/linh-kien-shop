@@ -18,4 +18,24 @@ class AppConstants {
   // User roles
   static const roleCustomer = 'customer';
   static const roleAdmin = 'admin';
+
+  // Payment methods
+  static const payVnpay = 'vnpay';
+  static const payCod = 'cod';
+
+  // Misc
+  static const currencySuffix = 'đ';
+  static const freeShipLabel = 'Miễn phí';
+}
+
+/// Nhãn tiếng Việt cho trạng thái đơn hàng (dùng cho badge/timeline).
+class OrderStatusLabel {
+  OrderStatusLabel._();
+  static const map = {
+    AppConstants.statusPending: 'Chờ xác nhận',
+    AppConstants.statusConfirmed: 'Đã xác nhận',
+    AppConstants.statusShipping: 'Đang giao',
+    AppConstants.statusDelivered: 'Hoàn thành',
+    AppConstants.statusCancelled: 'Đã hủy',
+  };
 }

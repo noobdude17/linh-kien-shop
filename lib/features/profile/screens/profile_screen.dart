@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../routes/app_routes.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -7,26 +10,87 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tài khoản')),
-      body: ListView(
+      body: Column(
         children: [
-          ListTile(
-            leading: const Icon(Icons.shopping_bag),
-            title: const Text('Đơn hàng của tôi'),
-            onTap: () => context.go('/orders'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.admin_panel_settings),
-            title: const Text('Quản trị (Admin)'),
-            onTap: () => context.go('/admin'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Đăng xuất'),
-            onTap: () => context.go('/login'),
+          _header(context),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _menuCard([
+                  _tile(context, Icons.inventory_2_outlined, 'Đơn hàng của tôi', AppRoutes.orders),
+                  _tile(context, Icons.location_on_outlined, 'Địa chỉ giao hàng', AppRoutes.addresses),
+                  _tile(context, Icons.favorite_border, 'Sản phẩm yêu thích', AppRoutes.wishlist),
+                  _tile(context, Icons.notifications_outlined, 'Thông báo', AppRoutes.notifications),
+                  _tile(context, Icons.credit_card, 'Phương thức thanh toán', null),
+                  _tile(context, Icons.settings_outlined, 'Cài đặt', null),
+                  _tile(context, Icons.help_outline, 'Trợ giúp & Hỗ trợ', null),
+                ]),
+                const SizedBox(height: 12),
+                _menuCard([
+                  _tile(context, Icons.admin_panel_settings_outlined, 'Quản trị (Admin)', AppRoutes.admin, color: AppColors.accent),
+                ]),
+                const SizedBox(height: 12),
+                _menuCard([
+                  _tile(context, Icons.logout, 'Đăng xuất', AppRoutes.login, color: AppColors.error),
+                ]),
+              ],
+            ),
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 3, cartCount: 3),
     );
   }
+
+  Widget _header(BuildContext context) => Container(
+        color: AppColors.primary,
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Tài khoản', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const CircleAvatar(radius: 30, backgroundColor: Colors.white24, child: Text('👤', style: TextStyle(fontSize: 28))),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text('Nguyễn Văn An', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                          Text('an.nguyen@email.com', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white54)),
+                      onPressed: () => context.go(AppRoutes.editProfile),
+                      child: const Text('Chỉnh sửa'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+  Widget _menuCard(List<Widget> children) => Container(
+        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), boxShadow: const [
+          BoxShadow(color: Color(0x0F000000), blurRadius: 4, offset: Offset(0, 1)),
+        ]),
+        child: Column(children: children),
+      );
+
+  Widget _tile(BuildContext context, IconData icon, String label, String? route, {Color color = AppColors.textPrimary}) => ListTile(
+        leading: Icon(icon, color: color),
+        title: Text(label, style: TextStyle(color: color, fontSize: 14)),
+        trailing: route != null ? const Icon(Icons.chevron_right, color: AppColors.textTertiary) : null,
+        onTap: route != null ? () => context.go(route) : null,
+      );
 }

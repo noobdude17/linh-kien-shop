@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_dimens.dart';
+import '../../../data/mock_data.dart';
+import '../../../routes/app_routes.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -7,51 +11,102 @@ class AdminDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Dashboard')),
-      body: GridView.count(
-        crossAxisCount: 2,
-        padding: const EdgeInsets.all(16),
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
+      appBar: AppBar(
+        backgroundColor: AppColors.accent,
+        leading: BackButton(onPressed: () => context.go(AppRoutes.profile)),
+        title: const Text('Quản trị'),
+        actions: const [Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.build))],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppDimens.screenPadding),
         children: [
-          _AdminCard(
-            icon: Icons.inventory,
-            label: 'Sản phẩm',
-            onTap: () => context.go('/admin/products'),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: AppDimens.gap,
+            crossAxisSpacing: AppDimens.gap,
+            childAspectRatio: 1.7,
+            children: MockData.adminStats.map((s) => _statCard(s)).toList(),
           ),
-          _AdminCard(
-            icon: Icons.receipt_long,
-            label: 'Đơn hàng',
-            onTap: () => context.go('/admin/orders'),
+          const SizedBox(height: 16),
+          _revenueChart(),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _quickAction('📦 Quản lý sản phẩm', AppColors.primary, () => context.go(AppRoutes.adminProducts))),
+              const SizedBox(width: 12),
+              Expanded(child: _quickAction('🧾 Quản lý đơn hàng', AppColors.accent, () => context.go(AppRoutes.adminOrders))),
+            ],
           ),
         ],
       ),
     );
   }
-}
 
-class _AdminCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _AdminCard({required this.icon, required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+  Widget _statCard(Map<String, dynamic> s) => Container(
+        padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: AppDimens.brCard,
+          border: Border(left: BorderSide(color: s['color'] as Color, width: 4)),
+          boxShadow: AppDimens.cardShadow,
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 48, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 8),
-            Text(label, style: Theme.of(context).textTheme.titleMedium),
+            Text(s['label'] as String, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            const SizedBox(height: 6),
+            Text(s['value'] as String, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: s['color'] as Color)),
           ],
         ),
-      ),
-    );
-  }
+      );
+
+  Widget _revenueChart() => Container(
+        padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
+        decoration: BoxDecoration(color: AppColors.surface, borderRadius: AppDimens.brCard, boxShadow: AppDimens.cardShadow),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Doanh thu 7 ngày', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 120,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(MockData.revenue7d.length, (i) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 22,
+                        height: MockData.revenue7d[i],
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter,
+                              colors: [AppColors.primary, AppColors.primaryGradLight]),
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(MockData.revenueDays[i], style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                    ],
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _quickAction(String label, Color color, VoidCallback onTap) => InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: color, borderRadius: AppDimens.brCard),
+          child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+        ),
+      );
 }

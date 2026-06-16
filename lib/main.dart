@@ -8,7 +8,15 @@ import 'routes/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Skeleton chạy được kể cả khi chưa cấu hình Firebase thật.
+  // Sau khi chạy `flutterfire configure`, init này sẽ thành công và bật backend.
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Firebase chưa cấu hình — chạy ở chế độ mock UI. ($e)');
+  }
   runApp(const ProviderScope(child: App()));
 }
 
