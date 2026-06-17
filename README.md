@@ -257,7 +257,17 @@ flutterfire configure
 ```
 Trên [Firebase Console](https://console.firebase.google.com): bật **Authentication** (Email/Password), **Cloud Firestore**, **Storage**.
 
-> ⚠️ `google-services.json` và `GoogleService-Info.plist` đã nằm trong `.gitignore` — **không commit**. Chỉ commit `firebase_options.dart`.
+> 🔒 **Repo này PRIVATE** → file config Firebase (`firebase_options.dart`, `google-services.json`) **được commit luôn** để team chỉ cần `git pull` + `flutter run` là dùng chung backend, không phải tự cấu hình. (Nếu sau này chuyển repo sang public, mở lại 2 dòng tương ứng trong `.gitignore`.)
+
+**Bảo mật cơ bản:** dù repo private, vẫn nên đặt **Firestore Security Rules** yêu cầu đăng nhập (tránh bot quét endpoint Firebase công khai):
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    match /{document=**} { allow read, write: if request.auth != null; }
+  }
+}
+```
 
 **Firestore collections:** `users`, `products`, `categories`, `orders` (tên đã định nghĩa trong `AppConstants`).
 

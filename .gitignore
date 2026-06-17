@@ -44,9 +44,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Firebase config — KHÔNG commit, mỗi người tự add sau khi tạo Firebase project
-google-services.json
-GoogleService-Info.plist
+# Firebase config — repo PRIVATE nên commit luôn để team clone-là-chạy.
+# (Nếu sau này đổi repo sang public, BỎ COMMENT 2 dòng dưới để ẩn lại.)
+# google-services.json
+# GoogleService-Info.plist
 
 # Generated files
 *.g.dart
