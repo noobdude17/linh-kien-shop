@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -9,18 +10,30 @@ import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/quantity_stepper.dart';
 import '../../../data/mock_data.dart';
 import '../../../data/models/product_model.dart';
+import '../../../features/cart/providers/cart_provider.dart';
 import '../../../routes/app_routes.dart';
 
-class ProductDetailScreen extends StatefulWidget {
+class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
   const ProductDetailScreen({super.key, required this.productId});
 
   @override
-  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+  ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }
 
-class _ProductDetailScreenState extends State<ProductDetailScreen> {
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   int _qty = 1;
+
+  void _addToCart(ProductModel p, {required bool buyNow}) {
+    ref.read(cartProvider.notifier).add(p, qty: _qty, variant: p.brand);
+    if (buyNow) {
+      context.go(AppRoutes.cart);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã thêm vào giỏ hàng'), duration: Duration(seconds: 1)),
+      );
+    }
+  }
 
   ProductModel get _product {
     final all = [...MockData.featured, ...MockData.gpuList];
@@ -146,9 +159,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
               child: Row(
                 children: [
-                  Expanded(child: AppOutlinedButton(label: '🛒 Giỏ hàng', onPressed: () => context.go(AppRoutes.cart))),
+                  Expanded(child: AppOutlinedButton(label: '🛒 Giỏ hàng', onPressed: () => _addToCart(p, buyNow: false))),
                   const SizedBox(width: 12),
-                  Expanded(flex: 2, child: PrimaryButton(label: 'Mua ngay', onPressed: () => context.go(AppRoutes.cart))),
+                  Expanded(flex: 2, child: PrimaryButton(label: 'Mua ngay', onPressed: () => _addToCart(p, buyNow: true))),
                 ],
               ),
             ),

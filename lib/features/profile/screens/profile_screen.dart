@@ -39,7 +39,7 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 3, cartCount: 3),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
     );
   }
 

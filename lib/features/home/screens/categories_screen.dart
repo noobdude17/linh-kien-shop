@@ -34,7 +34,7 @@ class CategoriesScreen extends StatelessWidget {
                 ))
             .toList(),
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 1, cartCount: 3),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
   }
 }

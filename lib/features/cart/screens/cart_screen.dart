@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -7,57 +8,55 @@ import '../../../core/widgets/app_buttons.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/quantity_stepper.dart';
 import '../../../core/widgets/summary_row.dart';
-import '../../../data/mock_data.dart';
 import '../../../data/models/cart_item_model.dart';
 import '../../../routes/app_routes.dart';
+import '../providers/cart_provider.dart';
 
-class CartScreen extends StatefulWidget {
+class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
-  @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  late final List<CartItemModel> _items = MockData.cartItems();
-
-  double get _subtotal => _items.where((e) => e.selected).fold(0, (s, e) => s + e.subtotal);
-  double get _discount => 2500000;
-  double get _total => _subtotal - _discount;
+  static const double _discount = 2500000;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(cartProvider);
+    final subtotal = ref.watch(cartSubtotalProvider);
+    final total = subtotal - _discount;
+    final notifier = ref.read(cartProvider.notifier);
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
-        title: Text('Giỏ hàng (${_items.length})'),
+        title: Text('Giỏ hàng (${items.length})'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppDimens.screenPadding),
-        children: [
-          ..._items.map(_cartItem),
-          _voucherBox(),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: AppDimens.brCard, boxShadow: AppDimens.cardShadow),
-            child: Column(
+      body: items.isEmpty
+          ? const Center(child: Text('Giỏ hàng trống'))
+          : ListView(
+              padding: const EdgeInsets.all(AppDimens.screenPadding),
               children: [
-                SummaryRow(label: 'Tạm tính', value: Formatter.price(_subtotal)),
-                const SummaryRow(label: 'Phí vận chuyển', value: 'Miễn phí', valueColor: AppColors.success),
-                SummaryRow(label: 'Giảm giá', value: '-${Formatter.price(_discount)}', valueColor: AppColors.error),
-                const Divider(),
-                SummaryRow(label: 'Tổng cộng', value: Formatter.price(_total), isTotal: true),
+                ...items.map((item) => _cartItem(context, notifier, item)),
+                _voucherBox(),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
+                  decoration: BoxDecoration(color: AppColors.surface, borderRadius: AppDimens.brCard, boxShadow: AppDimens.cardShadow),
+                  child: Column(
+                    children: [
+                      SummaryRow(label: 'Tạm tính', value: Formatter.price(subtotal)),
+                      const SummaryRow(label: 'Phí vận chuyển', value: 'Miễn phí', valueColor: AppColors.success),
+                      SummaryRow(label: 'Giảm giá', value: '-${Formatter.price(_discount)}', valueColor: AppColors.error),
+                      const Divider(),
+                      SummaryRow(label: 'Tổng cộng', value: Formatter.price(total < 0 ? 0 : total), isTotal: true),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _bottomBar(context),
+      bottomNavigationBar: items.isEmpty ? null : _bottomBar(context, items.length, total),
     );
   }
 
-  Widget _cartItem(CartItemModel item) {
+  Widget _cartItem(BuildContext context, CartNotifier notifier, CartItemModel item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(AppDimens.cardPadding),
@@ -67,7 +66,7 @@ class _CartScreenState extends State<CartScreen> {
         children: [
           Checkbox(
             value: item.selected,
-            onChanged: (v) => setState(() => item.selected = v ?? true),
+            onChanged: (_) => notifier.toggleSelected(item.productId),
           ),
           ImagePlaceholder(label: item.imageLabel, height: 64, radius: 8),
           const SizedBox(width: 12),
@@ -82,13 +81,16 @@ class _CartScreenState extends State<CartScreen> {
                 Text(Formatter.price(item.price),
                     style: const TextStyle(color: AppColors.primary, fontSize: 15, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
-                QuantityStepper(value: item.quantity, onChanged: (v) => setState(() => item.quantity = v)),
+                QuantityStepper(
+                  value: item.quantity,
+                  onChanged: (v) => notifier.setQuantity(item.productId, v),
+                ),
               ],
             ),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: AppColors.textTertiary),
-            onPressed: () => setState(() => _items.remove(item)),
+            onPressed: () => notifier.remove(item.productId),
           ),
         ],
       ),
@@ -113,7 +115,7 @@ class _CartScreenState extends State<CartScreen> {
         ),
       );
 
-  Widget _bottomBar(BuildContext context) => Container(
+  Widget _bottomBar(BuildContext context, int count, double total) => Container(
         decoration: const BoxDecoration(color: AppColors.surface, boxShadow: AppDimens.bottomBarShadow),
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         child: SafeArea(
@@ -125,7 +127,7 @@ class _CartScreenState extends State<CartScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('Tổng thanh toán', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                    Text(Formatter.price(_total),
+                    Text(Formatter.price(total < 0 ? 0 : total),
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primary)),
                   ],
                 ),
@@ -133,7 +135,7 @@ class _CartScreenState extends State<CartScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: PrimaryButton(
-                  label: 'Đặt hàng (${_items.length}) →',
+                  label: 'Đặt hàng ($count) →',
                   onPressed: () => context.go(AppRoutes.checkout),
                 ),
               ),

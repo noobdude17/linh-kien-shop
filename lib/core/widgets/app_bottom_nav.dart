@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/cart/providers/cart_provider.dart';
 import '../../routes/app_routes.dart';
 import '../theme/app_colors.dart';
 
 /// Thanh điều hướng dưới: Trang chủ / Danh mục / Giỏ hàng / Tài khoản.
-/// [currentIndex]: 0..3. [cartCount] hiển thị badge cam trên tab Giỏ hàng.
-class AppBottomNav extends StatelessWidget {
+/// [currentIndex]: 0..3. Badge giỏ hàng đọc trực tiếp từ cartProvider.
+class AppBottomNav extends ConsumerWidget {
   final int currentIndex;
-  final int cartCount;
 
-  const AppBottomNav({super.key, required this.currentIndex, this.cartCount = 0});
+  const AppBottomNav({super.key, required this.currentIndex});
 
   static const _routes = [
     AppRoutes.home,
@@ -24,7 +25,8 @@ class AppBottomNav extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cartCount = ref.watch(cartCountProvider);
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.surface,

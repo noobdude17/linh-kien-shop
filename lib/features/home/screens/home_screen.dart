@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/section_header.dart';
-import '../../../data/mock_data.dart';
+import '../../../features/cart/providers/cart_provider.dart';
+import '../../../features/product/providers/product_providers.dart';
 import '../../../routes/app_routes.dart';
 import '../widgets/category_chip.dart';
 import '../widgets/promo_banner.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final featured = ref.watch(featuredProductsProvider);
+    final categories = ref.watch(categoriesProvider);
+
     return Scaffold(
       body: Column(
         children: [
-          _header(context),
+          _header(context, ref),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(AppDimens.screenPadding),
@@ -32,17 +37,18 @@ class HomeScreen extends StatelessWidget {
                 ),
                 SizedBox(
                   height: 92,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 7,
-                    separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (_, i) {
-                      final c = MockData.categories[i];
-                      return CategoryChip(
-                        category: c,
-                        onTap: () => context.go('${AppRoutes.list}?categoryId=${c.id}'),
-                      );
-                    },
+                  child: categories.when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(child: Text('Lỗi: $e')),
+                    data: (list) => ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: list.length > 7 ? 7 : list.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      itemBuilder: (_, i) => CategoryChip(
+                        category: list[i],
+                        onTap: () => context.go('${AppRoutes.list}?categoryId=${list[i].id}'),
+                      ),
+                    ),
                   ),
                 ),
                 SectionHeader(
@@ -50,30 +56,38 @@ class HomeScreen extends StatelessWidget {
                   actionLabel: 'Xem tất cả →',
                   onAction: () => context.go(AppRoutes.list),
                 ),
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: AppDimens.gap,
-                  crossAxisSpacing: AppDimens.gap,
-                  childAspectRatio: 0.62,
-                  children: MockData.featured
-                      .map((p) => ProductCard(
-                            product: p,
-                            onTap: () => context.go('${AppRoutes.detail}/${p.id}'),
-                          ))
-                      .toList(),
+                featured.when(
+                  loading: () => const Padding(
+                    padding: EdgeInsets.all(40),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (e, _) => Center(child: Text('Lỗi: $e')),
+                  data: (list) => GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: AppDimens.gap,
+                    crossAxisSpacing: AppDimens.gap,
+                    childAspectRatio: 0.62,
+                    children: list
+                        .map((p) => ProductCard(
+                              product: p,
+                              onTap: () => context.go('${AppRoutes.detail}/${p.id}'),
+                            ))
+                        .toList(),
+                  ),
                 ),
               ],
             ),
           ),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 0, cartCount: 3),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 0),
     );
   }
 
-  Widget _header(BuildContext context) {
+  Widget _header(BuildContext context, WidgetRef ref) {
+    final cartCount = ref.watch(cartCountProvider);
     return Container(
       color: AppColors.primary,
       child: SafeArea(
@@ -98,16 +112,17 @@ class HomeScreen extends StatelessWidget {
                         icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
                         onPressed: () => context.go(AppRoutes.cart),
                       ),
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
-                          child: const Text('3',
-                              style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700)),
+                      if (cartCount > 0)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+                            child: Text('$cartCount',
+                                style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700)),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ],
