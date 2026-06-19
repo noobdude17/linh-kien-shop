@@ -51,6 +51,17 @@ flutter pub get
 flutter run
 ```
 
+For Firebase-backed runs in this public repo, copy `.env.example.json` to
+`.env.json`, fill in your Firebase values, then run:
+
+```bash
+flutter run --dart-define-from-file=.env.json
+```
+
+`.env.json`, `android/app/google-services.json`, and
+`ios/Runner/GoogleService-Info.plist` are intentionally ignored. Do not commit
+real Firebase keys or native config files to this public repository.
+
 > App **chạy được ngay** kể cả khi chưa cấu hình Firebase — phần khởi tạo Firebase được bọc `try/catch`, dữ liệu lấy từ `lib/data/mock_data.dart`. Khi Lead cấu hình Firebase xong, app tự dùng backend thật.
 
 Kiểm tra code trước khi commit:
@@ -257,9 +268,12 @@ flutterfire configure
 ```
 Trên [Firebase Console](https://console.firebase.google.com): bật **Authentication** (Email/Password), **Cloud Firestore**, **Storage**.
 
-> 🔒 **Repo này PRIVATE** → file config Firebase (`firebase_options.dart`, `google-services.json`) **được commit luôn** để team chỉ cần `git pull` + `flutter run` là dùng chung backend, không phải tự cấu hình. (Nếu sau này chuyển repo sang public, mở lại 2 dòng tương ứng trong `.gitignore`.)
+> 🔒 **Repo này PUBLIC** → không commit file config Firebase thật. Dùng `.env.json`
+> cục bộ với `flutter run --dart-define-from-file=.env.json`. File
+> `lib/firebase_options.dart` chỉ đọc giá trị từ Dart defines và giữ placeholder
+> an toàn trong Git.
 
-**Bảo mật cơ bản:** dù repo private, vẫn nên đặt **Firestore Security Rules** yêu cầu đăng nhập (tránh bot quét endpoint Firebase công khai):
+**Bảo mật cơ bản:** vì repo public, phải đặt **Firestore Security Rules** yêu cầu đăng nhập (tránh bot quét endpoint Firebase công khai):
 ```
 rules_version = '2';
 service cloud.firestore {
@@ -279,7 +293,7 @@ service cloud.firestore {
    flutter run -t tool/seed_firestore.dart
    ```
    Mở app → bấm **"Seed dữ liệu"** → chờ "Hoàn tất" → tắt.
-3. `flutter run` như bình thường — giờ app dùng Auth + Firestore thật.
+3. `flutter run --dart-define-from-file=.env.json` — giờ app dùng Auth + Firestore thật.
 
 ---
 

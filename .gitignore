@@ -44,10 +44,13 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Firebase config — repo PRIVATE nên commit luôn để team clone-là-chạy.
-# (Nếu sau này đổi repo sang public, BỎ COMMENT 2 dòng dưới để ẩn lại.)
-# google-services.json
-# GoogleService-Info.plist
+# Local secrets / Firebase config for public repo
+.env
+.env.*
+!.env.example
+!.env.example.json
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
 
 # Generated files
 *.g.dart
