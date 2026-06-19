@@ -51,14 +51,20 @@ flutter pub get
 flutter run
 ```
 
-For Firebase-backed runs in this public repo, copy `.env.example.json` to
-`.env.json`, fill in your Firebase values, then run:
+For Firebase-backed runs in this public repo, copy the private file you receive
+from the lead to:
 
 ```bash
-flutter run --dart-define-from-file=.env.json
+assets/config/firebase_config.json
 ```
 
-`.env.json`, `android/app/google-services.json`, and
+Then run normally:
+
+```bash
+flutter run
+```
+
+`assets/config/firebase_config.json`, `android/app/google-services.json`, and
 `ios/Runner/GoogleService-Info.plist` are intentionally ignored. Do not commit
 real Firebase keys or native config files to this public repository.
 
@@ -77,7 +83,7 @@ flutter test
 ```
 lib/
 ├── main.dart                     # Entry point, khởi tạo Firebase (guarded) + Riverpod
-├── firebase_options.dart         # ⚠️ PLACEHOLDER — Lead thay bằng file thật
+├── firebase_options.dart         # Đọc Firebase config từ assets/config/firebase_config.json
 │
 ├── core/                         # Dùng chung toàn app (KHÔNG chứa logic nghiệp vụ)
 │   ├── constants/app_constants.dart   # tên collection, status đơn, role, payment
@@ -188,7 +194,7 @@ Component có sẵn trong `core/widgets/` — tái dùng, đừng viết lại: 
 ### 1 · Lead — Auth & nền tảng (`feature/auth`)
 - **Màn:** Splash, Onboarding, Login, Register, Forgot password.
 - **Việc:**
-  - Cấu hình Firebase (xem mục dưới), commit `firebase_options.dart` thật.
+  - Cấu hình Firebase (xem mục dưới), gửi riêng `assets/config/firebase_config.json` thật cho team.
   - Viết `AuthRepository` (đăng ký/đăng nhập/đăng xuất bằng `firebase_auth`) + provider `authStateProvider`.
   - Nối Login/Register vào auth thật, validate form (email, mật khẩu ≥ 6 ký tự, mật khẩu khớp).
   - Redirect theo trạng thái đăng nhập trong `app_router.dart` (chưa login → `/login`).
@@ -263,15 +269,15 @@ Ví dụ: `feat(cart): tính tổng tiền có giảm giá`, `fix(auth): validat
 # Cài CLI một lần
 dart pub global activate flutterfire_cli
 
-# Trong thư mục project — tạo project Firebase & sinh firebase_options.dart thật
+# Trong thư mục project — tạo project Firebase và lấy các giá trị cấu hình
 flutterfire configure
 ```
 Trên [Firebase Console](https://console.firebase.google.com): bật **Authentication** (Email/Password), **Cloud Firestore**, **Storage**.
 
-> 🔒 **Repo này PUBLIC** → không commit file config Firebase thật. Dùng `.env.json`
-> cục bộ với `flutter run --dart-define-from-file=.env.json`. File
-> `lib/firebase_options.dart` chỉ đọc giá trị từ Dart defines và giữ placeholder
-> an toàn trong Git.
+> 🔒 **Repo này PUBLIC** → không commit file config Firebase thật. Gửi riêng
+> `assets/config/firebase_config.json` qua kênh an toàn. File
+> `lib/firebase_options.dart` đọc JSON này lúc app khởi động; nếu thiếu file,
+> app rơi về mock mode qua `try/catch`.
 
 **Bảo mật cơ bản:** vì repo public, phải đặt **Firestore Security Rules** yêu cầu đăng nhập (tránh bot quét endpoint Firebase công khai):
 ```
@@ -293,7 +299,7 @@ service cloud.firestore {
    flutter run -t tool/seed_firestore.dart
    ```
    Mở app → bấm **"Seed dữ liệu"** → chờ "Hoàn tất" → tắt.
-3. `flutter run --dart-define-from-file=.env.json` — giờ app dùng Auth + Firestore thật.
+3. `flutter run` — giờ app dùng Auth + Firestore thật nếu đã có `assets/config/firebase_config.json`.
 
 ---
 

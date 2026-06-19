@@ -49,6 +49,7 @@ app.*.map.json
 .env.*
 !.env.example
 !.env.example.json
+assets/config/firebase_config.json
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 

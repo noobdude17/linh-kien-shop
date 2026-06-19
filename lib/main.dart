@@ -12,7 +12,7 @@ void main() async {
   // Sau khi chạy `flutterfire configure`, init này sẽ thành công và bật backend.
   try {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+      options: await DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
     debugPrint('Firebase chưa cấu hình — chạy ở chế độ mock UI. ($e)');
