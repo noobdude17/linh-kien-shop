@@ -79,7 +79,7 @@ class CartScreen extends ConsumerWidget {
                 Text(item.variant, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                 const SizedBox(height: 6),
                 Text(Formatter.price(item.price),
-                    style: const TextStyle(color: AppColors.primary, fontSize: 15, fontWeight: FontWeight.w700)),
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
                 QuantityStepper(
                   value: item.quantity,
@@ -103,14 +103,14 @@ class CartScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: AppDimens.brCard,
-          border: Border.all(color: AppColors.primary, width: 1.2),
+          border: Border.all(color: AppColors.border, width: 1.2),
         ),
         child: Row(
           children: const [
             Text('🎟️', style: TextStyle(fontSize: 18)),
             SizedBox(width: 10),
             Expanded(child: Text('Thêm mã giảm giá / voucher', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))),
-            Text('Áp dụng', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700)),
+            Text('Áp dụng', style: TextStyle(color: AppColors.accentBlue, fontWeight: FontWeight.w500)),
           ],
         ),
       );
@@ -128,13 +128,13 @@ class CartScreen extends ConsumerWidget {
                   children: [
                     const Text('Tổng thanh toán', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                     Text(Formatter.price(total < 0 ? 0 : total),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primary)),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: PrimaryButton(
+                child: AccentButton(
                   label: 'Đặt hàng ($count) →',
                   onPressed: () => context.go(AppRoutes.checkout),
                 ),

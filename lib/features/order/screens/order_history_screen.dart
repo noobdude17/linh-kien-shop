@@ -25,7 +25,9 @@ class OrderHistoryScreen extends StatelessWidget {
           title: const Text('Đơn hàng của tôi'),
           bottom: TabBar(
             isScrollable: true,
-            indicatorColor: Colors.white,
+            indicatorColor: AppColors.primary,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: AppColors.textTertiary,
             tabAlignment: TabAlignment.start,
             tabs: _tabs.map((t) => Tab(text: t)).toList(),
           ),
@@ -82,7 +84,7 @@ class OrderHistoryScreen extends StatelessWidget {
             children: [
               const Text('Tổng tiền', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               Text(Formatter.price(o.totalAmount),
-                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900, fontSize: 15)),
+                  style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 15)),
             ],
           ),
           const SizedBox(height: 8),

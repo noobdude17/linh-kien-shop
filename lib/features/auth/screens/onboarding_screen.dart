@@ -37,7 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => context.go(AppRoutes.login),
-                  child: const Text('Bỏ qua'),
+                  child: const Text('Bỏ qua', style: TextStyle(color: AppColors.textSecondary)),
                 ),
               ),
               const Spacer(),
@@ -69,7 +69,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     width: active ? 22 : 7,
                     height: 7,
                     decoration: BoxDecoration(
-                      color: active ? AppColors.primary : AppColors.border,
+                      color: active ? AppColors.primary : const Color(0xFFD1D5DB),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );

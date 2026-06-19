@@ -16,7 +16,8 @@ class AdminProductListScreen extends StatelessWidget {
     final products = MockData.featured;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.adminAccent,
+        foregroundColor: Colors.white,
         leading: BackButton(onPressed: () => context.go(AppRoutes.admin)),
         title: const Text('Quản lý sản phẩm'),
       ),
@@ -25,7 +26,7 @@ class AdminProductListScreen extends StatelessWidget {
         children: products.map((p) => _row(context, p)).toList(),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.adminAccent,
         onPressed: () => context.go(AppRoutes.adminProductEdit),
         child: const Icon(Icons.add),
       ),

@@ -21,13 +21,7 @@ class ImagePlaceholder extends StatelessWidget {
       borderRadius: BorderRadius.circular(radius),
       child: Container(
         height: height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFE8EEF3), Color(0xFFD6E0EA)],
-          ),
-        ),
+        color: AppColors.background,
         alignment: Alignment.center,
         child: Text(
           label.toUpperCase(),
@@ -36,7 +30,7 @@ class ImagePlaceholder extends StatelessWidget {
             fontFamily: 'monospace',
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
+            letterSpacing: 0,
             color: AppColors.textTertiary,
           ),
         ),

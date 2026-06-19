@@ -18,7 +18,7 @@ class SearchScreen extends StatelessWidget {
         title: Container(
           height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+          decoration: BoxDecoration(color: AppColors.inputFill, borderRadius: BorderRadius.circular(20)),
           child: Row(
             children: [
               const Icon(Icons.search, color: AppColors.textTertiary, size: 20),
@@ -42,7 +42,7 @@ class SearchScreen extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         children: [
           Text('Tìm kiếm gần đây', style: AppTextStyles.sectionHeading),
           const SizedBox(height: 12),

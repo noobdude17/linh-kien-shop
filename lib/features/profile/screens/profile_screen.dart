@@ -31,7 +31,7 @@ class ProfileScreen extends ConsumerWidget {
                 ]),
                 const SizedBox(height: 12),
                 _menuCard([
-                  _tile(context, Icons.admin_panel_settings_outlined, 'Quản trị (Admin)', AppRoutes.admin, color: AppColors.accent),
+                  _tile(context, Icons.admin_panel_settings_outlined, 'Quản trị (Admin)', AppRoutes.admin, color: AppColors.adminAccent),
                 ]),
                 const SizedBox(height: 12),
                 _menuCard([
@@ -49,33 +49,39 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _header(BuildContext context, String? name, String? email) => Container(
-        color: AppColors.primary,
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(bottom: BorderSide(color: AppColors.divider)),
+        ),
         child: SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Tài khoản', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+                const Text('Tài khoản', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const CircleAvatar(radius: 30, backgroundColor: Colors.white24, child: Text('👤', style: TextStyle(fontSize: 28))),
+                    const CircleAvatar(radius: 30, backgroundColor: AppColors.inputFill, child: Icon(Icons.person, color: AppColors.bodyText, size: 28)),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(name?.isNotEmpty == true ? name! : 'Khách',
-                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                              style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
                           Text(email ?? '',
-                              style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                         ],
                       ),
                     ),
                     OutlinedButton(
-                      style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white54)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary, width: 1.5),
+                      ),
                       onPressed: () => context.go(AppRoutes.editProfile),
                       child: const Text('Chỉnh sửa'),
                     ),

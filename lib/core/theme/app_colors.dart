@@ -6,33 +6,40 @@ class AppColors {
   AppColors._();
 
   // Primary
-  static const primary = Color(0xFF1565C0);
-  static const primaryGradMid = Color(0xFF1976D2);
-  static const primaryGradLight = Color(0xFF42A5F5);
+  static const primary = Color(0xFF0F172A);
+  static const accentBlue = Color(0xFF2563EB);
+  static const primaryGradMid = Color(0xFF111827);
+  static const primaryGradLight = Color(0xFF2563EB);
 
   // Accent (CTA, admin)
-  static const accent = Color(0xFFFF6F00);
+  static const accent = Color(0xFFF97316);
 
   // Surfaces
-  static const background = Color(0xFFF5F5F5);
+  static const background = Color(0xFFF8FAFC);
   static const surface = Color(0xFFFFFFFF);
+  static const inputFill = Color(0xFFF3F4F6);
 
   // Text
-  static const textPrimary = Color(0xFF212121);
-  static const textSecondary = Color(0xFF757575);
-  static const textTertiary = Color(0xFF9AA5B1); // placeholder, struck price
+  static const textPrimary = Color(0xFF111827);
+  static const bodyText = Color(0xFF374151);
+  static const textSecondary = Color(0xFF6B7280);
+  static const textTertiary = Color(0xFF9CA3AF); // placeholder, struck price
 
   // Status
-  static const success = Color(0xFF2E7D32);
-  static const successBg = Color(0xFFE8F5E9);
-  static const error = Color(0xFFC62828);
-  static const errorBg = Color(0xFFFFEBEE);
-  static const star = Color(0xFFFFB300);
+  static const success = Color(0xFF059669);
+  static const successBg = Color(0xFFDCFCE7);
+  static const error = Color(0xFFDC2626);
+  static const errorBg = Color(0xFFFEE2E2);
+  static const warning = Color(0xFFD97706);
+  static const warningBg = Color(0xFFFEF3C7);
+  static const shippingBg = Color(0xFFDBEAFE);
+  static const doneBg = Color(0xFFF3F4F6);
+  static const star = Color(0xFFF59E0B);
 
   // Dividers / borders
-  static const divider = Color(0xFFECEFF1);
-  static const dividerAlt = Color(0xFFF0F2F5);
-  static const border = Color(0xFFE0E0E0);
+  static const divider = Color(0xFFF3F4F6);
+  static const dividerAlt = Color(0xFFE5E7EB);
+  static const border = Color(0xFFE5E7EB);
 
   // VNPay brand
   static const vnpBlue = Color(0xFF005BAA);
@@ -41,29 +48,30 @@ class AppColors {
   static const vnpGatewayEnd = Color(0xFF2E7D32);
 
   // Admin stat accents
-  static const statPurple = Color(0xFF7B1FA2);
+  static const adminAccent = Color(0xFF7C3AED);
+  static const statPurple = adminAccent;
 
   /// 12 nền pastel cho icon danh mục (một màu / danh mục).
   static const categoryBgs = <Color>[
-    Color(0xFFE3F2FD),
-    Color(0xFFF3E5F5),
-    Color(0xFFE8F5E9),
-    Color(0xFFFFF3E0),
-    Color(0xFFFCE4EC),
-    Color(0xFFE0F2F1),
-    Color(0xFFE8EAF6),
-    Color(0xFFE1F5FE),
-    Color(0xFFFFF8E1),
-    Color(0xFFE0F7FA),
-    Color(0xFFEDE7F6),
-    Color(0xFFF1F8E9),
+    inputFill,
+    inputFill,
+    inputFill,
+    inputFill,
+    inputFill,
+    inputFill,
+    inputFill,
+    inputFill,
+    inputFill,
+    inputFill,
+    inputFill,
+    inputFill,
   ];
 
   // Gradients
   static const bannerGradient = LinearGradient(
-    begin: Alignment(-0.8, -0.6),
-    end: Alignment(1, 0.6),
-    colors: [primary, primaryGradMid, accent],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [primary, Color(0x0011172A)],
   );
 
   static const vnpayGatewayGradient = LinearGradient(

@@ -19,7 +19,8 @@ class _AdminProductEditScreenState extends State<AdminProductEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.adminAccent,
+        foregroundColor: Colors.white,
         leading: BackButton(onPressed: () => context.go(AppRoutes.adminProducts)),
         title: const Text('Thêm sản phẩm'),
       ),
@@ -31,12 +32,12 @@ class _AdminProductEditScreenState extends State<AdminProductEditScreen> {
               Container(
                 width: 88, height: 88,
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.accent, width: 1.5, style: BorderStyle.solid),
+                  border: Border.all(color: AppColors.adminAccent, width: 1.5, style: BorderStyle.solid),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Text('📷', style: TextStyle(fontSize: 24)), Text('Thêm ảnh', style: TextStyle(fontSize: 11, color: AppColors.accent))],
+                  children: [Text('📷', style: TextStyle(fontSize: 24)), Text('Thêm ảnh', style: TextStyle(fontSize: 11, color: AppColors.adminAccent))],
                 ),
               ),
               const SizedBox(width: 12),

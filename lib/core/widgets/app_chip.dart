@@ -26,19 +26,18 @@ class AppChip extends StatelessWidget {
       bg = AppColors.primary;
       fg = Colors.white;
     } else if (trending) {
-      bg = const Color(0xFFFFF3E0);
-      fg = AppColors.accent;
+      bg = const Color(0xFFEFF6FF);
+      fg = AppColors.accentBlue;
     } else {
-      bg = AppColors.background;
-      fg = const Color(0xFF616161);
-      border = Border.all(color: AppColors.border);
+      bg = AppColors.inputFill;
+      fg = AppColors.bodyText;
     }
 
     return InkWell(
       onTap: onTap,
       borderRadius: AppDimens.brChip,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: AppDimens.brChip,
@@ -49,7 +48,7 @@ class AppChip extends StatelessWidget {
           style: TextStyle(
             color: fg,
             fontSize: 12,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),

@@ -14,11 +14,12 @@ class StatusBadge extends StatelessWidget {
       case AppConstants.statusCancelled:
         return (AppColors.error, AppColors.errorBg);
       case AppConstants.statusPending:
-        return (AppColors.accent, Color(0xFFFFF3E0));
+        return (AppColors.warning, AppColors.warningBg);
       case AppConstants.statusShipping:
+        return (AppColors.accentBlue, AppColors.shippingBg);
       case AppConstants.statusConfirmed:
       default:
-        return (AppColors.primary, Color(0xFFE3F2FD));
+        return (AppColors.bodyText, AppColors.doneBg);
     }
   }
 
@@ -27,11 +28,11 @@ class StatusBadge extends StatelessWidget {
     final (fg, bg) = _colors(status);
     final label = OrderStatusLabel.map[status] ?? status;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
       child: Text(
         label,
-        style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w700),
+        style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w500),
       ),
     );
   }

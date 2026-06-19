@@ -6,7 +6,6 @@ import '../theme/app_dimens.dart';
 import '../theme/app_text_styles.dart';
 import 'image_placeholder.dart';
 
-/// Card sản phẩm chuẩn dùng trong grid (Home, list, results, wishlist).
 class ProductCard extends StatelessWidget {
   final ProductModel product;
   final VoidCallback? onTap;
@@ -53,15 +52,19 @@ class ProductCard extends StatelessWidget {
                     top: 8,
                     right: 8,
                     child: CircleAvatar(
-                      radius: 14,
-                      backgroundColor: Colors.white,
-                      child: Text('❤️', style: TextStyle(fontSize: 14)),
+                      radius: 16,
+                      backgroundColor: Color(0xCCFFFFFF),
+                      child: Icon(
+                        Icons.favorite_border,
+                        size: 18,
+                        color: AppColors.bodyText,
+                      ),
                     ),
                   ),
               ],
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -69,16 +72,36 @@ class ProductCard extends StatelessWidget {
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.body.copyWith(fontSize: 13),
+                    style: AppTextStyles.body.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  Text(Formatter.price(product.price), style: AppTextStyles.priceCard),
-                  if (product.oldPrice != null)
-                    Text(Formatter.price(product.oldPrice!), style: AppTextStyles.oldPrice),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          Formatter.price(product.price),
+                          style: AppTextStyles.priceCard,
+                        ),
+                      ),
+                      if (product.oldPrice != null) ...[
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            Formatter.price(product.oldPrice!),
+                            style: AppTextStyles.oldPrice,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.star, size: 13, color: AppColors.star),
+                      const Icon(Icons.star, size: 12, color: AppColors.star),
                       const SizedBox(width: 2),
                       Text(
                         product.rating.toStringAsFixed(1),
@@ -99,8 +122,8 @@ class ProductCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           color: AppColors.accent,
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(999),
         ),
-        child: Text(text, style: AppTextStyles.badge.copyWith(fontSize: 10)),
+        child: Text(text, style: AppTextStyles.badge.copyWith(fontSize: 11)),
       );
 }

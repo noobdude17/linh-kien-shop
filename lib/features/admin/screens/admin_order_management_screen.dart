@@ -19,7 +19,8 @@ class AdminOrderManagementScreen extends StatelessWidget {
       length: _tabs.length,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: AppColors.accent,
+          backgroundColor: AppColors.adminAccent,
+          foregroundColor: Colors.white,
           leading: BackButton(onPressed: () => context.go(AppRoutes.admin)),
           title: const Text('Quản lý đơn hàng'),
           bottom: TabBar(

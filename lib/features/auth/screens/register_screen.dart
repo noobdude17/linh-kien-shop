@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_buttons.dart';
 import '../../../routes/app_routes.dart';
 import '../providers/auth_providers.dart';
@@ -108,7 +109,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   GestureDetector(
                     onTap: () => context.go(AppRoutes.login),
                     child: const Text('Đăng nhập',
-                        style: TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w700)),
+                        style: TextStyle(color: AppColors.accentBlue, fontWeight: FontWeight.w500)),
                   ),
                 ],
               ),

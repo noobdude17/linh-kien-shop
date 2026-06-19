@@ -34,7 +34,7 @@ class VnpayGatewayScreen extends StatelessWidget {
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 children: [
                   _card(Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,9 +44,9 @@ class VnpayGatewayScreen extends StatelessWidget {
                       SizedBox(height: 4),
                       Text('Mã đơn: LKS-2024061601', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                       SizedBox(height: 8),
-                      Text('29.800.000đ', style: TextStyle(color: AppColors.primary, fontSize: 28, fontWeight: FontWeight.w900)),
+                      Text('29.800.000đ', style: TextStyle(color: AppColors.textPrimary, fontSize: 28, fontWeight: FontWeight.w700)),
                       SizedBox(height: 8),
-                      Text('⏱ Hết hạn sau 14:59', style: TextStyle(color: AppColors.accent, fontSize: 12)),
+                      Text('⏱ Hết hạn sau 14:59', style: TextStyle(color: AppColors.accentBlue, fontSize: 12)),
                     ],
                   )),
                   const SizedBox(height: 12),
@@ -69,9 +69,9 @@ class VnpayGatewayScreen extends StatelessWidget {
                   )),
                   const SizedBox(height: 16),
                   SizedBox(
-                    height: 50,
+                    height: 52,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                       onPressed: () => context.go(AppRoutes.processing),
                       child: const Text('Thanh toán 29.800.000đ'),
                     ),
@@ -100,8 +100,8 @@ class VnpayGatewayScreen extends StatelessWidget {
             const SizedBox(height: 4),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(color: AppColors.inputFill, borderRadius: BorderRadius.circular(12)),
               child: Text(value, style: const TextStyle(color: AppColors.textTertiary)),
             ),
           ],
@@ -119,13 +119,12 @@ class _Tab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: active ? const Color(0xFFE3F2FD) : null,
-        border: Border.all(color: active ? AppColors.primary : AppColors.border),
-        borderRadius: BorderRadius.circular(8),
+        color: active ? AppColors.primary : AppColors.inputFill,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Text(label,
-          style: TextStyle(fontSize: 12, color: active ? AppColors.primary : AppColors.textSecondary,
-              fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
+          style: TextStyle(fontSize: 12, color: active ? Colors.white : AppColors.bodyText,
+              fontWeight: FontWeight.w500)),
     );
   }
 }

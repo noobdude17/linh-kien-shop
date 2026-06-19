@@ -23,7 +23,7 @@ class ForgotPasswordScreen extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: const BoxDecoration(
-                color: Color(0xFFE3F2FD),
+                color: Color(0xFFEFF6FF),
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,

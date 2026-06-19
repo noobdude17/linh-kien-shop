@@ -12,7 +12,8 @@ class AdminDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.adminAccent,
+        foregroundColor: Colors.white,
         leading: BackButton(onPressed: () => context.go(AppRoutes.profile)),
         title: const Text('Quản trị'),
         actions: const [Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.build))],
@@ -36,7 +37,7 @@ class AdminDashboardScreen extends StatelessWidget {
             children: [
               Expanded(child: _quickAction('📦 Quản lý sản phẩm', AppColors.primary, () => context.go(AppRoutes.adminProducts))),
               const SizedBox(width: 12),
-              Expanded(child: _quickAction('🧾 Quản lý đơn hàng', AppColors.accent, () => context.go(AppRoutes.adminOrders))),
+              Expanded(child: _quickAction('🧾 Quản lý đơn hàng', AppColors.adminAccent, () => context.go(AppRoutes.adminOrders))),
             ],
           ),
         ],
@@ -49,7 +50,7 @@ class AdminDashboardScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: AppDimens.brCard,
-          border: Border(left: BorderSide(color: s['color'] as Color, width: 4)),
+          border: const Border(left: BorderSide(color: AppColors.adminAccent, width: 3)),
           boxShadow: AppDimens.cardShadow,
         ),
         child: Column(
@@ -58,7 +59,7 @@ class AdminDashboardScreen extends StatelessWidget {
           children: [
             Text(s['label'] as String, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             const SizedBox(height: 6),
-            Text(s['value'] as String, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: s['color'] as Color)),
+            Text(s['value'] as String, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
           ],
         ),
       );
@@ -85,8 +86,7 @@ class AdminDashboardScreen extends StatelessWidget {
                         width: 22,
                         height: MockData.revenue7d[i],
                         decoration: const BoxDecoration(
-                          gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter,
-                              colors: [AppColors.primary, AppColors.primaryGradLight]),
+                          color: AppColors.accentBlue,
                           borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
                         ),
                       ),

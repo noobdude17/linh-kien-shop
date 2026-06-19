@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 
-/// Banner khuyến mãi gradient xanh→cam (Home).
 class PromoBanner extends StatelessWidget {
   final VoidCallback? onTap;
+
   const PromoBanner({super.key, this.onTap});
 
   @override
@@ -12,37 +12,69 @@ class PromoBanner extends StatelessWidget {
     return Container(
       height: 150,
       decoration: BoxDecoration(
-        gradient: AppColors.bannerGradient,
+        color: AppColors.primary,
         borderRadius: AppDimens.brCard,
         boxShadow: AppDimens.bannerShadow,
       ),
-      padding: const EdgeInsets.all(20),
-      child: Row(
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
         children: [
-          Expanded(
+          const Positioned(
+            right: 20,
+            bottom: 18,
+            child: Icon(
+              Icons.desktop_windows_rounded,
+              size: 72,
+              color: Colors.white24,
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(gradient: AppColors.bannerGradient),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Khuyến mãi hot',
-                    style: TextStyle(color: Colors.white70, fontSize: 12)),
+                const Text(
+                  'Khuyến mãi hot',
+                  style: TextStyle(color: Colors.white, fontSize: 13),
+                ),
                 const SizedBox(height: 4),
-                const Text('RTX 4070 Super\nGiảm 15%',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, height: 1.2)),
+                const Text(
+                  'RTX 4070 Super\nGiảm 15%',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 GestureDetector(
                   onTap: onTap,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                    decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(20)),
-                    child: const Text('Mua ngay',
-                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Mua ngay',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          const Text('🖥️', style: TextStyle(fontSize: 64)),
         ],
       ),
     );

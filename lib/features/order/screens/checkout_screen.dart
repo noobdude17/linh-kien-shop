@@ -36,10 +36,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           const SizedBox(height: 12),
           _section('📍 Địa chỉ giao hàng', trailing: GestureDetector(
             onTap: () => context.go(AppRoutes.addresses),
-            child: const Text('Đổi →', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+            child: const Text('Đổi →', style: TextStyle(color: AppColors.accentBlue, fontWeight: FontWeight.w500)),
           ), child: Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(border: Border.all(color: AppColors.primary, width: 1.5), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(border: Border.all(color: AppColors.border, width: 1.5), borderRadius: BorderRadius.circular(8)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -58,7 +58,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const SizedBox(width: 8),
                   Text('SL: ${i.quantity}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   const SizedBox(width: 8),
-                  Text(Formatter.price(i.price), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                  Text(Formatter.price(i.price), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                 ],
               ),
             )).toList(growable: false),
@@ -95,13 +95,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 children: [
                   const Text('Tổng thanh toán', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                   Text(Formatter.price(total),
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.primary)),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                 ],
               ),
               const SizedBox(height: 10),
               _payment == AppConstants.payVnpay
                   ? AccentButton(label: 'Thanh toán qua VNPay 🔒', onPressed: () => context.go(AppRoutes.vnpay))
-                  : PrimaryButton(label: 'Đặt hàng (COD)', onPressed: () => context.go(AppRoutes.success)),
+                  : AccentButton(label: 'Đặt hàng (COD)', onPressed: () => context.go(AppRoutes.success)),
             ],
           ),
         ),
@@ -120,7 +120,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           Column(children: [circle('✓', AppColors.success, Colors.white), const SizedBox(height: 4), const Text('Giỏ hàng', style: TextStyle(fontSize: 10))]),
           Container(width: 40, height: 2, color: AppColors.success, margin: const EdgeInsets.only(bottom: 16)),
-          Column(children: [circle('2', AppColors.primary, Colors.white), const SizedBox(height: 4), const Text('Đặt hàng', style: TextStyle(fontSize: 10))]),
+          Column(children: [circle('2', AppColors.accentBlue, Colors.white), const SizedBox(height: 4), const Text('Đặt hàng', style: TextStyle(fontSize: 10))]),
           Container(width: 40, height: 2, color: AppColors.border, margin: const EdgeInsets.only(bottom: 16)),
           Column(children: [circle('3', AppColors.border, AppColors.textSecondary), const SizedBox(height: 4), const Text('Thanh toán', style: TextStyle(fontSize: 10))]),
         ],
@@ -156,14 +156,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: selected ? AppColors.primary : AppColors.border, width: 1.5),
+          border: Border.all(color: selected ? AppColors.accentBlue : AppColors.border, width: 1.5),
           borderRadius: BorderRadius.circular(8),
-          color: selected ? const Color(0xFFE3F2FD) : null,
+          color: selected ? const Color(0xFFEFF6FF) : null,
         ),
         child: Row(
           children: [
             Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off,
-                color: selected ? AppColors.primary : AppColors.border, size: 20),
+                color: selected ? AppColors.accentBlue : AppColors.border, size: 20),
             const SizedBox(width: 10),
             logo,
             const SizedBox(width: 10),

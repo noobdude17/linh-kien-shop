@@ -89,27 +89,38 @@ class HomeScreen extends ConsumerWidget {
   Widget _header(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch(cartCountProvider);
     return Container(
-      color: AppColors.primary,
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.divider)),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
           child: Column(
             children: [
               Row(
                 children: [
                   const Text('⚡ Linh Kiện Shop',
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.inputFill,
+                      minimumSize: const Size.square(40),
+                    ),
+                    icon: const Icon(Icons.notifications_outlined, color: AppColors.bodyText),
                     onPressed: () => context.go(AppRoutes.notifications),
                   ),
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.inputFill,
+                          minimumSize: const Size.square(40),
+                        ),
+                        icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.bodyText),
                         onPressed: () => context.go(AppRoutes.cart),
                       ),
                       if (cartCount > 0)
@@ -131,7 +142,7 @@ class HomeScreen extends ConsumerWidget {
                 onTap: () => context.go(AppRoutes.search),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: AppDimens.brPill),
+                  decoration: BoxDecoration(color: AppColors.inputFill, borderRadius: AppDimens.brInput),
                   child: Row(
                     children: const [
                       Icon(Icons.search, color: AppColors.textTertiary, size: 20),

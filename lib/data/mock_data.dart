@@ -133,8 +133,8 @@ class MockData {
 
   // ---- Notifications ----
   static const notifications = <AppNotification>[
-    AppNotification(id: 'n1', icon: '🚚', iconBg: Color(0xFFE3F2FD), title: 'Đơn hàng đang được giao', message: 'Đơn LKS-2024061601 đang trên đường giao đến bạn', timeLabel: '2 giờ trước', unread: true, group: 'Hôm nay'),
-    AppNotification(id: 'n2', icon: '🔥', iconBg: Color(0xFFFFF3E0), title: 'Flash Sale RTX giảm 20%', message: 'Nhanh tay săn card đồ họa RTX với giá sốc hôm nay', timeLabel: '5 giờ trước', unread: true, group: 'Hôm nay'),
+    AppNotification(id: 'n1', icon: '🚚', iconBg: Color(0xFFEFF6FF), title: 'Đơn hàng đang được giao', message: 'Đơn LKS-2024061601 đang trên đường giao đến bạn', timeLabel: '2 giờ trước', unread: true, group: 'Hôm nay'),
+    AppNotification(id: 'n2', icon: '🔥', iconBg: Color(0xFFF3F4F6), title: 'Flash Sale RTX giảm 20%', message: 'Nhanh tay săn card đồ họa RTX với giá sốc hôm nay', timeLabel: '5 giờ trước', unread: true, group: 'Hôm nay'),
     AppNotification(id: 'n3', icon: '✓', iconBg: Color(0xFFE8F5E9), title: 'Đặt hàng thành công', message: 'Đơn LKS-2024061601 đã được tạo', timeLabel: 'Hôm qua', group: 'Trước đó'),
     AppNotification(id: 'n4', icon: '🎁', iconBg: Color(0xFFEDE7F6), title: 'Ưu đãi thành viên mới', message: 'Bạn nhận được voucher 100.000đ cho đơn đầu tiên', timeLabel: '2 ngày trước', group: 'Trước đó'),
   ];
@@ -148,10 +148,10 @@ class MockData {
 
   // ---- Admin dashboard ----
   static const adminStats = <Map<String, dynamic>>[
-    {'label': 'Doanh thu hôm nay', 'value': '45.500.000đ', 'color': Color(0xFFFF6F00)},
-    {'label': 'Đơn hàng mới', 'value': '12', 'color': Color(0xFF1565C0)},
-    {'label': 'Sản phẩm', 'value': '248', 'color': Color(0xFF2E7D32)},
-    {'label': 'Khách hàng', 'value': '1.024', 'color': Color(0xFF7B1FA2)},
+    {'label': 'Doanh thu hôm nay', 'value': '45.500.000đ', 'color': Color(0xFF7C3AED)},
+    {'label': 'Đơn hàng mới', 'value': '12', 'color': Color(0xFF7C3AED)},
+    {'label': 'Sản phẩm', 'value': '248', 'color': Color(0xFF7C3AED)},
+    {'label': 'Khách hàng', 'value': '1.024', 'color': Color(0xFF7C3AED)},
   ];
 
   /// Chiều cao 7 cột biểu đồ doanh thu (T2–CN), %.

@@ -61,11 +61,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 40),
                 const Text('⚡', style: TextStyle(fontSize: 48)),
                 const Text('Linh Kiện Shop',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.primary)),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                 const SizedBox(height: 32),
                 const Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Đăng nhập', style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900)),
+                  child: Text('Đăng nhập', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -119,7 +119,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     GestureDetector(
                       onTap: () => context.go(AppRoutes.register),
                       child: const Text('Đăng ký',
-                          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                          style: TextStyle(color: AppColors.accentBlue, fontWeight: FontWeight.w500)),
                     ),
                   ],
                 ),

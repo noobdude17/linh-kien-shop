@@ -14,7 +14,8 @@ class AdminOrderDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.adminAccent,
+        foregroundColor: Colors.white,
         leading: BackButton(onPressed: () => context.go(AppRoutes.adminOrders)),
         title: const Text('Đơn LKS-...01'),
       ),
@@ -63,7 +64,7 @@ class AdminOrderDetailScreen extends StatelessWidget {
           SizedBox(
             height: 50,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.adminAccent),
               onPressed: () => context.go(AppRoutes.adminOrders),
               child: const Text('Cập nhật trạng thái'),
             ),

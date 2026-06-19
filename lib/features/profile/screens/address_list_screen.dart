@@ -42,8 +42,8 @@ class AddressListScreen extends StatelessWidget {
                 if (a.isDefault)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: const Color(0xFFE3F2FD), borderRadius: BorderRadius.circular(6)),
-                    child: const Text('Mặc định', style: TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w700)),
+                    decoration: BoxDecoration(color: const Color(0xFFEFF6FF), borderRadius: BorderRadius.circular(6)),
+                    child: const Text('Mặc định', style: TextStyle(color: AppColors.accentBlue, fontSize: 10, fontWeight: FontWeight.w700)),
                   ),
               ],
             ),

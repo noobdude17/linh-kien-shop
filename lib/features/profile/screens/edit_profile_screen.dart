@@ -23,7 +23,7 @@ class EditProfileScreen extends StatelessWidget {
                 const CircleAvatar(radius: 44, backgroundColor: AppColors.background, child: Text('👤', style: TextStyle(fontSize: 40))),
                 Positioned(
                   bottom: 0, right: 0,
-                  child: CircleAvatar(radius: 14, backgroundColor: AppColors.primary,
+                  child: CircleAvatar(radius: 14, backgroundColor: AppColors.accentBlue,
                       child: const Icon(Icons.camera_alt, size: 14, color: Colors.white)),
                 ),
               ],

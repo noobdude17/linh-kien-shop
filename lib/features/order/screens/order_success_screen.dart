@@ -19,7 +19,7 @@ class OrderSuccessScreen extends StatelessWidget {
             children: [
               Container(
                 width: 104, height: 104,
-                decoration: const BoxDecoration(color: AppColors.successBg, shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
                 alignment: Alignment.center,
                 child: Container(
                   width: 68, height: 68,
@@ -35,9 +35,9 @@ class OrderSuccessScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(color: const Color(0xFFE3F2FD), borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(color: const Color(0xFFEFF6FF), borderRadius: BorderRadius.circular(8)),
                 child: const Text('Mã đơn: LKS-2024061601',
-                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13)),
+                    style: TextStyle(color: AppColors.accentBlue, fontWeight: FontWeight.w700, fontSize: 13)),
               ),
               const SizedBox(height: 32),
               Container(

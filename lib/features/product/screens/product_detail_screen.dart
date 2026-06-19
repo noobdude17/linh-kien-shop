@@ -85,9 +85,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             if (discount != null)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(4)),
+                                decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(8)),
                                 child: Text('-$discount%',
-                                    style: const TextStyle(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.w700)),
+                                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
                               ),
                           ],
                         ),

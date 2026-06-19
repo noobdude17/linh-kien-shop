@@ -31,29 +31,29 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.surface,
       body: GestureDetector(
         onTap: () => context.go(AppRoutes.onboarding),
         child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('⚡', style: TextStyle(fontSize: 52)),
+              Text('⚡', style: TextStyle(fontSize: 52, color: AppColors.accentBlue)),
               SizedBox(height: 12),
               Text('Linh Kiện Shop',
                   style: TextStyle(
                       fontSize: 27,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white)),
+                      color: AppColors.textPrimary)),
               SizedBox(height: 8),
               Text('Linh kiện chính hãng - Giá tốt nhất',
-                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
               SizedBox(height: 48),
               SizedBox(
                 width: 28,
                 height: 28,
                 child: CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 2.5),
+                    color: AppColors.accentBlue, strokeWidth: 2.5),
               ),
             ],
           ),
