@@ -188,7 +188,7 @@ Component có sẵn trong `core/widgets/` — tái dùng, đừng viết lại: 
 - **Màn:** Home, Categories, Search, Product List, Search Results, Empty, Product Detail.
 - **Việc:**
   - Hoàn thiện `FirestoreProductRepository` (đã có khung trong `product_repository.dart`).
-  - Bật backend thật: đổi `MockProductRepository()` → `FirestoreProductRepository(FirebaseFirestore.instance)` trong `product_providers.dart`.
+  - Backend bật/tắt bằng cờ `AppConfig.useFirebase` (Lead quản lý) — bạn chỉ cần đảm bảo `FirestoreProductRepository` truy vấn đúng.
   - Lọc theo danh mục thật, tìm kiếm thật (lọc theo tên), hiển thị empty state khi không có kết quả.
   - Màn chi tiết: load theo `productId` qua `productDetailProvider`.
 - **Xong khi:** Home/List/Detail hiển thị dữ liệu từ Firestore; tìm kiếm & lọc hoạt động.
@@ -271,6 +271,16 @@ service cloud.firestore {
 
 **Firestore collections:** `users`, `products`, `categories`, `orders` (tên đã định nghĩa trong `AppConstants`).
 
+### Bật backend thật (sau khi configure xong)
+1. Mở `lib/core/config/app_config.dart` → đổi `useFirebase = false` thành **`true`**.
+   → Toàn bộ repository tự chuyển từ Mock sang Firebase/Firestore (không cần sửa từng provider).
+2. Seed dữ liệu mẫu lên Firestore (12 danh mục + sản phẩm) để app có data ngay:
+   ```bash
+   flutter run -t tool/seed_firestore.dart
+   ```
+   Mở app → bấm **"Seed dữ liệu"** → chờ "Hoàn tất" → tắt.
+3. `flutter run` như bình thường — giờ app dùng Auth + Firestore thật.
+
 ---
 
 ## 🤖 Dành cho AI Agent
@@ -281,7 +291,7 @@ service cloud.firestore {
 2. **Chỉ sửa trong phạm vi của thành viên** (xem cột "Khu vực sở hữu"). **Không** sửa file của feature khác hay `core/widgets/`, `core/theme/`, `routes/` mà chưa được thống nhất — đó là vùng dùng chung dễ gây conflict.
 3. **Tuân theo luồng** `Screen → Provider → Repository → Data source`. Không gọi `FirebaseFirestore` trực tiếp trong screen.
 4. **Dùng tokens & hằng số:** `AppColors`, `AppDimens`, `AppTextStyles`, `AppRoutes`, `Formatter` — không hard-code.
-5. **Bật backend thật:** khi Firebase đã cấu hình, đổi `MockXxxRepository()` → `FirestoreXxxRepository(...)` trong file provider tương ứng (mỗi feature một dòng).
+5. **Bật backend thật:** chỉ cần đổi `AppConfig.useFirebase = true` trong `lib/core/config/app_config.dart` (1 chỗ duy nhất) — mọi repository tự chuyển Mock → Firebase. Không sửa từng provider.
 6. **Trước khi báo hoàn thành:** chạy `flutter analyze` (phải 0 issues) và `flutter test`. Mô tả ngắn gọn đã đổi gì.
 7. **Tiếng Việt** cho mọi text hiển thị trên UI. Giá tiền định dạng VNĐ.
 8. **Git:** commit theo quy ước `type(scope): mô tả`; không push thẳng `develop`/`master`, mở PR.
