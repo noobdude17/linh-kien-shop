@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../routes/app_routes.dart';
+import '../../auth/providers/auth_providers.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
     return Scaffold(
       body: Column(
         children: [
-          _header(context),
+          _header(context, user?.name, user?.email),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
@@ -32,7 +35,9 @@ class ProfileScreen extends StatelessWidget {
                 ]),
                 const SizedBox(height: 12),
                 _menuCard([
-                  _tile(context, Icons.logout, 'Đăng xuất', AppRoutes.login, color: AppColors.error),
+                  _tile(context, Icons.logout, 'Đăng xuất', null,
+                      color: AppColors.error,
+                      onTap: () => ref.read(authRepositoryProvider).signOut()),
                 ]),
               ],
             ),
@@ -43,7 +48,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _header(BuildContext context) => Container(
+  Widget _header(BuildContext context, String? name, String? email) => Container(
         color: AppColors.primary,
         child: SafeArea(
           bottom: false,
@@ -61,9 +66,11 @@ class ProfileScreen extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('Nguyễn Văn An', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
-                          Text('an.nguyen@email.com', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        children: [
+                          Text(name?.isNotEmpty == true ? name! : 'Khách',
+                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                          Text(email ?? '',
+                              style: const TextStyle(color: Colors.white70, fontSize: 12)),
                         ],
                       ),
                     ),
@@ -87,10 +94,14 @@ class ProfileScreen extends StatelessWidget {
         child: Column(children: children),
       );
 
-  Widget _tile(BuildContext context, IconData icon, String label, String? route, {Color color = AppColors.textPrimary}) => ListTile(
+  Widget _tile(BuildContext context, IconData icon, String label, String? route,
+          {Color color = AppColors.textPrimary, VoidCallback? onTap}) =>
+      ListTile(
         leading: Icon(icon, color: color),
         title: Text(label, style: TextStyle(color: color, fontSize: 14)),
-        trailing: route != null ? const Icon(Icons.chevron_right, color: AppColors.textTertiary) : null,
-        onTap: route != null ? () => context.go(route) : null,
+        trailing: (route != null || onTap != null)
+            ? const Icon(Icons.chevron_right, color: AppColors.textTertiary)
+            : null,
+        onTap: onTap ?? (route != null ? () => context.go(route) : null),
       );
 }

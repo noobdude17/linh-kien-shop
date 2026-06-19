@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/providers/auth_providers.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/auth/screens/onboarding_screen.dart';
 import '../features/auth/screens/login_screen.dart';
@@ -34,9 +38,36 @@ import '../features/admin/screens/admin_order_management_screen.dart';
 import '../features/admin/screens/admin_order_detail_screen.dart';
 import 'app_routes.dart';
 
+/// Các route công khai (không cần đăng nhập).
+const _publicRoutes = {
+  AppRoutes.splash,
+  AppRoutes.onboarding,
+  AppRoutes.login,
+  AppRoutes.register,
+  AppRoutes.forgot,
+};
+
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final authRepo = ref.watch(authRepositoryProvider);
   return GoRouter(
     initialLocation: AppRoutes.splash,
+    refreshListenable: GoRouterRefreshStream(authRepo.authStateChanges()),
+    redirect: (context, state) {
+      final loggedIn = authRepo.currentUser != null;
+      final loc = state.matchedLocation;
+
+      // Splash & onboarding tự điều hướng, không chặn.
+      if (loc == AppRoutes.splash || loc == AppRoutes.onboarding) return null;
+
+      // Chưa đăng nhập mà vào route cần auth → về Login.
+      if (!loggedIn && !_publicRoutes.contains(loc)) return AppRoutes.login;
+
+      // Đã đăng nhập mà còn ở Login/Register → về Home.
+      if (loggedIn && (loc == AppRoutes.login || loc == AppRoutes.register)) {
+        return AppRoutes.home;
+      }
+      return null;
+    },
     routes: [
       // A · Auth
       GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashScreen()),
@@ -92,3 +123,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+/// Cầu nối Stream → Listenable để go_router tự đánh giá lại redirect
+/// mỗi khi trạng thái đăng nhập thay đổi.
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _sub = stream.asBroadcastStream().listen((_) => notifyListeners());
+  }
+
+  late final StreamSubscription<dynamic> _sub;
+
+  @override
+  void dispose() {
+    _sub.cancel();
+    super.dispose();
+  }
+}

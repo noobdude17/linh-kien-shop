@@ -1,10 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/widgets/app_buttons.dart';
 import '../../../routes/app_routes.dart';
+import '../providers/auth_providers.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _name = TextEditingController();
+  final _email = TextEditingController();
+  final _phone = TextEditingController();
+  final _password = TextEditingController();
+  final _confirm = TextEditingController();
+  bool _agree = true;
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _email.dispose();
+    _phone.dispose();
+    _password.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (!_agree) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng đồng ý điều khoản sử dụng')),
+      );
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      await ref.read(authRepositoryProvider).signUp(
+            name: _name.text.trim(),
+            email: _email.text,
+            phone: _phone.text.trim(),
+            password: _password.text,
+          );
+      // Đăng ký xong → tự đăng nhập → router redirect sang Home.
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đăng ký thất bại: ${_friendly(e)}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,57 +69,74 @@ class RegisterScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18),
-        child: Column(
-          children: [
-            const _Field(hint: 'Họ và tên', icon: Icons.person_outline),
-            const _Field(hint: 'Email', icon: Icons.email_outlined),
-            const _Field(hint: 'Số điện thoại', icon: Icons.phone_outlined),
-            const _Field(hint: 'Mật khẩu', icon: Icons.lock_outline, obscure: true),
-            const _Field(hint: 'Nhập lại mật khẩu', icon: Icons.lock_outline, obscure: true),
-            Row(
-              children: [
-                Checkbox(value: true, onChanged: (_) {}),
-                const Expanded(
-                  child: Text('Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật',
-                      style: TextStyle(fontSize: 13)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            PrimaryButton(label: 'Đăng ký', onPressed: () => context.go(AppRoutes.home)),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Đã có tài khoản? '),
-                GestureDetector(
-                  onTap: () => context.go(AppRoutes.login),
-                  child: const Text('Đăng nhập',
-                      style: TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w700)),
-                ),
-              ],
-            ),
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              _field(_name, 'Họ và tên', Icons.person_outline,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập họ tên' : null),
+              _field(_email, 'Email', Icons.email_outlined,
+                  keyboard: TextInputType.emailAddress,
+                  validator: (v) => (v == null || !v.contains('@')) ? 'Email không hợp lệ' : null),
+              _field(_phone, 'Số điện thoại', Icons.phone_outlined,
+                  keyboard: TextInputType.phone,
+                  validator: (v) => (v == null || v.trim().length < 9) ? 'Số điện thoại không hợp lệ' : null),
+              _field(_password, 'Mật khẩu', Icons.lock_outline,
+                  obscure: true,
+                  validator: (v) => (v == null || v.length < 6) ? 'Mật khẩu tối thiểu 6 ký tự' : null),
+              _field(_confirm, 'Nhập lại mật khẩu', Icons.lock_outline,
+                  obscure: true,
+                  validator: (v) => (v != _password.text) ? 'Mật khẩu không khớp' : null),
+              Row(
+                children: [
+                  Checkbox(value: _agree, onChanged: (v) => setState(() => _agree = v ?? false)),
+                  const Expanded(
+                    child: Text('Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật',
+                        style: TextStyle(fontSize: 13)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _loading
+                  ? const Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator())
+                  : PrimaryButton(label: 'Đăng ký', onPressed: _submit),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Đã có tài khoản? '),
+                  GestureDetector(
+                    onTap: () => context.go(AppRoutes.login),
+                    child: const Text('Đăng nhập',
+                        style: TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-class _Field extends StatelessWidget {
-  final String hint;
-  final IconData icon;
-  final bool obscure;
-  const _Field({required this.hint, required this.icon, this.obscure = false});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _field(TextEditingController c, String hint, IconData icon,
+      {bool obscure = false, TextInputType? keyboard, String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
-      child: TextField(
+      child: TextFormField(
+        controller: c,
         obscureText: obscure,
+        keyboardType: keyboard,
         decoration: InputDecoration(hintText: hint, prefixIcon: Icon(icon)),
+        validator: validator,
       ),
     );
+  }
+
+  String _friendly(Object e) {
+    final s = e.toString();
+    if (s.contains('email-already-in-use')) return 'Email đã được dùng';
+    if (s.contains('weak-password')) return 'Mật khẩu quá yếu';
+    return 'Vui lòng thử lại';
   }
 }
