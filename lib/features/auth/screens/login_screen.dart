@@ -47,6 +47,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _google() async {
+    setState(() => _loading = true);
+    try {
+      await ref.read(authRepositoryProvider).signInWithGoogle();
+      // Thành công → router tự redirect sang Home.
+    } catch (e) {
+      if (mounted && !e.toString().contains('cancelled')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đăng nhập Google thất bại: ${_friendly(e)}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,7 +125,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 AppOutlinedButton(
                   label: 'Tiếp tục với Google',
                   icon: Icons.g_mobiledata,
-                  onPressed: _loading ? null : _submit, // TODO: tích hợp Google Sign-in thật
+                  onPressed: _loading ? null : _google,
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -135,6 +151,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final s = e.toString();
     if (s.contains('user-not-found')) return 'Tài khoản không tồn tại';
     if (s.contains('wrong-password') || s.contains('invalid-credential')) return 'Sai mật khẩu';
-    return 'Vui lòng thử lại';
+    if (s.contains('network')) return 'Lỗi mạng, kiểm tra kết nối';
+    // Lộ mã lỗi thật để dễ chẩn đoán (tạm thời).
+    final m = RegExp(r'\[([\w-]+)\]|code:\s*([\w-]+)').firstMatch(s);
+    final code = m?.group(1) ?? m?.group(2);
+    return code != null ? 'Lỗi: $code' : 'Vui lòng thử lại';
   }
 }

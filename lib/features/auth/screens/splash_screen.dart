@@ -1,25 +1,32 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../routes/app_routes.dart';
+import '../providers/auth_providers.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(seconds: 2), () {
-      if (mounted) context.go(AppRoutes.onboarding);
-    });
+    _timer = Timer(const Duration(seconds: 2), _go);
+  }
+
+  /// Đã đăng nhập → vào thẳng Home; chưa → xem onboarding (chế độ khách).
+  void _go() {
+    if (!mounted) return;
+    final loggedIn = ref.read(authRepositoryProvider).currentUser != null;
+    context.go(loggedIn ? AppRoutes.home : AppRoutes.onboarding);
   }
 
   @override
@@ -33,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: GestureDetector(
-        onTap: () => context.go(AppRoutes.onboarding),
+        onTap: _go,
         child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

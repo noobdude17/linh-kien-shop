@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/config/app_config.dart';
 import 'core/config/firebase_options.dart';
 
 void main() async {
@@ -11,7 +12,9 @@ void main() async {
     await Firebase.initializeApp(
       options: await DefaultFirebaseOptions.currentPlatform,
     );
+    AppConfig.firebaseEnabled = true; // có config hợp lệ → dùng backend thật
   } catch (e) {
+    AppConfig.firebaseEnabled = false; // chưa có config → chạy mock
     debugPrint('Firebase chưa cấu hình — chạy ở chế độ mock UI. ($e)');
   }
   runApp(const ProviderScope(child: App()));

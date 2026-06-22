@@ -39,14 +39,23 @@ import '../features/admin/screens/admin_order_management_screen.dart';
 import '../features/admin/screens/admin_order_detail_screen.dart';
 import 'app_routes.dart';
 
-/// Các route công khai (không cần đăng nhập).
-const _publicRoutes = {
-  AppRoutes.splash,
-  AppRoutes.onboarding,
-  AppRoutes.login,
-  AppRoutes.register,
-  AppRoutes.forgot,
-};
+/// Route CẦN đăng nhập (theo prefix). Khách (guest) duyệt thoải mái phần còn lại;
+/// chỉ chặn khu vực tài khoản, đặt hàng và admin.
+const _protectedPrefixes = <String>[
+  // /profile (tab Tài khoản) cho khách vào được — màn tự hiện prompt đăng nhập.
+  AppRoutes.editProfile, // /profile/edit
+  AppRoutes.orders, // gồm /orders/detail/:id
+  AppRoutes.addresses, // gồm /addresses/add
+  AppRoutes.wishlist,
+  AppRoutes.notifications,
+  AppRoutes.checkout,
+  AppRoutes.vnpay,
+  AppRoutes.processing,
+  AppRoutes.admin, // gồm /admin/*
+];
+
+bool _needsAuth(String loc) =>
+    _protectedPrefixes.any((p) => loc == p || loc.startsWith('$p/'));
 
 Widget _withBackScope(Widget child) => AppBackScope(child: child);
 
@@ -62,8 +71,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Splash & onboarding tự điều hướng, không chặn.
       if (loc == AppRoutes.splash || loc == AppRoutes.onboarding) return null;
 
-      // Chưa đăng nhập mà vào route cần auth → về Login.
-      if (!loggedIn && !_publicRoutes.contains(loc)) return AppRoutes.login;
+      // Khách vào khu vực cần đăng nhập → chuyển sang Login.
+      if (!loggedIn && _needsAuth(loc)) return AppRoutes.login;
 
       // Đã đăng nhập mà còn ở Login/Register → về Home.
       if (loggedIn && (loc == AppRoutes.login || loc == AppRoutes.register)) {

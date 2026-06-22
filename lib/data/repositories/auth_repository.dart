@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../models/user_model.dart';
@@ -22,6 +23,8 @@ abstract class AuthRepository {
     required String phone,
     required String password,
   });
+
+  Future<UserModel> signInWithGoogle();
 
   Future<void> signOut();
 }
@@ -45,18 +48,31 @@ class FirebaseAuthRepository implements AuthRepository {
         _cached = null;
         return null;
       }
-      final doc =
-          await _db.collection(AppConstants.colUsers).doc(fbUser.uid).get();
-      _cached = doc.exists
-          ? UserModel.fromFirestore(doc)
-          : UserModel(
-              id: fbUser.uid,
-              name: fbUser.displayName ?? '',
-              email: fbUser.email ?? '',
-              role: AppConstants.roleCustomer,
-            );
+      _cached = await _loadOrCreateProfile(fbUser);
       return _cached;
     });
+  }
+
+  Future<UserModel> _loadOrCreateProfile(fb.User fbUser) async {
+    // Hồ sơ tạm dựng từ tài khoản auth — luôn dùng được kể cả khi Firestore lỗi.
+    final fallback = UserModel(
+      id: fbUser.uid,
+      name: fbUser.displayName ?? '',
+      email: fbUser.email ?? '',
+      role: AppConstants.roleCustomer,
+    );
+    // Đọc/ghi Firestore là TÙY CHỌN: nếu lỗi (rules/chưa bật/mạng) vẫn cho đăng nhập.
+    try {
+      final ref = _db.collection(AppConstants.colUsers).doc(fbUser.uid);
+      final doc = await ref.get();
+      if (doc.exists) return UserModel.fromFirestore(doc);
+      await ref.set(fallback.toFirestore());
+      return fallback;
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️ Bỏ qua lỗi Firestore hồ sơ user: $e');
+      return fallback;
+    }
   }
 
   @override
@@ -64,15 +80,7 @@ class FirebaseAuthRepository implements AuthRepository {
       {required String email, required String password}) async {
     final cred = await _auth.signInWithEmailAndPassword(
         email: email.trim(), password: password);
-    final doc =
-        await _db.collection(AppConstants.colUsers).doc(cred.user!.uid).get();
-    _cached = doc.exists
-        ? UserModel.fromFirestore(doc)
-        : UserModel(
-            id: cred.user!.uid,
-            name: '',
-            email: email,
-            role: AppConstants.roleCustomer);
+    _cached = await _loadOrCreateProfile(cred.user!);
     return _cached!;
   }
 
@@ -101,14 +109,58 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signOut() => _auth.signOut();
+  Future<UserModel> signInWithGoogle() async {
+    final googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) {
+      throw fb.FirebaseAuthException(
+          code: 'cancelled', message: 'Đã hủy đăng nhập Google');
+    }
+    final googleAuth = await googleUser.authentication;
+    final credential = fb.GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+    final cred = await _auth.signInWithCredential(credential);
+    _cached = await _loadOrCreateProfile(cred.user!);
+    return _cached!;
+  }
+
+  @override
+  Future<void> signOut() async {
+    await GoogleSignIn().signOut();
+    await _auth.signOut();
+  }
 }
 
-/// Hiện thực giả lập — cho phép chạy app & test luồng khi chưa bật Firebase.
-/// Quy ước demo: email chứa "admin" sẽ được gán role admin.
+/// Hiện thực giả lập — chạy app khi chưa cấu hình Firebase.
+///
+/// Sửa bug "email bừa cũng đăng nhập": [signIn] kiểm tra với danh sách tài khoản
+/// đã đăng ký (in-memory). Có sẵn 2 tài khoản demo để test ngay:
+///   - khách:  demo@lks.vn  / 123456
+///   - admin:  admin@lks.vn / 123456
 class MockAuthRepository implements AuthRepository {
   final _controller = StreamController<UserModel?>.broadcast();
   UserModel? _current;
+
+  // email -> (password, UserModel)
+  final Map<String, ({String password, UserModel user})> _accounts = {
+    'demo@lks.vn': (
+      password: '123456',
+      user: UserModel(
+          id: 'mock-demo',
+          name: 'Khách Demo',
+          email: 'demo@lks.vn',
+          role: AppConstants.roleCustomer),
+    ),
+    'admin@lks.vn': (
+      password: '123456',
+      user: UserModel(
+          id: 'mock-admin',
+          name: 'Quản trị viên',
+          email: 'admin@lks.vn',
+          role: AppConstants.roleAdmin),
+    ),
+  };
 
   @override
   UserModel? get currentUser => _current;
@@ -123,14 +175,16 @@ class MockAuthRepository implements AuthRepository {
   Future<UserModel> signIn(
       {required String email, required String password}) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    _current = UserModel(
-      id: 'mock-uid',
-      name: 'Người dùng',
-      email: email,
-      role: email.contains('admin')
-          ? AppConstants.roleAdmin
-          : AppConstants.roleCustomer,
-    );
+    final acc = _accounts[email.trim().toLowerCase()];
+    if (acc == null) {
+      throw fb.FirebaseAuthException(
+          code: 'user-not-found', message: 'Tài khoản không tồn tại');
+    }
+    if (acc.password != password) {
+      throw fb.FirebaseAuthException(
+          code: 'wrong-password', message: 'Sai mật khẩu');
+    }
+    _current = acc.user;
     _controller.add(_current);
     return _current!;
   }
@@ -143,12 +197,32 @@ class MockAuthRepository implements AuthRepository {
     required String password,
   }) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    _current = UserModel(
-      id: 'mock-uid',
+    final key = email.trim().toLowerCase();
+    if (_accounts.containsKey(key)) {
+      throw fb.FirebaseAuthException(
+          code: 'email-already-in-use', message: 'Email đã được dùng');
+    }
+    final user = UserModel(
+      id: 'mock-${DateTime.now().millisecondsSinceEpoch}',
       name: name,
-      email: email,
+      email: email.trim(),
       role: AppConstants.roleCustomer,
       phone: phone,
+    );
+    _accounts[key] = (password: password, user: user);
+    _current = user;
+    _controller.add(_current);
+    return user;
+  }
+
+  @override
+  Future<UserModel> signInWithGoogle() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    _current = const UserModel(
+      id: 'mock-google',
+      name: 'Google User',
+      email: 'google.user@gmail.com',
+      role: AppConstants.roleCustomer,
     );
     _controller.add(_current);
     return _current!;

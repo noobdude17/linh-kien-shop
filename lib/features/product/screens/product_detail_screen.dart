@@ -10,6 +10,7 @@ import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/quantity_stepper.dart';
 import '../../../data/mock_data.dart';
 import '../../../data/models/product_model.dart';
+import '../../../features/auth/providers/auth_providers.dart';
 import '../../../features/cart/providers/cart_provider.dart';
 import '../../../routes/app_routes.dart';
 
@@ -25,6 +26,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   int _qty = 1;
 
   void _addToCart(ProductModel p, {required bool buyNow}) {
+    // Khách chưa đăng nhập → yêu cầu đăng nhập trước khi thêm vào giỏ.
+    final loggedIn = ref.read(authRepositoryProvider).currentUser != null;
+    if (!loggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Vui lòng đăng nhập để mua hàng'),
+          duration: const Duration(seconds: 2),
+          action: SnackBarAction(
+            label: 'Đăng nhập',
+            onPressed: () => context.go(AppRoutes.login),
+          ),
+        ),
+      );
+      return;
+    }
     ref.read(cartProvider.notifier).add(p, qty: _qty, variant: p.brand);
     if (buyNow) {
       context.go(AppRoutes.cart);

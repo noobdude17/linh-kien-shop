@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/widgets/app_buttons.dart';
 import '../../../routes/app_routes.dart';
 import '../../auth/providers/auth_providers.dart';
 
@@ -12,10 +13,50 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
+
+    // Khách chưa đăng nhập → hiện lời mời đăng nhập, không nhảy thẳng form.
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Tài khoản')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircleAvatar(
+                  radius: 36,
+                  backgroundColor: AppColors.surface,
+                  child: Icon(Icons.person_outline, size: 40, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 20),
+                const Text('Đăng nhập để tiếp tục',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                const Text(
+                  'Đăng nhập để xem đơn hàng, địa chỉ, sản phẩm yêu thích và thanh toán.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 24),
+                PrimaryButton(label: 'Đăng nhập', onPressed: () => context.go(AppRoutes.login)),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => context.go(AppRoutes.register),
+                  child: const Text('Chưa có tài khoản? Đăng ký'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+      );
+    }
+
     return Scaffold(
       body: Column(
         children: [
-          _header(context, user?.name, user?.email),
+          _header(context, user.name, user.email),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
