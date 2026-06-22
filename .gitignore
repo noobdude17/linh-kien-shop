@@ -53,6 +53,7 @@ app.*.map.json
 assets/config/firebase_config.json
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
+.claude/
 
 # Generated files
 *.g.dart
