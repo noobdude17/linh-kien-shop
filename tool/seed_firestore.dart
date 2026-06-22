@@ -19,7 +19,9 @@ import 'package:linh_kien_shop/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: await DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const SeedApp());
 }
 

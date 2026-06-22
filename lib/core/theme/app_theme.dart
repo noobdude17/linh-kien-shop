@@ -60,12 +60,12 @@ class AppTheme {
       ),
     ),
     checkboxTheme: CheckboxThemeData(
-      fillColor: MaterialStateProperty.resolveWith((states) {
-        return states.contains(MaterialState.selected)
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        return states.contains(WidgetState.selected)
             ? AppColors.primary
             : Colors.transparent;
       }),
-      checkColor: MaterialStateProperty.all(Colors.white),
+      checkColor: WidgetStateProperty.all(Colors.white),
       side: const BorderSide(color: AppColors.border, width: 1.5),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     ),
