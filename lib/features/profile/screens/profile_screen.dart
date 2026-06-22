@@ -56,7 +56,8 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       body: Column(
         children: [
-          _header(context, user.name, user.email),
+          _header(context, user.name, user.email,
+              () => ref.read(authRepositoryProvider).signOut()),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
@@ -89,7 +90,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _header(BuildContext context, String? name, String? email) => Container(
+  Widget _header(BuildContext context, String? name, String? email, VoidCallback onLogout) => Container(
         decoration: const BoxDecoration(
           color: AppColors.surface,
           border: Border(bottom: BorderSide(color: AppColors.divider)),
@@ -125,6 +126,11 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       onPressed: () => context.go(AppRoutes.editProfile),
                       child: const Text('Chỉnh sửa'),
+                    ),
+                    IconButton(
+                      tooltip: 'Đăng xuất',
+                      icon: const Icon(Icons.logout, color: AppColors.error),
+                      onPressed: onLogout,
                     ),
                   ],
                 ),

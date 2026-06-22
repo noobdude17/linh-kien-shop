@@ -15,17 +15,21 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
   Timer? _timer;
+  bool _navigated = false;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(seconds: 2), _go);
+    // ponytail: 4s safety net — Firebase khôi phục session thực tế <1s
+    _timer = Timer(const Duration(seconds: 4),
+        () => _go(ref.read(authRepositoryProvider).currentUser != null));
   }
 
-  /// Đã đăng nhập → vào thẳng Home; chưa → xem onboarding (chế độ khách).
-  void _go() {
-    if (!mounted) return;
-    final loggedIn = ref.read(authRepositoryProvider).currentUser != null;
+  /// Đã đăng nhập → Home; chưa → onboarding (chế độ khách).
+  void _go(bool loggedIn) {
+    if (_navigated || !mounted) return;
+    _navigated = true;
+    _timer?.cancel();
     context.go(loggedIn ? AppRoutes.home : AppRoutes.onboarding);
   }
 
@@ -37,10 +41,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Chờ Firebase khôi phục session (auth state hết loading) rồi mới điều hướng.
+    final auth = ref.watch(authStateProvider);
+    if (!auth.isLoading) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _go(auth.valueOrNull != null));
+    }
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: GestureDetector(
-        onTap: _go,
+        onTap: () => _go(ref.read(authRepositoryProvider).currentUser != null),
         child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
