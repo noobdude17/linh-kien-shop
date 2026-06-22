@@ -18,6 +18,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _phone = TextEditingController();
+  final _dob = TextEditingController();
+  final _address = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _agree = true;
@@ -28,9 +30,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _name.dispose();
     _email.dispose();
     _phone.dispose();
+    _dob.dispose();
+    _address.dispose();
     _password.dispose();
     _confirm.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDob() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(now.year - 20),
+      firstDate: DateTime(1920),
+      lastDate: now,
+    );
+    if (picked != null) {
+      _dob.text = '${picked.day.toString().padLeft(2, '0')}/'
+          '${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+    }
   }
 
   Future<void> _submit() async {
@@ -48,6 +66,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _email.text,
             phone: _phone.text.trim(),
             password: _password.text,
+            address: _address.text.trim(),
+            dob: _dob.text.trim(),
           );
       // Đăng ký xong → tự đăng nhập → router redirect sang Home.
     } catch (e) {
@@ -82,6 +102,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               _field(_phone, 'Số điện thoại', Icons.phone_outlined,
                   keyboard: TextInputType.phone,
                   validator: (v) => (v == null || v.trim().length < 9) ? 'Số điện thoại không hợp lệ' : null),
+              _field(_dob, 'Ngày sinh', Icons.cake_outlined,
+                  readOnly: true, onTap: _pickDob,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Chọn ngày sinh' : null),
+              _field(_address, 'Địa chỉ', Icons.location_on_outlined,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập địa chỉ' : null),
               _field(_password, 'Mật khẩu', Icons.lock_outline,
                   obscure: true,
                   validator: (v) => (v == null || v.length < 6) ? 'Mật khẩu tối thiểu 6 ký tự' : null),
@@ -121,12 +146,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _field(TextEditingController c, String hint, IconData icon,
-      {bool obscure = false, TextInputType? keyboard, String? Function(String?)? validator}) {
+      {bool obscure = false,
+      bool readOnly = false,
+      VoidCallback? onTap,
+      TextInputType? keyboard,
+      String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(
         controller: c,
         obscureText: obscure,
+        readOnly: readOnly,
+        onTap: onTap,
         keyboardType: keyboard,
         decoration: InputDecoration(hintText: hint, prefixIcon: Icon(icon)),
         validator: validator,

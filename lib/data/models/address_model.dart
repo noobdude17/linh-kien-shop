@@ -15,16 +15,17 @@ class AddressModel {
     this.isDefault = false,
   });
 
-  factory AddressModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return AddressModel(
-      id: doc.id,
-      name: data['name'] ?? '',
-      phone: data['phone'] ?? '',
-      detail: data['detail'] ?? '',
-      isDefault: data['isDefault'] ?? false,
-    );
-  }
+  factory AddressModel.fromFirestore(DocumentSnapshot doc) =>
+      AddressModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+
+  factory AddressModel.fromMap(String id, Map<String, dynamic> data) =>
+      AddressModel(
+        id: id,
+        name: data['name'] ?? '',
+        phone: data['phone'] ?? '',
+        detail: data['detail'] ?? '',
+        isDefault: data['isDefault'] ?? false,
+      );
 
   Map<String, dynamic> toFirestore() => {
         'name': name,

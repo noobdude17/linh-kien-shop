@@ -11,6 +11,7 @@ import '../features/auth/screens/onboarding_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
+import '../features/auth/screens/complete_profile_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/home/screens/categories_screen.dart';
 import '../features/home/screens/search_screen.dart';
@@ -71,6 +72,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Splash & onboarding tự điều hướng, không chặn.
       if (loc == AppRoutes.splash || loc == AppRoutes.onboarding) return null;
 
+      // Đã đăng nhập nhưng thiếu thông tin (vd: đăng nhập Google) → buộc hoàn tất.
+      final user = authRepo.currentUser;
+      if (user != null &&
+          !user.profileComplete &&
+          loc != AppRoutes.completeProfile) {
+        return AppRoutes.completeProfile;
+      }
+
       // Khách vào khu vực cần đăng nhập → chuyển sang Login.
       if (!loggedIn && _needsAuth(loc)) return AppRoutes.login;
 
@@ -87,6 +96,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: AppRoutes.login, builder: (_, _) => _withBackScope(const LoginScreen())),
       GoRoute(path: AppRoutes.register, builder: (_, _) => _withBackScope(const RegisterScreen())),
       GoRoute(path: AppRoutes.forgot, builder: (_, _) => _withBackScope(const ForgotPasswordScreen())),
+      GoRoute(path: AppRoutes.completeProfile, builder: (_, _) => _withBackScope(const CompleteProfileScreen())),
 
       // B · Home & Browse
       GoRoute(path: AppRoutes.home, builder: (_, _) => _withBackScope(const HomeScreen())),

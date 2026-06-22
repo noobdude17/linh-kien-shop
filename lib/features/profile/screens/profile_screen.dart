@@ -83,6 +83,9 @@ class ProfileScreen extends ConsumerWidget {
                   _tile(context, Icons.logout, 'Đăng xuất', null,
                       color: AppColors.error,
                       onTap: () => ref.read(authRepositoryProvider).signOut()),
+                  _tile(context, Icons.delete_forever, 'Xóa tài khoản', null,
+                      color: AppColors.error,
+                      onTap: () => _confirmDelete(context, ref)),
                 ]),
               ],
             ),
@@ -144,6 +147,37 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       );
+
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xóa tài khoản?'),
+        content: const Text(
+            'Hành động này không thể hoàn tác. Toàn bộ thông tin tài khoản sẽ bị xóa.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Xóa', style: TextStyle(color: AppColors.error))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await ref.read(authRepositoryProvider).deleteAccount();
+    } catch (e) {
+      if (context.mounted) {
+        final recent = e.toString().contains('requires-recent-login');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(recent
+                  ? 'Cần đăng nhập lại trước khi xóa, hãy đăng xuất rồi đăng nhập lại'
+                  : 'Xóa thất bại, thử lại')),
+        );
+      }
+    }
+  }
 
   Widget _menuCard(List<Widget> children) => Container(
         decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), boxShadow: const [

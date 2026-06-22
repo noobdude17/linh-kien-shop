@@ -1,26 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_buttons.dart';
-import '../../../data/mock_data.dart';
 import '../../../data/models/address_model.dart';
 import '../../../routes/app_routes.dart';
+import '../../auth/providers/auth_providers.dart';
 
-class AddressListScreen extends StatelessWidget {
+class AddressListScreen extends ConsumerWidget {
   const AddressListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    // Địa chỉ giao hàng mặc định = ảnh chụp lúc tạo tài khoản (không đổi khi sửa
+    // hồ sơ). Tài khoản cũ/mock chưa có thì dựng tạm từ hồ sơ.
+    final fallback = (user != null && (user.address?.trim().isNotEmpty ?? false))
+        ? AddressModel(
+            id: 'default',
+            name: user.name,
+            phone: user.phone ?? '',
+            detail: user.address!,
+            isDefault: true)
+        : null;
+    final def = user?.defaultAddress ?? fallback;
+    final addresses = <AddressModel>[?def];
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go(AppRoutes.profile)),
         title: const Text('Địa chỉ của tôi'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppDimens.screenPadding),
-        children: MockData.addresses.map((a) => _addressCard(context, a)).toList(),
-      ),
+      body: addresses.isEmpty
+          ? const Center(child: Text('Chưa có địa chỉ'))
+          : ListView(
+              padding: const EdgeInsets.all(AppDimens.screenPadding),
+              children: addresses.map((a) => _addressCard(context, a)).toList(),
+            ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: PrimaryButton(label: '+ Thêm địa chỉ mới', onPressed: () => context.go(AppRoutes.addAddress)),
