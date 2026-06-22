@@ -57,3 +57,18 @@ ios/Runner/GoogleService-Info.plist
 # Generated files
 *.g.dart
 *.freezed.dart
+
+# Dart/Flutter lock (keep pubspec.lock, ignore these)
+.flutter-plugins
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Coverage / test outputs
+coverage/
+*.lcov
+
+# VSCode (uncomment if team doesn't share launch configs)
+# .vscode/

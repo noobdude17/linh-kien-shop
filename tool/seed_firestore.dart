@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 
 import 'package:linh_kien_shop/core/constants/app_constants.dart';
 import 'package:linh_kien_shop/data/mock_data.dart';
-import 'package:linh_kien_shop/firebase_options.dart';
+import 'package:linh_kien_shop/core/config/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
