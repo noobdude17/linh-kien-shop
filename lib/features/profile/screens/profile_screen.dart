@@ -13,18 +13,8 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateProvider);
-    return authState.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-        bottomNavigationBar: AppBottomNav(currentIndex: 3),
-      ),
-      error: (e, _) => const Scaffold(
-        body: Center(child: Text('Lỗi xác thực')),
-        bottomNavigationBar: AppBottomNav(currentIndex: 3),
-      ),
-      data: (user) => user == null ? _loginView(context) : _profileView(context, ref, user),
-    );
+    final user = ref.watch(currentUserProvider);
+    return user != null ? _profileView(context, ref, user) : _loginView(context);
   }
 
   Scaffold _loginView(BuildContext context) {
@@ -136,6 +126,8 @@ class ProfileScreen extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.primary,
                         side: const BorderSide(color: AppColors.primary, width: 1.5),
+                        // Theme dùng minimumSize.fromHeight (width=∞) → vỡ layout trong Row. Ép về kích thước theo nội dung.
+                        minimumSize: const Size(64, 40),
                       ),
                       onPressed: () => context.go(AppRoutes.editProfile),
                       child: const Text('Chỉnh sửa'),
