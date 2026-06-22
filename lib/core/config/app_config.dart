@@ -7,5 +7,5 @@ class AppConfig {
   AppConfig._();
 
   /// ⬇️ ĐỔI THÀNH true SAU KHI CẤU HÌNH FIREBASE XONG ⬇️
-  static const bool useFirebase = false;
+  static const bool useFirebase = true;
 }
