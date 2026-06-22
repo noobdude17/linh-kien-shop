@@ -64,7 +64,7 @@ class FirebaseAuthRepository implements AuthRepository {
     // Đọc/ghi Firestore là TÙY CHỌN: nếu lỗi (rules/chưa bật/mạng) vẫn cho đăng nhập.
     try {
       final ref = _db.collection(AppConstants.colUsers).doc(fbUser.uid);
-      final doc = await ref.get();
+      final doc = await ref.get().timeout(const Duration(seconds: 5));
       if (doc.exists) return UserModel.fromFirestore(doc);
       await ref.set(fallback.toFirestore());
       return fallback;
@@ -110,7 +110,9 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<UserModel> signInWithGoogle() async {
-    final googleUser = await GoogleSignIn().signIn();
+    final googleUser = await GoogleSignIn(
+      serverClientId: '605283360947-c5mniq9t6h5ij2glcrprq8eouu97n683.apps.googleusercontent.com',
+    ).signIn();
     if (googleUser == null) {
       throw fb.FirebaseAuthException(
           code: 'cancelled', message: 'Đã hủy đăng nhập Google');

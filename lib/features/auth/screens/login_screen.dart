@@ -67,6 +67,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        leading: BackButton(onPressed: () => context.go(AppRoutes.profile)),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -74,7 +79,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             key: _formKey,
             child: Column(
               children: [
-                const SizedBox(height: 40),
                 const Text('⚡', style: TextStyle(fontSize: 48)),
                 const Text('Linh Kiện Shop',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
