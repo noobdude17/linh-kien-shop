@@ -35,3 +35,9 @@ final productDetailProvider =
     FutureProvider.family<ProductModel?, String>((ref, id) {
   return ref.watch(productRepositoryProvider).getById(id);
 });
+
+/// Tìm kiếm sản phẩm theo từ khóa.
+final searchProvider =
+    FutureProvider.autoDispose.family<List<ProductModel>, String>((ref, query) {
+  return ref.watch(productRepositoryProvider).search(query.toLowerCase().trim());
+});

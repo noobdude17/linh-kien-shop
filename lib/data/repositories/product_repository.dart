@@ -25,8 +25,13 @@ class MockProductRepository implements ProductRepository {
   Future<List<ProductModel>> getFeatured() => _delayed(MockData.featured);
 
   @override
-  Future<List<ProductModel>> getByCategory(String? categoryId) =>
-      _delayed(MockData.gpuList);
+  Future<List<ProductModel>> getByCategory(String? categoryId) {
+    final all = [...MockData.featured, ...MockData.gpuList];
+    final filtered = categoryId == null
+        ? all
+        : all.where((p) => p.categoryId == categoryId).toList();
+    return _delayed(filtered);
+  }
 
   @override
   Future<ProductModel?> getById(String id) {
@@ -41,8 +46,12 @@ class MockProductRepository implements ProductRepository {
   @override
   Future<List<ProductModel>> search(String query) {
     final q = query.toLowerCase();
+    final all = [...MockData.featured, ...MockData.gpuList];
     return _delayed(
-      MockData.gpuList.where((p) => p.name.toLowerCase().contains(q)).toList(),
+      all.where((p) =>
+          p.name.toLowerCase().contains(q) ||
+          p.brand.toLowerCase().contains(q) ||
+          p.categoryName.toLowerCase().contains(q)).toList(),
     );
   }
 }
