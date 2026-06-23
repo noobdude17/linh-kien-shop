@@ -28,6 +28,19 @@ class MockData {
     CategoryModel(id: 'accessory', name: 'Phụ kiện', icon: '🎧', colorIndex: 11),
   ];
 
+  // ---- Brands (logo slider) — chỉ những hãng có sẵn logo asset ----
+  static const brands = <(String name, String logo)>[
+    ('AMD', 'assets/images/brands/amd.png'),
+    ('ASUS', 'assets/images/brands/asus.png'),
+    ('Intel', 'assets/images/brands/intel.png'),
+    ('MSI', 'assets/images/brands/msi.png'),
+    ('Samsung', 'assets/images/brands/samsung.png'),
+    ('Logitech', 'assets/images/brands/logitech.png'),
+    ('Microsoft', 'assets/images/brands/microsoft.png'),
+    ('Razer', 'assets/images/brands/razer.png'),
+    ('Crucial', 'assets/images/brands/crucial.png'),
+  ];
+
   // ---- Featured products (Home) ----
   static const featured = <ProductModel>[
     ProductModel(
@@ -90,6 +103,62 @@ class MockData {
       categoryName: 'SSD',
       stock: 23,
       specs: {'Dung lượng': '1TB', 'Chuẩn': 'NVMe PCIe 4.0', 'Đọc': '7450MB/s'},
+    ),
+    ProductModel(
+      id: 'p5',
+      name: 'Logitech G Pro X Superlight 2',
+      brand: 'Logitech',
+      price: 3200000,
+      oldPrice: 3700000,
+      rating: 4.9,
+      reviewCount: 178,
+      imageLabel: 'G PRO X SUPERLIGHT',
+      categoryId: 'mouse',
+      categoryName: 'Chuột',
+      stock: 31,
+      specs: {'DPI': '32000', 'Trọng lượng': '60g', 'Kết nối': 'Wireless'},
+    ),
+    ProductModel(
+      id: 'p6',
+      name: 'Razer BlackWidow V4 Pro RGB',
+      brand: 'Razer',
+      price: 4500000,
+      oldPrice: 5200000,
+      rating: 4.7,
+      reviewCount: 92,
+      imageLabel: 'BLACKWIDOW V4 PRO',
+      categoryId: 'keyboard',
+      categoryName: 'Bàn phím',
+      stock: 18,
+      specs: {'Switch': 'Green', 'Kết nối': 'USB-C', 'Đèn': 'Chroma RGB'},
+    ),
+    ProductModel(
+      id: 'p7',
+      name: 'Samsung Odyssey G7 27" 240Hz QHD',
+      brand: 'Samsung',
+      price: 8900000,
+      oldPrice: 10500000,
+      rating: 4.8,
+      reviewCount: 144,
+      imageLabel: 'ODYSSEY G7 27"',
+      categoryId: 'monitor',
+      categoryName: 'Màn hình',
+      stock: 9,
+      specs: {'Tấm nền': 'VA', 'Tần số': '240Hz', 'Độ phân giải': 'QHD'},
+    ),
+    ProductModel(
+      id: 'p8',
+      name: 'ASUS ROG Strix G16 Gaming Laptop',
+      brand: 'ASUS',
+      price: 32500000,
+      oldPrice: 36000000,
+      rating: 4.6,
+      reviewCount: 67,
+      imageLabel: 'ROG STRIX G16',
+      categoryId: 'laptop',
+      categoryName: 'Laptop',
+      stock: 5,
+      specs: {'CPU': 'i7-13650HX', 'GPU': 'RTX 4060', 'RAM': '16GB DDR5'},
     ),
   ];
 
