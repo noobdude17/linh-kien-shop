@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/widgets/app_buttons.dart';
 import '../../../routes/app_routes.dart';
+import '../../../data/models/user_model.dart';
 import '../../auth/providers/auth_providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -12,10 +14,53 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
+    return user != null ? _profileView(context, ref, user) : _loginView(context);
+  }
+
+  Scaffold _loginView(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Tài khoản')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircleAvatar(
+                radius: 36,
+                backgroundColor: AppColors.surface,
+                child: Icon(Icons.person_outline, size: 40, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 20),
+              const Text('Đăng nhập để tiếp tục',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              const Text(
+                'Đăng nhập để xem đơn hàng, địa chỉ, sản phẩm yêu thích và thanh toán.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              PrimaryButton(label: 'Đăng nhập', onPressed: () => context.go(AppRoutes.login)),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => context.go(AppRoutes.register),
+                child: const Text('Chưa có tài khoản? Đăng ký'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+    );
+  }
+
+  Scaffold _profileView(BuildContext context, WidgetRef ref, UserModel user) {
     return Scaffold(
       body: Column(
         children: [
-          _header(context, user?.name, user?.email),
+          _header(context, user.name, user.email,
+              () => ref.read(authRepositoryProvider).signOut()),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
@@ -38,6 +83,9 @@ class ProfileScreen extends ConsumerWidget {
                   _tile(context, Icons.logout, 'Đăng xuất', null,
                       color: AppColors.error,
                       onTap: () => ref.read(authRepositoryProvider).signOut()),
+                  _tile(context, Icons.delete_forever, 'Xóa tài khoản', null,
+                      color: AppColors.error,
+                      onTap: () => _confirmDelete(context, ref)),
                 ]),
               ],
             ),
@@ -48,7 +96,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _header(BuildContext context, String? name, String? email) => Container(
+  Widget _header(BuildContext context, String? name, String? email, VoidCallback onLogout) => Container(
         decoration: const BoxDecoration(
           color: AppColors.surface,
           border: Border(bottom: BorderSide(color: AppColors.divider)),
@@ -81,9 +129,16 @@ class ProfileScreen extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.primary,
                         side: const BorderSide(color: AppColors.primary, width: 1.5),
+                        // Theme dùng minimumSize.fromHeight (width=∞) → vỡ layout trong Row. Ép về kích thước theo nội dung.
+                        minimumSize: const Size(64, 40),
                       ),
                       onPressed: () => context.go(AppRoutes.editProfile),
                       child: const Text('Chỉnh sửa'),
+                    ),
+                    IconButton(
+                      tooltip: 'Đăng xuất',
+                      icon: const Icon(Icons.logout, color: AppColors.error),
+                      onPressed: onLogout,
                     ),
                   ],
                 ),
@@ -92,6 +147,37 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       );
+
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xóa tài khoản?'),
+        content: const Text(
+            'Hành động này không thể hoàn tác. Toàn bộ thông tin tài khoản sẽ bị xóa.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Xóa', style: TextStyle(color: AppColors.error))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await ref.read(authRepositoryProvider).deleteAccount();
+    } catch (e) {
+      if (context.mounted) {
+        final recent = e.toString().contains('requires-recent-login');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(recent
+                  ? 'Cần đăng nhập lại trước khi xóa, hãy đăng xuất rồi đăng nhập lại'
+                  : 'Xóa thất bại, thử lại')),
+        );
+      }
+    }
+  }
 
   Widget _menuCard(List<Widget> children) => Container(
         decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), boxShadow: const [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
@@ -8,21 +9,26 @@ import '../../../core/widgets/app_buttons.dart';
 import '../../../core/widgets/summary_row.dart';
 import '../../../data/mock_data.dart';
 import '../../../routes/app_routes.dart';
+import '../../profile/providers/address_providers.dart';
 
-class CheckoutScreen extends StatefulWidget {
+class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
 
   @override
-  State<CheckoutScreen> createState() => _CheckoutScreenState();
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
-class _CheckoutScreenState extends State<CheckoutScreen> {
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String _payment = AppConstants.payVnpay;
-  final _addr = MockData.addresses.first;
   final _items = MockData.cartItems();
 
   @override
   Widget build(BuildContext context) {
+    // Địa chỉ mặc định lấy từ provider (đầu danh sách); rỗng → mock để demo.
+    final list = ref.watch(addressesProvider).valueOrNull;
+    final addr = (list != null && list.isNotEmpty)
+        ? list.first
+        : MockData.addresses.first;
     final total = 29800000;
     return Scaffold(
       appBar: AppBar(
@@ -43,9 +49,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${_addr.name} · ${_addr.phone}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text('${addr.name} · ${addr.phone}', style: const TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                Text(_addr.detail, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
+                Text(addr.detail, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
               ],
             ),
           )),

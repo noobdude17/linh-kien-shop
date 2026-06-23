@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_buttons.dart';
 import '../../../routes/app_routes.dart';
+import '../../location/location_picker_screen.dart';
 import '../providers/auth_providers.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -18,19 +20,56 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _phone = TextEditingController();
+  final _dob = TextEditingController();
+  final _address = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _agree = true;
   bool _loading = false;
+  double? _lat, _lng; // toạ độ xác nhận từ map picker (null nếu nhập tay)
 
   @override
   void dispose() {
     _name.dispose();
     _email.dispose();
     _phone.dispose();
+    _dob.dispose();
+    _address.dispose();
     _password.dispose();
     _confirm.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDob() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(now.year - 20),
+      firstDate: DateTime(1920),
+      lastDate: now,
+    );
+    if (picked != null) {
+      _dob.text = '${picked.day.toString().padLeft(2, '0')}/'
+          '${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+    }
+  }
+
+  Future<void> _pickLocation() async {
+    final res = await Navigator.of(context).push<LocationResult>(
+      MaterialPageRoute(
+        builder: (_) => LocationPickerScreen(
+          initial: (_lat != null && _lng != null) ? LatLng(_lat!, _lng!) : null,
+          initialText: _address.text.trim().isEmpty ? null : _address.text.trim(),
+        ),
+      ),
+    );
+    if (res != null) {
+      setState(() {
+        _address.text = res.address;
+        _lat = res.lat;
+        _lng = res.lng;
+      });
+    }
   }
 
   Future<void> _submit() async {
@@ -48,6 +87,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _email.text,
             phone: _phone.text.trim(),
             password: _password.text,
+            address: _address.text.trim(),
+            dob: _dob.text.trim(),
+            lat: _lat,
+            lng: _lng,
           );
       // Đăng ký xong → tự đăng nhập → router redirect sang Home.
     } catch (e) {
@@ -82,6 +125,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               _field(_phone, 'Số điện thoại', Icons.phone_outlined,
                   keyboard: TextInputType.phone,
                   validator: (v) => (v == null || v.trim().length < 9) ? 'Số điện thoại không hợp lệ' : null),
+              _field(_dob, 'Ngày sinh', Icons.cake_outlined,
+                  readOnly: true, onTap: _pickDob,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Chọn ngày sinh' : null),
+              _field(_address, 'Địa chỉ (chọn trên bản đồ)', Icons.location_on_outlined,
+                  readOnly: true, onTap: _pickLocation,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Chọn địa chỉ trên bản đồ' : null),
               _field(_password, 'Mật khẩu', Icons.lock_outline,
                   obscure: true,
                   validator: (v) => (v == null || v.length < 6) ? 'Mật khẩu tối thiểu 6 ký tự' : null),
@@ -121,12 +170,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _field(TextEditingController c, String hint, IconData icon,
-      {bool obscure = false, TextInputType? keyboard, String? Function(String?)? validator}) {
+      {bool obscure = false,
+      bool readOnly = false,
+      VoidCallback? onTap,
+      TextInputType? keyboard,
+      String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(
         controller: c,
         obscureText: obscure,
+        readOnly: readOnly,
+        onTap: onTap,
         keyboardType: keyboard,
         decoration: InputDecoration(hintText: hint, prefixIcon: Icon(icon)),
         validator: validator,

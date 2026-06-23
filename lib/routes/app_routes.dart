@@ -9,6 +9,7 @@ class AppRoutes {
   static const login = '/login';
   static const register = '/register';
   static const forgot = '/forgot';
+  static const completeProfile = '/complete-profile';
 
   // B · Home & Browse
   static const home = '/home';

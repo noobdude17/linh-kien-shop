@@ -10,7 +10,10 @@ class EmptyResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Kết quả tìm kiếm')),
+      appBar: AppBar(
+        leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
+        title: const Text('Kết quả tìm kiếm'),
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),

@@ -35,7 +35,7 @@ class ProductModel {
     this.specs = const {},
   });
 
-  bool get inStock => stock > 0;
+  bool get inStock => isActive;
 
   /// % giảm giá (làm tròn), null nếu không có oldPrice.
   int? get discountPercent {

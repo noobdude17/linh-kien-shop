@@ -7,6 +7,7 @@ class AppConstants {
   static const colCategories = 'categories';
   static const colOrders = 'orders';
   static const colCart = 'cart';
+  static const colAddresses = 'addresses'; // subcollection users/{uid}/addresses
 
   // Order status
   static const statusPending = 'pending';

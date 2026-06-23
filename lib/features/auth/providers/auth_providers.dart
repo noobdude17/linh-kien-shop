@@ -8,7 +8,7 @@ import '../../../data/repositories/auth_repository.dart';
 
 /// Nguồn xác thực. Tự chuyển Mock ↔ Firebase theo cờ [AppConfig.useFirebase].
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  if (AppConfig.useFirebase) {
+  if (AppConfig.firebaseEnabled) {
     return FirebaseAuthRepository(
         fb.FirebaseAuth.instance, FirebaseFirestore.instance);
   }
