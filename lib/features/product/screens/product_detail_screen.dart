@@ -6,12 +6,21 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/app_buttons.dart';
-import '../../../core/widgets/image_placeholder.dart';
+import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/quantity_stepper.dart';
 import '../../../data/models/product_model.dart';
+import '../../../data/models/product_variant.dart';
+import '../../../data/models/review_model.dart';
 import '../../../features/auth/providers/auth_providers.dart';
 import '../../../features/cart/providers/cart_provider.dart';
+import '../../../features/home/providers/recently_viewed_provider.dart';
+import '../../../features/product/providers/compare_provider.dart';
 import '../../../features/product/providers/product_providers.dart';
+import '../../../features/product/providers/review_provider.dart';
+import '../../../features/product/providers/wishlist_provider.dart';
+import '../../../features/product/widgets/product_image_gallery.dart';
+import '../../../features/product/widgets/review_card.dart';
+import '../../../features/product/widgets/variant_selector.dart';
 import '../../../routes/app_routes.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -26,6 +35,8 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   int _qty = 1;
   bool _isAdding = false;
+  bool _tracked = false;
+  ProductVariant? _selectedVariant;
 
   void _addToCart(ProductModel p, {required bool buyNow}) {
     if (_isAdding) return;
@@ -44,7 +55,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       return;
     }
     setState(() => _isAdding = true);
-    ref.read(cartProvider.notifier).add(p, qty: _qty, variant: p.brand);
+    ref.read(cartProvider.notifier).add(
+          p,
+          qty: _qty,
+          variant: _selectedVariant?.name ?? p.brand,
+          priceOverride: _selectedVariant?.price,
+        );
     if (buyNow) {
       context.go(AppRoutes.cart);
     } else {
@@ -56,6 +72,138 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         ),
       );
     }
+  }
+
+  void _toggleCompare(ProductModel p) {
+    final notifier = ref.read(compareProvider.notifier);
+    final isIn = notifier.contains(p.id);
+    if (!isIn) {
+      if (notifier.atLimit) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tối đa 3 sản phẩm để so sánh'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+        return;
+      }
+      final cat = notifier.categoryId;
+      if (cat != null && cat != p.categoryId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Chỉ so sánh sản phẩm cùng danh mục (${notifier.categoryName})'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+    }
+    notifier.toggle(p);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content:
+            Text(isIn ? 'Đã xóa khỏi so sánh' : 'Đã thêm vào so sánh'),
+        duration: const Duration(seconds: 2),
+        action: isIn
+            ? null
+            : SnackBarAction(
+                label: 'Xem',
+                onPressed: () {
+                  if (!mounted) return;
+                  context.go(AppRoutes.compare);
+                },
+              ),
+      ),
+    );
+  }
+
+  void _showWriteReview(ProductModel p) {
+    double selectedRating = 0;
+    final controller = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+              20, 12, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text('Viết đánh giá',
+                  style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 12),
+              Row(
+                children: List.generate(5, (i) {
+                  final star = (i + 1).toDouble();
+                  return GestureDetector(
+                    onTap: () =>
+                        setModalState(() => selectedRating = star),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: Icon(
+                        i < selectedRating ? Icons.star : Icons.star_border,
+                        color: AppColors.star,
+                        size: 32,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Nhận xét của bạn...',
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppDimens.radiusInput),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              PrimaryButton(
+                label: 'Gửi đánh giá',
+                onPressed: () {
+                  if (selectedRating == 0) return;
+                  ref.read(reviewProvider(p.id).notifier).addReview(
+                        ReviewModel(
+                          id: 'r_${DateTime.now().millisecondsSinceEpoch}',
+                          productId: p.id,
+                          userId: 'me',
+                          userName: 'Bạn',
+                          rating: selectedRating,
+                          comment: controller.text.trim(),
+                          createdAt: DateTime.now(),
+                        ),
+                      );
+                  Navigator.of(ctx).pop();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -75,8 +223,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               Text('Lỗi: $e'),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.invalidate(
-                    productDetailProvider(widget.productId)),
+                onPressed: () =>
+                    ref.invalidate(productDetailProvider(widget.productId)),
                 child: const Text('Thử lại'),
               ),
             ],
@@ -90,13 +238,46 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             body: const Center(child: Text('Không tìm thấy sản phẩm')),
           );
         }
+        if (!_tracked) {
+          _tracked = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              ref
+                  .read(recentlyViewedProvider.notifier)
+                  .add(widget.productId);
+            }
+          });
+        }
         return _buildDetail(p);
       },
     );
   }
 
   Widget _buildDetail(ProductModel p) {
-    final discount = p.discountPercent;
+    final isWishlisted =
+        ref.watch(wishlistProvider.select((ids) => ids.contains(p.id)));
+    final isComparing = ref.watch(
+        compareProvider.select((list) => list.any((c) => c.id == p.id)));
+
+    // Effective price/stock based on selected variant
+    final effectivePrice = _selectedVariant?.price ?? p.price;
+    final effectiveOldPrice = _selectedVariant?.oldPrice ?? p.oldPrice;
+    final effectiveStock =
+        _selectedVariant != null ? _selectedVariant!.stock : p.stock;
+    final effectiveInStock = _selectedVariant != null
+        ? _selectedVariant!.isAvailable
+        : p.inStock;
+    final effectiveDiscount =
+        effectiveOldPrice != null && effectiveOldPrice > effectivePrice
+            ? (((effectiveOldPrice - effectivePrice) / effectiveOldPrice) *
+                    100)
+                .round()
+            : null;
+    // Must select variant if product has variants
+    final canBuy = effectiveInStock &&
+        (p.variants.isEmpty || _selectedVariant != null) &&
+        !_isAdding;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -104,10 +285,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ImagePlaceholder(
-                  label: p.imageLabel,
+                ProductImageGallery(
+                  images: p.images,
+                  fallbackLabel: p.imageLabel,
                   height: AppDimens.heroImageHeight,
-                  radius: 0,
                 ),
                 Transform.translate(
                   offset: const Offset(0, -20),
@@ -137,19 +318,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(Formatter.price(p.price),
+                            Text(Formatter.price(effectivePrice),
                                 style: AppTextStyles.priceDetail),
                             const SizedBox(width: 8),
-                            if (p.oldPrice != null)
+                            if (effectiveOldPrice != null)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
                                 child: Text(
-                                  Formatter.price(p.oldPrice!),
+                                  Formatter.price(effectiveOldPrice),
                                   style: AppTextStyles.oldPriceDetail,
                                 ),
                               ),
                             const SizedBox(width: 8),
-                            if (discount != null)
+                            if (effectiveDiscount != null)
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 2),
@@ -158,7 +339,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  '-$discount%',
+                                  '-$effectiveDiscount%',
                                   style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 11,
@@ -178,55 +359,41 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               style: AppTextStyles.meta,
                             ),
                             const SizedBox(width: 12),
-                            if (p.inStock)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppColors.successBg,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Text(
-                                  'Còn hàng',
-                                  style: TextStyle(
-                                      color: AppColors.success,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                              ),
+                            _stockBadge(effectiveInStock, effectiveStock,
+                                p.variants.isNotEmpty && _selectedVariant == null),
                           ],
                         ),
-                        const Divider(height: 24),
-                        Text(
-                          'Thông số kỹ thuật',
-                          style: AppTextStyles.sectionHeading
-                              .copyWith(fontSize: 14),
-                        ),
-                        const SizedBox(height: 10),
-                        GridView.count(
-                          crossAxisCount: 2,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
-                          childAspectRatio: 3,
-                          children: p.specs.entries
-                              .map((e) => _specTile(e.key, e.value))
-                              .toList(),
-                        ),
+                        // Variant selector
+                        if (p.variants.isNotEmpty)
+                          _buildVariantSection(p),
+                        if (p.specs.isNotEmpty) ...[
+                          const Divider(height: 24),
+                          Text(
+                            'Thông số kỹ thuật',
+                            style: AppTextStyles.sectionHeading
+                                .copyWith(fontSize: 14),
+                          ),
+                          const SizedBox(height: 10),
+                          _buildSpecTable(p.specs),
+                        ],
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text('Số lượng',
                                 style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w600)),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600)),
                             QuantityStepper(
                               value: _qty,
-                              onChanged: (v) => setState(() => _qty = v),
+                              onChanged: canBuy
+                                  ? (v) => setState(() => _qty = v)
+                                  : null,
                             ),
                           ],
                         ),
+                        _buildRelatedSection(p),
+                        _buildReviewsSection(p),
                         const SizedBox(height: 80),
                       ],
                     ),
@@ -246,12 +413,32 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _circleBtn(Icons.arrow_back,
-                        () => context.canPop() ? context.pop() : context.go(AppRoutes.list)),
+                    _circleBtn(
+                      Icons.arrow_back,
+                      () => context.canPop()
+                          ? context.pop()
+                          : context.go(AppRoutes.list),
+                    ),
                     Row(
                       children: [
-                        _circleBtn(Icons.favorite_border,
-                            () => context.go(AppRoutes.wishlist)),
+                        _circleBtn(
+                          Icons.compare_arrows,
+                          () => _toggleCompare(p),
+                          bgColor: isComparing
+                              ? AppColors.accentBlue
+                              : Colors.black38,
+                        ),
+                        const SizedBox(width: 8),
+                        _circleBtn(
+                          isWishlisted
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          () => ref
+                              .read(wishlistProvider.notifier)
+                              .toggle(p.id),
+                          iconColor:
+                              isWishlisted ? Colors.red : Colors.white,
+                        ),
                         const SizedBox(width: 8),
                         _cartBtn(context),
                       ],
@@ -273,19 +460,26 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   Expanded(
                     child: AppOutlinedButton(
                       label: 'Thêm giỏ hàng',
-                      onPressed: _isAdding
-                          ? null
-                          : () => _addToCart(p, buyNow: false),
+                      onPressed: canBuy
+                          ? () => _addToCart(p, buyNow: false)
+                          : null,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     flex: 2,
                     child: PrimaryButton(
-                      label: _isAdding ? 'Đang xử lý...' : 'Mua ngay',
-                      onPressed: _isAdding
-                          ? null
-                          : () => _addToCart(p, buyNow: true),
+                      label: _isAdding
+                          ? 'Đang xử lý...'
+                          : !effectiveInStock
+                              ? 'Hết hàng'
+                              : p.variants.isNotEmpty &&
+                                      _selectedVariant == null
+                                  ? 'Chọn phiên bản'
+                                  : 'Mua ngay',
+                      onPressed: canBuy
+                          ? () => _addToCart(p, buyNow: true)
+                          : null,
                     ),
                   ),
                 ],
@@ -297,37 +491,247 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  Widget _specTile(String label, String value) => Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildVariantSection(ProductModel p) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Row(
           children: [
-            Text(label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            const Text('Phiên bản:',
+                style:
+                    TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            if (_selectedVariant != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                _selectedVariant!.name,
                 style: const TextStyle(
-                    fontSize: 10, color: AppColors.textSecondary)),
-            const SizedBox(height: 2),
-            Text(value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w700)),
+                    fontSize: 14,
+                    color: AppColors.accentBlue,
+                    fontWeight: FontWeight.w600),
+              ),
+            ],
           ],
         ),
+        const SizedBox(height: 10),
+        VariantSelector(
+          variants: p.variants,
+          selected: _selectedVariant,
+          onSelect: (v) => setState(() => _selectedVariant = v),
+        ),
+        if (_selectedVariant == null)
+          const Padding(
+            padding: EdgeInsets.only(top: 6),
+            child: Text(
+              'Vui lòng chọn phiên bản để tiếp tục',
+              style: TextStyle(color: AppColors.warning, fontSize: 12),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _stockBadge(bool inStock, int stock, bool pending) {
+    if (pending) return const SizedBox.shrink();
+    if (!inStock) return _chip('Hết hàng', AppColors.errorBg, AppColors.error);
+    if (stock <= 5) {
+      return _chip('Sắp hết (còn $stock)', AppColors.warningBg, AppColors.warning);
+    }
+    return _chip('Còn hàng ($stock)', AppColors.successBg, AppColors.success);
+  }
+
+  Widget _chip(String text, Color bg, Color fg) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(text,
+            style: TextStyle(
+                color: fg, fontSize: 11, fontWeight: FontWeight.w600)),
       );
 
-  Widget _circleBtn(IconData icon, VoidCallback onTap) => InkWell(
+  Widget _buildRelatedSection(ProductModel p) {
+    final relatedAsync = ref.watch(relatedProductsProvider(p.id));
+    return relatedAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (related) {
+        if (related.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Divider(height: 24),
+            Text('Sản phẩm liên quan',
+                style:
+                    AppTextStyles.sectionHeading.copyWith(fontSize: 14)),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 300,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: related.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (_, i) => SizedBox(
+                  key: ValueKey(related[i].id),
+                  width: 150,
+                  child: ProductCard(
+                    product: related[i],
+                    onTap: () => context
+                        .go('${AppRoutes.detail}/${related[i].id}'),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildReviewsSection(ProductModel p) {
+    final reviews = ref.watch(reviewProvider(p.id));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Đánh giá (${reviews.length})',
+                style:
+                    AppTextStyles.sectionHeading.copyWith(fontSize: 14)),
+            TextButton(
+              onPressed: () => _showWriteReview(p),
+              child: const Text('Viết đánh giá',
+                  style: TextStyle(
+                      color: AppColors.accentBlue, fontSize: 13)),
+            ),
+          ],
+        ),
+        if (reviews.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('Chưa có đánh giá nào',
+                style: TextStyle(color: AppColors.textSecondary)),
+          )
+        else
+          ...reviews.take(3).map((r) => ReviewCard(review: r)),
+      ],
+    );
+  }
+
+  static const _skipSpecKeys = {
+    'sourceUrl',
+    'sourceType',
+    'inclusionScope',
+  };
+
+  static const _specLabelMap = {
+    'caseMaxGpuLengthMm': 'Max GPU (mm)',
+    'casePsuFormFactor': 'PSU Form Factor',
+    'caseSupportedMotherboardFormFactors': 'Motherboard',
+    'caseFanSupport': 'Fan Support',
+    'releaseYear': 'Năm ra mắt',
+    'caseMaxCoolerHeightMm': 'Max Tản Nhiệt (mm)',
+    'caseDriveBays': 'Khe ổ cứng',
+    'caseExpansionSlots': 'Khe mở rộng',
+    'caseType': 'Loại case',
+    'caseWeight': 'Trọng lượng',
+    'gpuChipset': 'Chipset',
+    'gpuMemoryGb': 'VRAM (GB)',
+    'gpuMemoryType': 'Loại bộ nhớ',
+    'gpuCoreClock': 'Xung nhân',
+    'gpuBoostClock': 'Boost Clock',
+    'gpuTdp': 'TDP',
+    'cpuSocket': 'Socket',
+    'cpuCores': 'Số nhân',
+    'cpuThreads': 'Số luồng',
+    'cpuBaseClock': 'Xung cơ bản',
+    'cpuBoostClock': 'Boost Clock',
+    'memoryType': 'Loại RAM',
+    'memorySpeed': 'Tốc độ',
+    'memoryCapacityGb': 'Dung lượng (GB)',
+    'storageCapacityGb': 'Dung lượng (GB)',
+    'storageInterface': 'Giao tiếp',
+    'storageFormFactor': 'Form Factor',
+    'storageReadSpeed': 'Tốc độ đọc',
+    'storageWriteSpeed': 'Tốc độ ghi',
+  };
+
+  String _formatSpecLabel(String key) {
+    if (_specLabelMap.containsKey(key)) return _specLabelMap[key]!;
+    final spaced = key.replaceAllMapped(
+      RegExp(r'([A-Z])'),
+      (m) => ' ${m.group(0)!}',
+    ).trim();
+    if (spaced.isEmpty) return key;
+    return '${spaced[0].toUpperCase()}${spaced.substring(1)}';
+  }
+
+  Widget _buildSpecTable(Map<String, String> specs) {
+    final entries = specs.entries
+        .where((e) => !_skipSpecKeys.contains(e.key))
+        .toList();
+    if (entries.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: List.generate(entries.length, (i) {
+          final e = entries[i];
+          return Container(
+            color: i.isEven ? AppColors.background : AppColors.surface,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 130,
+                  child: Text(
+                    _formatSpecLabel(e.key),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    e.value,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _circleBtn(
+    IconData icon,
+    VoidCallback onTap, {
+    Color bgColor = Colors.black38,
+    Color iconColor = Colors.white,
+  }) =>
+      InkWell(
         onTap: onTap,
         child: CircleAvatar(
           radius: 20,
-          backgroundColor: Colors.black38,
-          child: Icon(icon, color: Colors.white, size: 20),
+          backgroundColor: bgColor,
+          child: Icon(icon, color: iconColor, size: 20),
         ),
       );
 

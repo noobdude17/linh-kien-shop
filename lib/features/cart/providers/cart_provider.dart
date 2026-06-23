@@ -8,8 +8,15 @@ class CartNotifier extends Notifier<List<CartItemModel>> {
   @override
   List<CartItemModel> build() => []; // bắt đầu rỗng; user thêm qua add()
 
-  void add(ProductModel p, {int qty = 1, String variant = ''}) {
-    final idx = state.indexWhere((e) => e.productId == p.id);
+  void add(
+    ProductModel p, {
+    int qty = 1,
+    String variant = '',
+    double? priceOverride,
+  }) {
+    final idx = state.indexWhere(
+      (e) => e.productId == p.id && e.variant == variant,
+    );
     if (idx >= 0) {
       final updated = [...state];
       updated[idx].quantity += qty;
@@ -21,7 +28,7 @@ class CartNotifier extends Notifier<List<CartItemModel>> {
           productId: p.id,
           name: p.name,
           variant: variant,
-          price: p.price,
+          price: priceOverride ?? p.price,
           imageLabel: p.imageLabel,
           quantity: qty,
         ),

@@ -45,7 +45,7 @@ class CategoriesScreen extends ConsumerWidget {
                 horizontal: AppDimens.screenPadding,
               ),
               itemCount: MockData.brands.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (_, i) {
                 final (name, logo) = MockData.brands[i];
                 return _BrandTile(
@@ -70,9 +70,9 @@ class CategoriesScreen extends ConsumerWidget {
                 horizontal: AppDimens.screenPadding,
               ),
               itemCount: list.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (_, i) => _TypeTile(
-                category: list[i],
+                category: list[i] as CategoryModel,
                 onTap: () =>
                     context.go('${AppRoutes.list}?categoryId=${list[i].id}'),
               ),
@@ -90,7 +90,7 @@ class CategoriesScreen extends ConsumerWidget {
                 horizontal: AppDimens.screenPadding,
               ),
               itemCount: list.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (_, i) => SizedBox(
                 width: 160,
                 child: ProductCard(

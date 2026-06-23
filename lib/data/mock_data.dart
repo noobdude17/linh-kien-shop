@@ -6,6 +6,8 @@ import 'models/category_model.dart';
 import 'models/notification_model.dart';
 import 'models/order_model.dart';
 import 'models/product_model.dart';
+import 'models/product_variant.dart';
+import 'models/review_model.dart';
 
 /// Dữ liệu mẫu tĩnh trích từ design handoff. Dùng để dựng skeleton chạy được
 /// trước khi nối Firestore. Khi có backend, thay bằng repository thật.
@@ -66,29 +68,66 @@ class MockData {
       id: 'p2',
       name: 'Intel Core i7-14700K',
       brand: 'Intel',
-      price: 9200000,
+      price: 8500000,
       oldPrice: 10500000,
       rating: 4.9,
       reviewCount: 89,
       imageLabel: 'CORE i7-14700K',
       categoryId: 'cpu',
       categoryName: 'CPU',
-      stock: 8,
+      stock: 0,
       specs: {'Socket': 'LGA1700', 'Nhân': '20', 'Xung': '5.6GHz'},
+      variants: [
+        ProductVariant(
+          id: 'p2v1',
+          name: 'BOX (Retail)',
+          price: 9200000,
+          oldPrice: 10500000,
+          stock: 8,
+        ),
+        ProductVariant(
+          id: 'p2v2',
+          name: 'TRAY (OEM)',
+          price: 8500000,
+          stock: 12,
+        ),
+      ],
     ),
     ProductModel(
       id: 'p3',
-      name: 'Kingston Fury 32GB DDR5 6000MHz',
+      name: 'Kingston Fury DDR5 6000MHz',
       brand: 'Kingston',
-      price: 2800000,
-      oldPrice: 3200000,
+      price: 1600000,
+      oldPrice: 1900000,
       rating: 4.7,
       reviewCount: 56,
-      imageLabel: 'FURY 32GB DDR5',
+      imageLabel: 'FURY DDR5',
       categoryId: 'ram',
       categoryName: 'RAM',
       stock: 0,
-      specs: {'Dung lượng': '32GB (2x16)', 'Bus': '6000MHz', 'Loại': 'DDR5'},
+      specs: {'Bus': '6000MHz', 'Loại': 'DDR5', 'Chuẩn': 'CL36'},
+      variants: [
+        ProductVariant(
+          id: 'p3v1',
+          name: '16GB',
+          price: 1600000,
+          oldPrice: 1900000,
+          stock: 15,
+        ),
+        ProductVariant(
+          id: 'p3v2',
+          name: '32GB (2x16)',
+          price: 2800000,
+          oldPrice: 3200000,
+          stock: 3,
+        ),
+        ProductVariant(
+          id: 'p3v3',
+          name: '64GB (2x32)',
+          price: 5400000,
+          stock: 0,
+        ),
+      ],
     ),
     ProductModel(
       id: 'p4',
@@ -230,4 +269,53 @@ class MockData {
   // ---- Search ----
   static const recentSearches = ['RTX 4070', 'SSD Samsung', 'Laptop Gaming'];
   static const trendingSearches = ['RTX 4080 Super', 'i9-14900K', 'DDR5 32GB'];
+
+  // ---- Reviews ----
+  static final reviews = <ReviewModel>[
+    ReviewModel(
+      id: 'r1',
+      productId: 'p1',
+      userId: 'u1',
+      userName: 'Nguyễn Văn An',
+      rating: 5,
+      comment: 'Card chạy cực mượt, nhiệt độ ổn định, hiệu năng vượt kỳ vọng.',
+      createdAt: DateTime(2024, 5, 10),
+    ),
+    ReviewModel(
+      id: 'r2',
+      productId: 'p1',
+      userId: 'u2',
+      userName: 'Trần Thị Bình',
+      rating: 4,
+      comment: 'Hàng đúng mô tả, giao nhanh, đóng gói cẩn thận.',
+      createdAt: DateTime(2024, 4, 20),
+    ),
+    ReviewModel(
+      id: 'r3',
+      productId: 'p2',
+      userId: 'u3',
+      userName: 'Lê Minh Cường',
+      rating: 5,
+      comment: 'CPU i7-14700K mạnh, ép xung lên 5.8GHz ổn định, nhiệt tốt.',
+      createdAt: DateTime(2024, 3, 15),
+    ),
+    ReviewModel(
+      id: 'r4',
+      productId: 'p2',
+      userId: 'u4',
+      userName: 'Phạm Thu Hà',
+      rating: 4,
+      comment: 'Sản phẩm chính hãng, giá tốt so với thị trường.',
+      createdAt: DateTime(2024, 2, 8),
+    ),
+    ReviewModel(
+      id: 'r5',
+      productId: 'p4',
+      userId: 'u5',
+      userName: 'Hoàng Đức Nam',
+      rating: 5,
+      comment: 'SSD 990 Pro tốc độ đọc ghi cực nhanh, boot Windows chỉ 8 giây.',
+      createdAt: DateTime(2024, 6, 1),
+    ),
+  ];
 }

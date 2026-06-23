@@ -1,23 +1,41 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../product/providers/product_providers.dart';
 
+const _kSearchKey = 'recent_searches';
+const _kSearchMax = 10;
+
 class RecentSearchesNotifier extends Notifier<List<String>> {
-  static const _max = 10;
-
   @override
-  List<String> build() => [];
+  List<String> build() {
+    _load();
+    return [];
+  }
 
-  void add(String query) {
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getStringList(_kSearchKey) ?? [];
+  }
+
+  Future<void> add(String query) async {
     final q = query.trim();
     if (q.isEmpty) return;
-    state = [q, ...state.where((s) => s != q)].take(_max).toList();
+    state = [q, ...state.where((s) => s != q)].take(_kSearchMax).toList();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_kSearchKey, state);
   }
 
-  void remove(String query) {
+  Future<void> remove(String query) async {
     state = state.where((s) => s != query).toList();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_kSearchKey, state);
   }
 
-  void clear() => state = [];
+  Future<void> clear() async {
+    state = [];
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kSearchKey);
+  }
 }
 
 final recentSearchesProvider =
