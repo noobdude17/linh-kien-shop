@@ -109,7 +109,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ProductListScreen(categoryId: state.uri.queryParameters['categoryId']),
         ),
       ),
-      GoRoute(path: AppRoutes.results, builder: (_, _) => _withBackScope(const SearchResultsScreen())),
+      GoRoute(
+        path: AppRoutes.results,
+        builder: (_, state) => _withBackScope(
+          SearchResultsScreen(query: state.uri.queryParameters['q'] ?? ''),
+        ),
+      ),
       GoRoute(path: AppRoutes.empty, builder: (_, _) => _withBackScope(const EmptyResultsScreen())),
 
       // C · Product Detail

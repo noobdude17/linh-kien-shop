@@ -64,16 +64,28 @@ class DefaultFirebaseOptions {
   }
 
   static FirebaseOptions _fromDartDefines() {
-    if (kIsWeb) return web;
-
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        return android;
-      case TargetPlatform.iOS:
-        return ios;
-      default:
-        throw UnsupportedError('Platform is not supported by Firebase config.');
+    FirebaseOptions opts;
+    if (kIsWeb) {
+      opts = web;
+    } else {
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.android:
+          opts = android;
+        case TargetPlatform.iOS:
+          opts = ios;
+        default:
+          throw UnsupportedError('Platform is not supported by Firebase config.');
+      }
     }
+    // Placeholder values mean no real --dart-define was provided → throw so
+    // main.dart catch block sets firebaseEnabled = false (mock mode).
+    if (opts.apiKey.startsWith('YOUR_')) {
+      throw StateError(
+        'Firebase not configured. Provide assets/config/firebase_config.json '
+        'or --dart-define=FIREBASE_*_API_KEY=<real-key>.',
+      );
+    }
+    return opts;
   }
 
   static String _required(Map<String, dynamic> config, String key) {

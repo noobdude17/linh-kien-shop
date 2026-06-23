@@ -190,7 +190,7 @@ Component có sẵn trong `core/widgets/` — tái dùng, đừng viết lại: 
 | # | Thành viên | Branch | Khu vực sở hữu (thư mục) |
 |---|---|---|---|
 | 1 | **Khoa (Lead)** | `feature/auth` | `features/auth/`, `firebase_options.dart`, `routes/`, `AuthRepository` |
-| 2 | _(tên)_ | `feature/product` | `features/product/`, `features/home/`, `data/repositories/product_repository.dart` |
+| 2 | **Trần Quang Huy**  | `feature/product` | `features/product/`, `features/home/`, `data/repositories/product_repository.dart` |
 | 3 | _(tên)_ | `feature/cart-order` | `features/cart/`, `features/order/`, `OrderRepository` |
 | 4 | _(tên)_ | `feature/admin` | `features/admin/` |
 | 5 | **Trần Minh Huy** | `feature/ui-profile` | `features/profile/`, `core/widgets/` (polish), `AddressRepository` |
