@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/app_buttons.dart';
+import '../../../core/widgets/user_avatar.dart';
 import '../../../routes/app_routes.dart';
 import '../../../data/models/user_model.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -51,7 +52,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 4),
     );
   }
 
@@ -59,8 +60,7 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       body: Column(
         children: [
-          _header(context, user.name, user.email,
-              () => ref.read(authRepositoryProvider).signOut()),
+          _header(context, user.name, user.email, user.photoUrl),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
@@ -70,9 +70,6 @@ class ProfileScreen extends ConsumerWidget {
                   _tile(context, Icons.location_on_outlined, 'Địa chỉ giao hàng', AppRoutes.addresses),
                   _tile(context, Icons.favorite_border, 'Sản phẩm yêu thích', AppRoutes.wishlist),
                   _tile(context, Icons.notifications_outlined, 'Thông báo', AppRoutes.notifications),
-                  _tile(context, Icons.credit_card, 'Phương thức thanh toán', null),
-                  _tile(context, Icons.settings_outlined, 'Cài đặt', null),
-                  _tile(context, Icons.help_outline, 'Trợ giúp & Hỗ trợ', null),
                 ]),
                 const SizedBox(height: 12),
                 _menuCard([
@@ -80,9 +77,12 @@ class ProfileScreen extends ConsumerWidget {
                 ]),
                 const SizedBox(height: 12),
                 _menuCard([
+                  _tile(context, Icons.lock_reset, 'Đổi mật khẩu', null,
+                      color: AppColors.error,
+                      onTap: () => _changePassword(context, ref, user.email)),
                   _tile(context, Icons.logout, 'Đăng xuất', null,
                       color: AppColors.error,
-                      onTap: () => ref.read(authRepositoryProvider).signOut()),
+                      onTap: () => _confirmLogout(context, ref)),
                   _tile(context, Icons.delete_forever, 'Xóa tài khoản', null,
                       color: AppColors.error,
                       onTap: () => _confirmDelete(context, ref)),
@@ -92,11 +92,11 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 4),
     );
   }
 
-  Widget _header(BuildContext context, String? name, String? email, VoidCallback onLogout) => Container(
+  Widget _header(BuildContext context, String? name, String? email, String? photoUrl) => Container(
         decoration: const BoxDecoration(
           color: AppColors.surface,
           border: Border(bottom: BorderSide(color: AppColors.divider)),
@@ -112,7 +112,7 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const CircleAvatar(radius: 30, backgroundColor: AppColors.inputFill, child: Icon(Icons.person, color: AppColors.bodyText, size: 28)),
+                    UserAvatar(photoUrl: photoUrl, radius: 30),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -135,11 +135,6 @@ class ProfileScreen extends ConsumerWidget {
                       onPressed: () => context.go(AppRoutes.editProfile),
                       child: const Text('Chỉnh sửa'),
                     ),
-                    IconButton(
-                      tooltip: 'Đăng xuất',
-                      icon: const Icon(Icons.logout, color: AppColors.error),
-                      onPressed: onLogout,
-                    ),
                   ],
                 ),
               ],
@@ -147,6 +142,61 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       );
+
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Đăng xuất?'),
+        content: const Text('Bạn có muốn đăng xuất khỏi tài khoản này không?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Đăng xuất', style: TextStyle(color: AppColors.error))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await ref.read(authRepositoryProvider).signOut();
+  }
+
+  Future<void> _changePassword(BuildContext context, WidgetRef ref, String? email) async {
+    if (email == null || email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không tìm thấy email của tài khoản')),
+      );
+      return;
+    }
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Đổi mật khẩu?'),
+        content: Text('Chúng tôi sẽ gửi liên kết đặt lại mật khẩu tới $email.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Gửi liên kết', style: TextStyle(color: AppColors.error))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await ref.read(authRepositoryProvider).sendPasswordReset(email);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã gửi liên kết đổi mật khẩu tới $email')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gửi thất bại, thử lại')),
+        );
+      }
+    }
+  }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     final ok = await showDialog<bool>(

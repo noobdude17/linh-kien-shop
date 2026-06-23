@@ -8,8 +8,13 @@ import 'package:flutter/services.dart' show rootBundle;
 class DefaultFirebaseOptions {
   static const _assetPath = 'assets/config/firebase_config.json';
 
+  /// Config thô đã đọc từ asset (null nếu chạy mock). Dùng cho cấu hình ngoài
+  /// Firebase, vd Cloudinary — tránh đọc lại file.
+  static Map<String, dynamic>? rawConfig;
+
   static Future<FirebaseOptions> get currentPlatform async {
     final config = await _loadAssetConfig();
+    rawConfig = config;
     if (config != null) return _fromMap(config);
     return _fromDartDefines();
   }

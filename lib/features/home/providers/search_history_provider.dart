@@ -42,10 +42,16 @@ final recentSearchesProvider =
     NotifierProvider<RecentSearchesNotifier, List<String>>(
         RecentSearchesNotifier.new);
 
+/// Trending = brands + category names từ featured products.
 final trendingSearchesProvider = FutureProvider<List<String>>((ref) async {
   final featured = await ref.watch(featuredProductsProvider.future);
-  final brands = featured.map((p) => p.brand).where((b) => b.isNotEmpty).toSet();
-  final categories =
-      featured.map((p) => p.categoryName).where((c) => c.isNotEmpty).toSet();
+  final brands = featured
+      .map((p) => p.brand)
+      .where((b) => b.isNotEmpty)
+      .toSet();
+  final categories = featured
+      .map((p) => p.categoryName)
+      .where((c) => c.isNotEmpty)
+      .toSet();
   return {...brands, ...categories}.take(8).toList();
 });

@@ -21,6 +21,7 @@ class ProductModel {
   final bool isActive;
   final Map<String, String> specs;
   final List<ProductVariant> variants;
+  final Map<String, dynamic> compatibility;
 
   const ProductModel({
     required this.id,
@@ -40,6 +41,7 @@ class ProductModel {
     this.isActive = true,
     this.specs = const {},
     this.variants = const [],
+    this.compatibility = const {},
   });
 
   bool get inStock {
@@ -88,6 +90,7 @@ class ProductModel {
       variants: (data['variants'] as List<dynamic>? ?? [])
           .map((v) => ProductVariant.fromMap(v as Map<String, dynamic>))
           .toList(),
+      compatibility: Map<String, dynamic>.from(data['compatibility'] ?? {}),
     );
   }
 
@@ -108,5 +111,6 @@ class ProductModel {
         'isActive': isActive,
         'specs': specs,
         'variants': variants.map((v) => v.toMap()).toList(),
+        'compatibility': compatibility,
       };
 }

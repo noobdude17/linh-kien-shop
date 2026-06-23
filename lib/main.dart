@@ -13,6 +13,9 @@ void main() async {
       options: await DefaultFirebaseOptions.currentPlatform,
     );
     AppConfig.firebaseEnabled = true; // có config hợp lệ → dùng backend thật
+    final cfg = DefaultFirebaseOptions.rawConfig;
+    AppConfig.cloudinaryCloudName = cfg?['CLOUDINARY_CLOUD_NAME'] ?? '';
+    AppConfig.cloudinaryUploadPreset = cfg?['CLOUDINARY_UPLOAD_PRESET'] ?? '';
   } catch (e) {
     AppConfig.firebaseEnabled = false; // chưa có config → chạy mock
     debugPrint('Firebase chưa cấu hình — chạy ở chế độ mock UI. ($e)');

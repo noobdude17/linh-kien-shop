@@ -5,8 +5,8 @@ import '../../features/cart/providers/cart_provider.dart';
 import '../../routes/app_routes.dart';
 import '../theme/app_colors.dart';
 
-/// Thanh điều hướng dưới: Trang chủ / Danh mục / Giỏ hàng / Tài khoản.
-/// [currentIndex]: 0..3. Badge giỏ hàng đọc trực tiếp từ cartProvider.
+/// Thanh điều hướng dưới: Trang chủ / Danh mục / Lắp đặt / Giỏ hàng / Tài khoản.
+/// [currentIndex]: 0..4. Badge giỏ hàng đọc trực tiếp từ cartProvider.
 class AppBottomNav extends ConsumerWidget {
   final int currentIndex;
 
@@ -15,6 +15,7 @@ class AppBottomNav extends ConsumerWidget {
   static const _routes = [
     AppRoutes.home,
     AppRoutes.categories,
+    AppRoutes.partPicker,
     AppRoutes.cart,
     AppRoutes.profile,
   ];
@@ -40,9 +41,10 @@ class AppBottomNav extends ConsumerWidget {
             children: [
               _item(context, 0, Icons.home_rounded, 'Trang chủ'),
               _item(context, 1, Icons.grid_view_rounded, 'Danh mục'),
-              _item(context, 2, Icons.shopping_cart_rounded, 'Giỏ hàng',
+              _item(context, 2, Icons.build_circle_outlined, 'Lắp đặt'),
+              _item(context, 3, Icons.shopping_cart_rounded, 'Giỏ hàng',
                   badge: cartCount),
-              _item(context, 3, Icons.person_rounded, 'Tài khoản'),
+              _item(context, 4, Icons.person_rounded, 'Tài khoản'),
             ],
           ),
         ),
@@ -92,6 +94,8 @@ class AppBottomNav extends ConsumerWidget {
             const SizedBox(height: 4),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,

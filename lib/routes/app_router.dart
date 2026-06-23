@@ -22,6 +22,8 @@ import '../features/home/screens/empty_results_screen.dart';
 import '../features/product/screens/product_list_screen.dart';
 import '../features/product/screens/product_detail_screen.dart';
 import '../features/product/screens/compare_screen.dart';
+import '../features/part_picker/screens/part_picker_screen.dart';
+import '../features/part_picker/screens/part_selection_screen.dart';
 import '../features/cart/screens/cart_screen.dart';
 import '../features/order/screens/checkout_screen.dart';
 import '../features/order/screens/vnpay_gateway_screen.dart';
@@ -87,6 +89,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(path: AppRoutes.empty, builder: (_, _) => _withBackScope(const EmptyResultsScreen())),
+      GoRoute(
+        path: AppRoutes.partPicker,
+        builder: (_, _) => _withBackScope(const PartPickerScreen()),
+      ),
+      GoRoute(
+        path: '${AppRoutes.partPickerSelect}/:categoryId',
+        builder: (_, state) => _withBackScope(
+          PartSelectionScreen(categoryId: state.pathParameters['categoryId']!),
+        ),
+      ),
 
       // C · Product Detail
       GoRoute(

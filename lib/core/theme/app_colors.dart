@@ -69,18 +69,18 @@ class AppColors {
 
   /// 12 nền pastel cho icon danh mục (một màu / danh mục).
   static const categoryBgs = <Color>[
-    inputFill,
-    inputFill,
-    inputFill,
-    inputFill,
-    inputFill,
-    inputFill,
-    inputFill,
-    inputFill,
-    inputFill,
-    inputFill,
-    inputFill,
-    inputFill,
+    Color(0xFFEFF6FF), // blue
+    Color(0xFFF0FDF4), // green
+    Color(0xFFFEF2F2), // red
+    Color(0xFFFFF7ED), // orange
+    Color(0xFFF5F3FF), // violet
+    Color(0xFFFEFCE8), // yellow
+    Color(0xFFECFEFF), // cyan
+    Color(0xFFFDF2F8), // pink
+    Color(0xFFEEF2FF), // indigo
+    Color(0xFFF0FDFA), // teal
+    Color(0xFFFFFBEB), // amber
+    Color(0xFFF8FAFC), // slate
   ];
 
   // Gradients

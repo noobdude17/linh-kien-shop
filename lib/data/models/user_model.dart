@@ -10,6 +10,9 @@ class UserModel {
   final String? address;
   final String? phone;
   final String? dob; // ngày sinh, dd/MM/yyyy
+  // Ảnh đại diện. Firestore chỉ lưu URL ảnh tự tải lên (Cloudinary); avatar
+  // Google đọc trực tiếp từ Auth lúc đăng nhập, KHÔNG lưu (xem auth_repository).
+  final String? photoUrl;
   // Địa chỉ giao hàng mặc định — chốt MỘT LẦN lúc tạo tài khoản, sửa hồ sơ
   // không đụng tới.
   final AddressModel? defaultAddress;
@@ -25,6 +28,7 @@ class UserModel {
     this.address,
     this.phone,
     this.dob,
+    this.photoUrl,
     this.defaultAddress,
     this.emailVerified = true,
   });
@@ -47,6 +51,7 @@ class UserModel {
       address: data['address'],
       phone: data['phone'],
       dob: data['dob'],
+      photoUrl: data['photoUrl'],
       defaultAddress: data['defaultAddress'] != null
           ? AddressModel.fromMap(
               'default', data['defaultAddress'] as Map<String, dynamic>)
@@ -69,6 +74,7 @@ class UserModel {
     String? phone,
     String? address,
     String? dob,
+    String? photoUrl,
     AddressModel? defaultAddress,
     bool? emailVerified,
   }) =>
@@ -80,6 +86,7 @@ class UserModel {
         address: address ?? this.address,
         phone: phone ?? this.phone,
         dob: dob ?? this.dob,
+        photoUrl: photoUrl ?? this.photoUrl,
         defaultAddress: defaultAddress ?? this.defaultAddress,
         emailVerified: emailVerified ?? this.emailVerified,
       );

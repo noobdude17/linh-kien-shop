@@ -10,5 +10,7 @@
   "FIREBASE_MEASUREMENT_ID": "your-measurement-id",
   "FIREBASE_IOS_API_KEY": "your-ios-api-key",
   "FIREBASE_IOS_APP_ID": "your-ios-app-id",
-  "FIREBASE_IOS_BUNDLE_ID": "com.nhom.lks"
+  "FIREBASE_IOS_BUNDLE_ID": "com.nhom.lks",
+  "CLOUDINARY_CLOUD_NAME": "your-cloud-name",
+  "CLOUDINARY_UPLOAD_PRESET": "your-unsigned-preset"
 }
