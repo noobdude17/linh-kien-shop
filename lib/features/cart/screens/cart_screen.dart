@@ -15,13 +15,11 @@ import '../providers/cart_provider.dart';
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
-  static const double _discount = 2500000;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final items = ref.watch(cartProvider);
     final subtotal = ref.watch(cartSubtotalProvider);
-    final total = subtotal - _discount;
+    final total = subtotal;
     final notifier = ref.read(cartProvider.notifier);
 
     return Scaffold(
@@ -44,9 +42,8 @@ class CartScreen extends ConsumerWidget {
                     children: [
                       SummaryRow(label: 'Tạm tính', value: Formatter.price(subtotal)),
                       const SummaryRow(label: 'Phí vận chuyển', value: 'Miễn phí', valueColor: AppColors.success),
-                      SummaryRow(label: 'Giảm giá', value: '-${Formatter.price(_discount)}', valueColor: AppColors.error),
                       const Divider(),
-                      SummaryRow(label: 'Tổng cộng', value: Formatter.price(total < 0 ? 0 : total), isTotal: true),
+                      SummaryRow(label: 'Tổng cộng', value: Formatter.price(subtotal), isTotal: true),
                     ],
                   ),
                 ),
@@ -124,10 +121,11 @@ class CartScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('Tổng thanh toán', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                    Text(Formatter.price(total < 0 ? 0 : total),
+                    Text(Formatter.price(total),
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                   ],
                 ),

@@ -70,6 +70,27 @@ class AppTextStyles {
     decoration: TextDecoration.lineThrough,
   );
 
+  static const oldPriceDetail = TextStyle(
+    fontFamily: _family,
+    fontSize: 14,
+    color: AppColors.textTertiary,
+    decoration: TextDecoration.lineThrough,
+  );
+
+  static const productCardName = TextStyle(
+    fontFamily: _family,
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  );
+
+  static const productCardMeta = TextStyle(
+    fontFamily: _family,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textSecondary,
+  );
+
   static const total = TextStyle(
     fontFamily: _family,
     fontSize: 18,

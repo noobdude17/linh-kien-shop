@@ -72,11 +72,7 @@ class ProductCard extends StatelessWidget {
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.body.copyWith(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppTextStyles.productCardName,
                   ),
                   const SizedBox(height: 6),
                   Row(
@@ -105,7 +101,7 @@ class ProductCard extends StatelessWidget {
                       const SizedBox(width: 2),
                       Text(
                         product.rating.toStringAsFixed(1),
-                        style: AppTextStyles.meta.copyWith(fontSize: 11),
+                        style: AppTextStyles.productCardMeta,
                       ),
                     ],
                   ),

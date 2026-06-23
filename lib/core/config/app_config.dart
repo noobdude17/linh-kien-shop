@@ -10,5 +10,5 @@ class AppConfig {
   AppConfig._();
 
   /// Có dùng Firebase thật hay không. Do `main.dart` gán sau khi init.
-  static bool firebaseEnabled = false;
+  static bool firebaseEnabled = true;
 }
