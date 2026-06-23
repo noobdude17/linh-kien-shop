@@ -238,6 +238,23 @@ Component có sẵn trong `core/widgets/` — tái dùng, đừng viết lại: 
   - Rà soát & polish các `core/widgets/` dùng chung (báo nhóm trước khi sửa widget chung).
 - **Xong khi:** sửa profile lưu được; thêm/xóa địa chỉ & wishlist hoạt động.
 
+#### 🗺️ Xác minh địa chỉ bằng bản đồ (Map location verification)
+Mọi địa chỉ giao hàng đều gắn toạ độ `(lat, lng)` đã xác nhận, không chỉ chữ.
+Dùng ở **đăng ký / hoàn tất hồ sơ** và **CRUD địa chỉ giao hàng**.
+
+- **Hai cách chọn:**
+  1. **Chạm trên bản đồ** → suy ra địa chỉ chữ (reverse geocode toạ độ → chữ).
+  2. **Gõ địa chỉ** → bản đồ/ghim nhảy tới đó (forward geocode chữ → toạ độ).
+     Không tra được = địa chỉ không hợp lệ → báo nhập lại. *Forward geocode chính
+     là bộ kiểm tra hợp lệ;* ghim ở giữa màn để người dùng xác nhận lần cuối.
+- **Stack:** `flutter_map` (tiles OSM) + `latlong2` + `geocoding` — **không cần
+  API key, không tính phí**. Ghim mặc định: Đà Nẵng `(16.0333, 108.2114)`.
+- **Màn/khe nối:** `features/location/location_picker_screen.dart` (UI bản đồ,
+  trả `LocationResult`), `features/location/geocode.dart` (khe geocode duy nhất).
+- **⚠️ Giới hạn:** plugin `geocoding` chỉ chạy **Android/iOS** (không có web).
+  Trên web — hoặc khi tiles/geocode lỗi — màn tự **xuống chế độ chữ**: hiện banner
+  "Bản đồ hiện không khả dụng…" kèm lỗi cụ thể, vẫn nhập tay & lưu được (toạ độ `null`).
+
 ---
 
 ## 🔀 Quy trình Git

@@ -6,6 +6,9 @@ class AddressModel {
   final String phone;
   final String detail; // địa chỉ đầy đủ
   final bool isDefault;
+  // Toạ độ đã xác nhận trên bản đồ. Null khi nhập tay (web/bản đồ lỗi).
+  final double? latitude;
+  final double? longitude;
 
   const AddressModel({
     required this.id,
@@ -13,6 +16,8 @@ class AddressModel {
     required this.phone,
     required this.detail,
     this.isDefault = false,
+    this.latitude,
+    this.longitude,
   });
 
   factory AddressModel.fromFirestore(DocumentSnapshot doc) =>
@@ -25,6 +30,8 @@ class AddressModel {
         phone: data['phone'] ?? '',
         detail: data['detail'] ?? '',
         isDefault: data['isDefault'] ?? false,
+        latitude: (data['latitude'] as num?)?.toDouble(),
+        longitude: (data['longitude'] as num?)?.toDouble(),
       );
 
   Map<String, dynamic> toFirestore() => {
@@ -32,5 +39,17 @@ class AddressModel {
         'phone': phone,
         'detail': detail,
         'isDefault': isDefault,
+        'latitude': latitude,
+        'longitude': longitude,
       };
+
+  AddressModel copyWith({String? id, bool? isDefault}) => AddressModel(
+        id: id ?? this.id,
+        name: name,
+        phone: phone,
+        detail: detail,
+        isDefault: isDefault ?? this.isDefault,
+        latitude: latitude,
+        longitude: longitude,
+      );
 }

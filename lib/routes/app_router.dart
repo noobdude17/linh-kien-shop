@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/widgets/app_back_scope.dart';
+import '../data/models/address_model.dart';
 import '../features/auth/providers/auth_providers.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/auth/screens/onboarding_screen.dart';
@@ -137,7 +138,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(path: AppRoutes.addresses, builder: (_, _) => _withBackScope(const AddressListScreen())),
-      GoRoute(path: AppRoutes.addAddress, builder: (_, _) => _withBackScope(const AddAddressScreen())),
+      GoRoute(
+        path: AppRoutes.addAddress,
+        builder: (_, state) => _withBackScope(
+          AddAddressScreen(initial: state.extra as AddressModel?),
+        ),
+      ),
       GoRoute(path: AppRoutes.wishlist, builder: (_, _) => _withBackScope(const WishlistScreen())),
       GoRoute(path: AppRoutes.wishlistEmpty, builder: (_, _) => _withBackScope(const WishlistEmptyScreen())),
       GoRoute(path: AppRoutes.notifications, builder: (_, _) => _withBackScope(const NotificationsScreen())),

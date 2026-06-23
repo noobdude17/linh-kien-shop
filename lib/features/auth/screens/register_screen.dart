@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_buttons.dart';
 import '../../../routes/app_routes.dart';
+import '../../location/location_picker_screen.dart';
 import '../providers/auth_providers.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -24,6 +26,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _confirm = TextEditingController();
   bool _agree = true;
   bool _loading = false;
+  double? _lat, _lng; // toạ độ xác nhận từ map picker (null nếu nhập tay)
 
   @override
   void dispose() {
@@ -51,6 +54,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
+  Future<void> _pickLocation() async {
+    final res = await Navigator.of(context).push<LocationResult>(
+      MaterialPageRoute(
+        builder: (_) => LocationPickerScreen(
+          initial: (_lat != null && _lng != null) ? LatLng(_lat!, _lng!) : null,
+          initialText: _address.text.trim().isEmpty ? null : _address.text.trim(),
+        ),
+      ),
+    );
+    if (res != null) {
+      setState(() {
+        _address.text = res.address;
+        _lat = res.lat;
+        _lng = res.lng;
+      });
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_agree) {
@@ -68,6 +89,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             password: _password.text,
             address: _address.text.trim(),
             dob: _dob.text.trim(),
+            lat: _lat,
+            lng: _lng,
           );
       // Đăng ký xong → tự đăng nhập → router redirect sang Home.
     } catch (e) {
@@ -105,8 +128,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               _field(_dob, 'Ngày sinh', Icons.cake_outlined,
                   readOnly: true, onTap: _pickDob,
                   validator: (v) => (v == null || v.trim().isEmpty) ? 'Chọn ngày sinh' : null),
-              _field(_address, 'Địa chỉ', Icons.location_on_outlined,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập địa chỉ' : null),
+              _field(_address, 'Địa chỉ (chọn trên bản đồ)', Icons.location_on_outlined,
+                  readOnly: true, onTap: _pickLocation,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Chọn địa chỉ trên bản đồ' : null),
               _field(_password, 'Mật khẩu', Icons.lock_outline,
                   obscure: true,
                   validator: (v) => (v == null || v.length < 6) ? 'Mật khẩu tối thiểu 6 ký tự' : null),

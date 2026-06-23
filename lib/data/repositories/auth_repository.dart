@@ -25,6 +25,8 @@ abstract class AuthRepository {
     required String password,
     String? address,
     String? dob,
+    double? lat,
+    double? lng,
   });
 
   Future<UserModel> signInWithGoogle();
@@ -35,6 +37,8 @@ abstract class AuthRepository {
     String? phone,
     String? address,
     String? dob,
+    double? lat,
+    double? lng,
   });
 
   Future<void> signOut();
@@ -44,8 +48,8 @@ abstract class AuthRepository {
 }
 
 /// Gộp thông tin mới vào hồ sơ hiện tại; trường null hoặc rỗng thì giữ nguyên.
-UserModel _merge(
-    UserModel cur, String? name, String? phone, String? address, String? dob) {
+UserModel _merge(UserModel cur, String? name, String? phone, String? address,
+    String? dob, double? lat, double? lng) {
   String? keep(String? v, String? old) =>
       (v == null || v.trim().isEmpty) ? old : v.trim();
   final mergedName = keep(name, cur.name) ?? '';
@@ -62,19 +66,22 @@ UserModel _merge(
     // Chốt một lần: chỉ tạo địa chỉ giao hàng mặc định khi chưa có. Sửa hồ sơ
     // (đổi tên/SĐT) KHÔNG lan sang địa chỉ giao hàng.
     defaultAddress: cur.defaultAddress ??
-        _defaultFrom(mergedName, mergedPhone, mergedAddress),
+        _defaultFrom(mergedName, mergedPhone, mergedAddress, lat, lng),
   );
 }
 
 /// Tạo địa chỉ giao hàng mặc định từ thông tin lúc tạo tài khoản (nếu có địa chỉ).
-AddressModel? _defaultFrom(String name, String? phone, String? address) =>
+AddressModel? _defaultFrom(String name, String? phone, String? address,
+        [double? lat, double? lng]) =>
     (address != null && address.isNotEmpty)
         ? AddressModel(
             id: 'default',
             name: name,
             phone: phone ?? '',
             detail: address,
-            isDefault: true)
+            isDefault: true,
+            latitude: lat,
+            longitude: lng)
         : null;
 
 /// Hiện thực Firebase Auth + lưu hồ sơ user vào Firestore `users`.
@@ -159,6 +166,8 @@ class FirebaseAuthRepository implements AuthRepository {
     required String password,
     String? address,
     String? dob,
+    double? lat,
+    double? lng,
   }) async {
     final cred = await _auth.createUserWithEmailAndPassword(
         email: email.trim(), password: password);
@@ -170,7 +179,7 @@ class FirebaseAuthRepository implements AuthRepository {
       phone: phone,
       address: address,
       dob: dob,
-      defaultAddress: _defaultFrom(name, phone, address?.trim()),
+      defaultAddress: _defaultFrom(name, phone, address?.trim(), lat, lng),
     );
     // Set _cached NGAY (đồng bộ) để listener authState bỏ qua, không ghi fallback.
     _emit(user);
@@ -206,8 +215,10 @@ class FirebaseAuthRepository implements AuthRepository {
     String? phone,
     String? address,
     String? dob,
+    double? lat,
+    double? lng,
   }) async {
-    final updated = _merge(_cached!, name, phone, address, dob);
+    final updated = _merge(_cached!, name, phone, address, dob, lat, lng);
     await _db
         .collection(AppConstants.colUsers)
         .doc(updated.id)
@@ -305,6 +316,8 @@ class MockAuthRepository implements AuthRepository {
     required String password,
     String? address,
     String? dob,
+    double? lat,
+    double? lng,
   }) async {
     await Future.delayed(const Duration(milliseconds: 300));
     final key = email.trim().toLowerCase();
@@ -320,7 +333,7 @@ class MockAuthRepository implements AuthRepository {
       phone: phone,
       address: address,
       dob: dob,
-      defaultAddress: _defaultFrom(name, phone, address?.trim()),
+      defaultAddress: _defaultFrom(name, phone, address?.trim(), lat, lng),
     );
     _accounts[key] = (password: password, user: user);
     _current = user;
@@ -347,8 +360,10 @@ class MockAuthRepository implements AuthRepository {
     String? phone,
     String? address,
     String? dob,
+    double? lat,
+    double? lng,
   }) async {
-    final updated = _merge(_current!, name, phone, address, dob);
+    final updated = _merge(_current!, name, phone, address, dob, lat, lng);
     final key = updated.email.trim().toLowerCase();
     if (_accounts.containsKey(key)) {
       _accounts[key] = (password: _accounts[key]!.password, user: updated);
