@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart' as geo;
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Lỗi geocoding "có thể đọc được" để màn hình hiển thị cho người dùng.
@@ -23,6 +24,23 @@ Future<LatLng> forwardGeocode(String address) async {
     throw GeocodeException('Bản đồ chưa hỗ trợ trên nền web');
   }
   return firstLocationOrThrow(await geo.locationFromAddress(address));
+}
+
+/// Vị trí GPS hiện tại, hoặc null nếu không có quyền/không bật/lỗi.
+Future<LatLng?> currentLatLng() async {
+  if (kIsWeb) return null;
+  try {
+    if (!await Geolocator.isLocationServiceEnabled()) return null;
+    var perm = await Geolocator.checkPermission();
+    if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
+    if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+      return null;
+    }
+    final pos = await Geolocator.getCurrentPosition();
+    return LatLng(pos.latitude, pos.longitude);
+  } catch (_) {
+    return null; // ponytail: GPS là "nice-to-have", lỗi gì cũng rơi về mặc định
+  }
 }
 
 /// Toạ độ → địa chỉ chữ. Trả '' khi không có kết quả (giữ text hiện tại).

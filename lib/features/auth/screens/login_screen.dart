@@ -53,13 +53,59 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authRepositoryProvider).signInWithGoogle();
       // Thành công → router tự redirect sang Home.
     } catch (e) {
-      if (mounted && !e.toString().contains('cancelled')) {
+      final s = e.toString();
+      // Scenario B: email đã có tài khoản mật khẩu → hỏi mật khẩu rồi liên kết.
+      if (s.contains('link-password-required')) {
+        if (mounted) await _linkGoogle();
+      } else if (mounted && !s.contains('cancelled')) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Đăng nhập Google thất bại: ${_friendly(e)}')),
         );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  /// Hỏi mật khẩu tài khoản sẵn có rồi liên kết Google vào (Scenario B).
+  Future<void> _linkGoogle() async {
+    final ctrl = TextEditingController();
+    final password = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Liên kết Google'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+                'Email này đã đăng ký bằng mật khẩu. Nhập mật khẩu để liên kết với Google.'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              obscureText: true,
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Mật khẩu'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Huỷ')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, ctrl.text),
+              child: const Text('Liên kết')),
+        ],
+      ),
+    );
+    if (password == null || password.isEmpty) return;
+    try {
+      await ref.read(authRepositoryProvider).linkPendingGoogleAccount(password);
+      // Liên kết xong → đã đăng nhập → router tự redirect sang Home.
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Liên kết thất bại: ${_friendly(e)}')),
+        );
+      }
     }
   }
 
@@ -131,6 +177,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   icon: Icons.g_mobiledata,
                   onPressed: _loading ? null : _google,
                 ),
+                const SizedBox(height: 8),
+                // Gợi ý hiển thị cho MỌI người → không lộ tài khoản nào tồn tại.
+                const Text(
+                  'Đã đăng ký bằng Google? Hãy đăng nhập bằng Google.',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -153,6 +206,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   String _friendly(Object e) {
     final s = e.toString();
+    if (s.contains('credential-already-in-use') || s.contains('provider-already-linked')) {
+      return 'Tài khoản Google này đã được liên kết với tài khoản khác';
+    }
     if (s.contains('user-not-found')) return 'Tài khoản không tồn tại';
     if (s.contains('wrong-password') || s.contains('invalid-credential')) return 'Sai mật khẩu';
     if (s.contains('network')) return 'Lỗi mạng, kiểm tra kết nối';

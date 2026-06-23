@@ -1,3 +1,8 @@
+# Secrets — real Firebase config (keep *.example.json tracked)
+/firebase_config.json
+**/firebase_config.json
+!**/firebase_config.example.json
+
 # Miscellaneous
 *.class
 *.log
@@ -73,3 +78,10 @@ coverage/
 
 # VSCode (uncomment if team doesn't share launch configs)
 # .vscode/
+
+# Local debug/tool artifacts (browser profiles, codex, debug screenshots)
+.chrome-debug-profile*/
+.codex_appdata/
+.codex_gitconfig
+flutter_app_*.png
+flutter_cdp.png
