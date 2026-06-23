@@ -61,7 +61,7 @@ class ProfileScreen extends ConsumerWidget {
       body: Column(
         children: [
           _header(context, user.name, user.email, user.photoUrl,
-              () => ref.read(authRepositoryProvider).signOut()),
+              () => _confirmLogout(context, ref)),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
@@ -83,7 +83,7 @@ class ProfileScreen extends ConsumerWidget {
                 _menuCard([
                   _tile(context, Icons.logout, 'Đăng xuất', null,
                       color: AppColors.error,
-                      onTap: () => ref.read(authRepositoryProvider).signOut()),
+                      onTap: () => _confirmLogout(context, ref)),
                   _tile(context, Icons.delete_forever, 'Xóa tài khoản', null,
                       color: AppColors.error,
                       onTap: () => _confirmDelete(context, ref)),
@@ -148,6 +148,24 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       );
+
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Đăng xuất?'),
+        content: const Text('Bạn có muốn đăng xuất khỏi tài khoản này không?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Đăng xuất', style: TextStyle(color: AppColors.error))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await ref.read(authRepositoryProvider).signOut();
+  }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     final ok = await showDialog<bool>(
