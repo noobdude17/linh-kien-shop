@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/services/cloudinary.dart';
 import '../models/address_model.dart';
 import '../models/user_model.dart';
 
@@ -45,6 +47,9 @@ abstract class AuthRepository {
     double? lng,
   });
 
+  /// Đổi ảnh đại diện: upload [file] lên Cloudinary, lưu URL vào hồ sơ.
+  Future<UserModel> updateAvatar(File file);
+
   Future<void> signOut();
 
   /// Gửi email đặt lại mật khẩu (kèm liên kết đặt lại do Firebase host).
@@ -76,6 +81,7 @@ UserModel _merge(UserModel cur, String? name, String? phone, String? address,
     phone: mergedPhone,
     address: mergedAddress,
     dob: keep(dob, cur.dob),
+    photoUrl: cur.photoUrl, // giữ avatar khi sửa hồ sơ (tên/SĐT/ngày sinh)
     // Chốt một lần: chỉ tạo địa chỉ giao hàng mặc định khi chưa có. Sửa hồ sơ
     // (đổi tên/SĐT) KHÔNG lan sang địa chỉ giao hàng.
     defaultAddress: cur.defaultAddress ??
@@ -163,15 +169,20 @@ class FirebaseAuthRepository implements AuthRepository {
       final doc = await ref.get().timeout(const Duration(seconds: 5));
       // emailVerified là trạng thái Auth (không lưu Firestore) → lấy từ fbUser.
       if (doc.exists) {
-        return UserModel.fromFirestore(doc)
-            .copyWith(emailVerified: fbUser.emailVerified);
+        final stored = UserModel.fromFirestore(doc);
+        // Ảnh tự tải lên (Cloudinary, lưu Firestore) ưu tiên; nếu không có thì
+        // dùng avatar Google trực tiếp từ Auth.
+        return stored.copyWith(
+          emailVerified: fbUser.emailVerified,
+          photoUrl: stored.photoUrl ?? fbUser.photoURL,
+        );
       }
-      await ref.set(fallback.toFirestore());
-      return fallback;
+      await ref.set(fallback.toFirestore()); // toFirestore KHÔNG ghi photoUrl
+      return fallback.copyWith(photoUrl: fbUser.photoURL); // hiển thị avatar Google
     } catch (e) {
       // ignore: avoid_print
       print('⚠️ Bỏ qua lỗi Firestore hồ sơ user: $e');
-      return fallback;
+      return fallback.copyWith(photoUrl: fbUser.photoURL);
     }
   }
 
@@ -289,6 +300,19 @@ class FirebaseAuthRepository implements AuthRepository {
         .collection(AppConstants.colUsers)
         .doc(updated.id)
         .set(updated.toFirestore(), SetOptions(merge: true));
+    _emit(updated);
+    return updated;
+  }
+
+  @override
+  Future<UserModel> updateAvatar(File file) async {
+    final url = await Cloudinary.uploadImage(file, folder: 'avatars');
+    final updated = _cached!.copyWith(photoUrl: url);
+    // Ghi riêng photoUrl (toFirestore không đụng tới trường này).
+    await _db
+        .collection(AppConstants.colUsers)
+        .doc(updated.id)
+        .set({'photoUrl': url}, SetOptions(merge: true));
     _emit(updated);
     return updated;
   }
@@ -457,6 +481,19 @@ class MockAuthRepository implements AuthRepository {
     double? lng,
   }) async {
     final updated = _merge(_current!, name, phone, address, dob, lat, lng);
+    final key = updated.email.trim().toLowerCase();
+    if (_accounts.containsKey(key)) {
+      _accounts[key] = (password: _accounts[key]!.password, user: updated);
+    }
+    _current = updated;
+    _controller.add(_current);
+    return updated;
+  }
+
+  @override
+  Future<UserModel> updateAvatar(File file) async {
+    // Mock: không upload thật — dùng đường dẫn file để UI hiển thị (FileImage).
+    final updated = _current!.copyWith(photoUrl: file.path);
     final key = updated.email.trim().toLowerCase();
     if (_accounts.containsKey(key)) {
       _accounts[key] = (password: _accounts[key]!.password, user: updated);

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/app_buttons.dart';
+import '../../../core/widgets/user_avatar.dart';
 import '../../../routes/app_routes.dart';
 import '../../../data/models/user_model.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -59,7 +60,7 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       body: Column(
         children: [
-          _header(context, user.name, user.email,
+          _header(context, user.name, user.email, user.photoUrl,
               () => ref.read(authRepositoryProvider).signOut()),
           Expanded(
             child: ListView(
@@ -96,7 +97,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _header(BuildContext context, String? name, String? email, VoidCallback onLogout) => Container(
+  Widget _header(BuildContext context, String? name, String? email, String? photoUrl, VoidCallback onLogout) => Container(
         decoration: const BoxDecoration(
           color: AppColors.surface,
           border: Border(bottom: BorderSide(color: AppColors.divider)),
@@ -112,7 +113,7 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const CircleAvatar(radius: 30, backgroundColor: AppColors.inputFill, child: Icon(Icons.person, color: AppColors.bodyText, size: 28)),
+                    UserAvatar(photoUrl: photoUrl, radius: 30),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
