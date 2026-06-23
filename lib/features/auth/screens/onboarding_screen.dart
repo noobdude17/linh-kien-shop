@@ -19,7 +19,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_index < MockData.onboarding.length - 1) {
       setState(() => _index++);
     } else {
-      context.go(AppRoutes.login);
+      context.go(AppRoutes.home); // vào thẳng app ở chế độ khách
     }
   }
 
@@ -36,7 +36,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () => context.go(AppRoutes.login),
+                  onPressed: () => context.go(AppRoutes.home),
                   child: const Text('Bỏ qua', style: TextStyle(color: AppColors.textSecondary)),
                 ),
               ),

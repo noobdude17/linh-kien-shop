@@ -17,6 +17,8 @@ class AppRoutes {
   static const list = '/list'; // product list (?categoryId=)
   static const results = '/results'; // search results (?q=)
   static const empty = '/empty'; // empty search results
+  static const partPicker = '/part-picker';
+  static const partPickerSelect = '/part-picker/select';
 
   // C · Product Detail
   static const detail = '/detail'; // /detail/:id

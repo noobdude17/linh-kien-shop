@@ -16,6 +16,7 @@ class ProductModel {
   final int stock;
   final bool isActive;
   final Map<String, String> specs;
+  final Map<String, dynamic> compatibility;
 
   const ProductModel({
     required this.id,
@@ -33,6 +34,7 @@ class ProductModel {
     this.stock = 0,
     this.isActive = true,
     this.specs = const {},
+    this.compatibility = const {},
   });
 
   bool get inStock => isActive;
@@ -61,23 +63,25 @@ class ProductModel {
       stock: data['stock'] ?? 0,
       isActive: data['isActive'] ?? true,
       specs: Map<String, String>.from(data['specs'] ?? {}),
+      compatibility: Map<String, dynamic>.from(data['compatibility'] ?? {}),
     );
   }
 
   Map<String, dynamic> toFirestore() => {
-        'name': name,
-        'brand': brand,
-        'description': description,
-        'price': price,
-        'oldPrice': oldPrice,
-        'rating': rating,
-        'reviewCount': reviewCount,
-        'imageLabel': imageLabel,
-        'imageUrl': imageUrl,
-        'categoryId': categoryId,
-        'categoryName': categoryName,
-        'stock': stock,
-        'isActive': isActive,
-        'specs': specs,
-      };
+    'name': name,
+    'brand': brand,
+    'description': description,
+    'price': price,
+    'oldPrice': oldPrice,
+    'rating': rating,
+    'reviewCount': reviewCount,
+    'imageLabel': imageLabel,
+    'imageUrl': imageUrl,
+    'categoryId': categoryId,
+    'categoryName': categoryName,
+    'stock': stock,
+    'isActive': isActive,
+    'specs': specs,
+    'compatibility': compatibility,
+  };
 }

@@ -8,7 +8,7 @@ import '../../../data/repositories/product_repository.dart';
 
 /// Nguồn dữ liệu sản phẩm. Tự chuyển Mock ↔ Firestore theo [AppConfig.useFirebase].
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
-  if (AppConfig.useFirebase) {
+  if (AppConfig.firebaseEnabled) {
     return FirestoreProductRepository(FirebaseFirestore.instance);
   }
   return MockProductRepository();

@@ -189,7 +189,8 @@ Component có sẵn trong `core/widgets/` — tái dùng, đừng viết lại: 
 | 2 | _(tên)_ | `feature/product` | `features/product/`, `features/home/`, `data/repositories/product_repository.dart` |
 | 3 | _(tên)_ | `feature/cart-order` | `features/cart/`, `features/order/`, `OrderRepository` |
 | 4 | _(tên)_ | `feature/admin` | `features/admin/` |
-| 5 | _(tên)_ | `feature/ui-profile` | `features/profile/`, `core/widgets/` (polish), `AddressRepository` |
+| 5 | **Trần Minh Huy** | `feature/ui-profile` | `features/profile/`, `core/widgets/` (polish), `AddressRepository` |
+| 6 | **Trần Minh Huy** | `PartPicker` |  |
 
 ### 1 · Lead — Auth & nền tảng (`feature/auth`)
 - **Màn:** Splash, Onboarding, Login, Register, Forgot password.

@@ -1,25 +1,36 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../routes/app_routes.dart';
+import '../providers/auth_providers.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   Timer? _timer;
+  bool _navigated = false;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(seconds: 2), () {
-      if (mounted) context.go(AppRoutes.onboarding);
-    });
+    // ponytail: 4s safety net — Firebase khôi phục session thực tế <1s
+    _timer = Timer(const Duration(seconds: 4),
+        () => _go(ref.read(authRepositoryProvider).currentUser != null));
+  }
+
+  /// Đã đăng nhập → Home; chưa → onboarding (chế độ khách).
+  void _go(bool loggedIn) {
+    if (_navigated || !mounted) return;
+    _navigated = true;
+    _timer?.cancel();
+    context.go(loggedIn ? AppRoutes.home : AppRoutes.onboarding);
   }
 
   @override
@@ -30,10 +41,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Chờ Firebase khôi phục session (auth state hết loading) rồi mới điều hướng.
+    final auth = ref.watch(authStateProvider);
+    if (!auth.isLoading) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _go(auth.valueOrNull != null));
+    }
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: GestureDetector(
-        onTap: () => context.go(AppRoutes.onboarding),
+        onTap: () => _go(ref.read(authRepositoryProvider).currentUser != null),
         child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

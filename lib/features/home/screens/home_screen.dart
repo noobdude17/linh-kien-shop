@@ -32,13 +32,14 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 SectionHeader(
                   title: 'Danh mục',
-                  actionLabel: 'Xem tất cả →',
-                  onAction: () => context.go(AppRoutes.categories),
+                  actionLabel: 'Lắp PC →',
+                  onAction: () => context.go(AppRoutes.partPicker),
                 ),
                 SizedBox(
                   height: 92,
                   child: categories.when(
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Center(child: Text('Lỗi: $e')),
                     data: (list) => ListView.separated(
                       scrollDirection: Axis.horizontal,
@@ -46,7 +47,9 @@ class HomeScreen extends ConsumerWidget {
                       separatorBuilder: (_, _) => const SizedBox(width: 8),
                       itemBuilder: (_, i) => CategoryChip(
                         category: list[i],
-                        onTap: () => context.go('${AppRoutes.list}?categoryId=${list[i].id}'),
+                        onTap: () => context.go(
+                          '${AppRoutes.list}?categoryId=${list[i].id}',
+                        ),
                       ),
                     ),
                   ),
@@ -70,10 +73,13 @@ class HomeScreen extends ConsumerWidget {
                     crossAxisSpacing: AppDimens.gap,
                     childAspectRatio: 0.62,
                     children: list
-                        .map((p) => ProductCard(
-                              product: p,
-                              onTap: () => context.go('${AppRoutes.detail}/${p.id}'),
-                            ))
+                        .map(
+                          (p) => ProductCard(
+                            product: p,
+                            onTap: () =>
+                                context.go('${AppRoutes.detail}/${p.id}'),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -101,15 +107,24 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  const Text('⚡ Linh Kiện Shop',
-                      style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
+                  const Text(
+                    '⚡ Linh Kiện Shop',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   const Spacer(),
                   IconButton(
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.inputFill,
                       minimumSize: const Size.square(40),
                     ),
-                    icon: const Icon(Icons.notifications_outlined, color: AppColors.bodyText),
+                    icon: const Icon(
+                      Icons.notifications_outlined,
+                      color: AppColors.bodyText,
+                    ),
                     onPressed: () => context.go(AppRoutes.notifications),
                   ),
                   Stack(
@@ -120,7 +135,10 @@ class HomeScreen extends ConsumerWidget {
                           backgroundColor: AppColors.inputFill,
                           minimumSize: const Size.square(40),
                         ),
-                        icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.bodyText),
+                        icon: const Icon(
+                          Icons.shopping_cart_outlined,
+                          color: AppColors.bodyText,
+                        ),
                         onPressed: () => context.go(AppRoutes.cart),
                       ),
                       if (cartCount > 0)
@@ -129,9 +147,18 @@ class HomeScreen extends ConsumerWidget {
                           right: 4,
                           child: Container(
                             padding: const EdgeInsets.all(3),
-                            decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
-                            child: Text('$cartCount',
-                                style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700)),
+                            decoration: const BoxDecoration(
+                              color: AppColors.accent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '$cartCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                         ),
                     ],
@@ -141,14 +168,29 @@ class HomeScreen extends ConsumerWidget {
               GestureDetector(
                 onTap: () => context.go(AppRoutes.search),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(color: AppColors.inputFill, borderRadius: AppDimens.brInput),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.inputFill,
+                    borderRadius: AppDimens.brInput,
+                  ),
                   child: Row(
                     children: const [
-                      Icon(Icons.search, color: AppColors.textTertiary, size: 20),
+                      Icon(
+                        Icons.search,
+                        color: AppColors.textTertiary,
+                        size: 20,
+                      ),
                       SizedBox(width: 8),
-                      Text('Tìm kiếm CPU, RAM, Laptop...',
-                          style: TextStyle(color: AppColors.textTertiary, fontSize: 14)),
+                      Text(
+                        'Tìm kiếm CPU, RAM, Laptop...',
+                        style: TextStyle(
+                          color: AppColors.textTertiary,
+                          fontSize: 14,
+                        ),
+                      ),
                     ],
                   ),
                 ),

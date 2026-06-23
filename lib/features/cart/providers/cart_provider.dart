@@ -1,13 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/mock_data.dart';
 import '../../../data/models/cart_item_model.dart';
 import '../../../data/models/product_model.dart';
 
 /// Quản lý state giỏ hàng toàn app (badge, màn Cart, Checkout đều đọc chung).
 class CartNotifier extends Notifier<List<CartItemModel>> {
   @override
-  List<CartItemModel> build() => MockData.cartItems(); // seed demo; để [] khi nối thật
+  List<CartItemModel> build() => []; // bắt đầu rỗng; user thêm qua add()
 
   void add(ProductModel p, {int qty = 1, String variant = ''}) {
     final idx = state.indexWhere((e) => e.productId == p.id);

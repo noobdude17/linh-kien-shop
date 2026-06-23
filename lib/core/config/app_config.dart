@@ -1,11 +1,14 @@
-/// Cấu hình toàn cục để bật/tắt backend thật.
+/// Cấu hình toàn cục.
 ///
-/// CÁCH BẬT FIREBASE (sau khi Lead chạy `flutterfire configure`):
-///   đổi `useFirebase` = true → mọi repository tự chuyển từ Mock sang Firestore/Auth thật.
-/// Để false → app chạy hoàn toàn bằng dữ liệu mẫu (không cần Firebase).
+/// [firebaseEnabled] được set ở runtime trong `main.dart`: bật TRUE khi
+/// `Firebase.initializeApp` thành công (máy đã có `assets/config/firebase_config.json`),
+/// ngược lại FALSE → app tự chạy bằng dữ liệu mẫu (Mock).
+///
+/// Nhờ vậy: máy của bạn (đã cấu hình Firebase) dùng backend thật;
+/// thành viên chưa có file config vẫn chạy được ở chế độ mock — không cần sửa code.
 class AppConfig {
   AppConfig._();
 
-  /// ⬇️ ĐỔI THÀNH true SAU KHI CẤU HÌNH FIREBASE XONG ⬇️
-  static const bool useFirebase = true;
+  /// Có dùng Firebase thật hay không. Do `main.dart` gán sau khi init.
+  static bool firebaseEnabled = false;
 }
