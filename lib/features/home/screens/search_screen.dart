@@ -71,8 +71,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     context.go(AppRoutes.home);
                   }
                 },
-                child: const Icon(Icons.close,
-                    color: AppColors.textTertiary, size: 20),
+                child: const Icon(
+                  Icons.close,
+                  color: AppColors.textTertiary,
+                  size: 20,
+                ),
               ),
             ],
           ),
@@ -89,9 +92,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 GestureDetector(
                   onTap: () =>
                       ref.read(recentSearchesProvider.notifier).clear(),
-                  child: const Text('Xóa tất cả',
-                      style: TextStyle(
-                          fontSize: 12, color: AppColors.textSecondary)),
+                  child: const Text(
+                    'Xóa tất cả',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -100,10 +107,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               spacing: 8,
               runSpacing: 8,
               children: recent
-                  .map((s) => AppChip(
-                        label: s,
-                        onTap: () => _submit(s),
-                      ))
+                  .map((s) => AppChip(label: s, onTap: () => _submit(s)))
                   .toList(),
             ),
             const SizedBox(height: 24),
@@ -112,16 +116,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           const SizedBox(height: 12),
           trending.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
             data: (list) => Wrap(
               spacing: 8,
               runSpacing: 8,
               children: list
-                  .map((s) => AppChip(
-                        label: s,
-                        trending: true,
-                        onTap: () => _submit(s),
-                      ))
+                  .map(
+                    (s) => AppChip(
+                      label: s,
+                      trending: true,
+                      onTap: () => _submit(s),
+                    ),
+                  )
                   .toList(),
             ),
           ),
