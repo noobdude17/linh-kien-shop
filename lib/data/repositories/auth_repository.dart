@@ -31,6 +31,10 @@ abstract class AuthRepository {
 
   Future<UserModel> signInWithGoogle();
 
+  /// Liên kết Google (đang chờ) vào tài khoản email/mật khẩu sẵn có.
+  /// Gọi sau khi [signInWithGoogle] ném 'link-password-required'.
+  Future<UserModel> linkPendingGoogleAccount(String password);
+
   /// Bổ sung/cập nhật thông tin cá nhân. Trường nào null thì giữ nguyên.
   Future<UserModel> updateProfile({
     String? name,
@@ -122,6 +126,10 @@ class FirebaseAuthRepository implements AuthRepository {
   UserModel? _cached;
   // Đã xác định trạng thái Auth lần đầu chưa (Firebase khôi phục phiên xong).
   bool _resolved = false;
+  // Google credential đang chờ liên kết (Scenario B): email này đã có tài khoản
+  // mật khẩu nên Firebase chặn đăng nhập Google tới khi xác minh chủ sở hữu.
+  fb.AuthCredential? _pendingGoogleCred;
+  String? _pendingLinkEmail;
 
   void _emit(UserModel? u) {
     _resolved = true;
@@ -235,8 +243,35 @@ class FirebaseAuthRepository implements AuthRepository {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
-    final cred = await _auth.signInWithCredential(credential);
-    _emit(await _loadOrCreateProfile(cred.user!));
+    try {
+      final cred = await _auth.signInWithCredential(credential);
+      _emit(await _loadOrCreateProfile(cred.user!));
+      return _cached!;
+    } on fb.FirebaseAuthException catch (e) {
+      // Email này đã đăng ký bằng mật khẩu (Scenario B). Firebase bắt xác minh
+      // chủ sở hữu trước khi liên kết → giữ credential, báo UI hỏi mật khẩu.
+      if (e.code == 'account-exists-with-different-credential') {
+        _pendingGoogleCred = credential; // dùng credential tự dựng (e.credential có thể null)
+        _pendingLinkEmail = googleUser.email; // tin cậy; e.email bị enum-protection xoá
+        throw fb.FirebaseAuthException(
+            code: 'link-password-required', message: googleUser.email);
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<UserModel> linkPendingGoogleAccount(String password) async {
+    final email = _pendingLinkEmail!;
+    final cred = _pendingGoogleCred!;
+    // Đăng nhập tài khoản mật khẩu sẵn có → liên kết Google vào cùng uid → hồ sơ
+    // (SĐT/địa chỉ/địa chỉ mặc định) được giữ nguyên. linkWithCredential có thể
+    // ném 'credential-already-in-use'/'provider-already-linked'.
+    await _auth.signInWithEmailAndPassword(email: email, password: password);
+    await _auth.currentUser!.linkWithCredential(cred);
+    _emit(await _loadOrCreateProfile(_auth.currentUser!));
+    _pendingGoogleCred = null;
+    _pendingLinkEmail = null;
     return _cached!;
   }
 
@@ -393,15 +428,24 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<UserModel> signInWithGoogle() async {
     await Future.delayed(const Duration(milliseconds: 300));
-    _current = const UserModel(
-      id: 'mock-google',
-      name: 'Google User',
-      email: 'google.user@gmail.com',
-      role: AppConstants.roleCustomer,
-    );
+    const googleEmail = 'google.user@gmail.com';
+    // Scenario B (giả lập): nếu email Google đã có tài khoản → dùng lại hồ sơ đó.
+    final existing = _accounts[googleEmail];
+    _current = existing?.user ??
+        const UserModel(
+          id: 'mock-google',
+          name: 'Google User',
+          email: googleEmail,
+          role: AppConstants.roleCustomer,
+        );
     _controller.add(_current);
     return _current!;
   }
+
+  @override
+  Future<UserModel> linkPendingGoogleAccount(String password) async =>
+      // ponytail: stub — Google SSO không chạy được trong mock.
+      _current!;
 
   @override
   Future<UserModel> updateProfile({

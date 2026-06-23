@@ -192,7 +192,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   String _friendly(Object e) {
     final s = e.toString();
-    if (s.contains('email-already-in-use')) return 'Email đã được dùng';
+    if (s.contains('email-already-in-use')) {
+      return 'Email này đã được đăng ký. Nếu trước đây bạn dùng Google, hãy đăng nhập bằng Google.';
+    }
     if (s.contains('weak-password')) return 'Mật khẩu quá yếu';
     return 'Vui lòng thử lại';
   }
