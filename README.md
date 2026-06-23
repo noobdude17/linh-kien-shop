@@ -28,6 +28,7 @@ App thương mại điện tử bán **linh kiện & thiết bị máy tính, la
 | State management | `flutter_riverpod` |
 | Routing | `go_router` |
 | Backend | Firebase (Auth + Firestore + Storage) |
+| Bản đồ & geocoding | `flutter_map` (tiles OSM) + `latlong2` + `geocoding` — **không cần API key, không tính phí** (chỉ Android/iOS; web tự xuống chế độ nhập tay) |
 | Thanh toán | Mock VNPay (giả lập, không tích hợp SDK thật) |
 
 Yêu cầu: Flutter SDK ≥ 3.11, Dart ≥ 3.11. Kiểm tra: `flutter --version`.
@@ -123,6 +124,9 @@ lib/
 │   │   └── providers/cart_provider.dart        # ⭐ MẪU state (Notifier)
 │   ├── order/screens/           # checkout, vnpay_gateway, payment_processing,
 │   │                            # order_success, order_history, order_detail
+│   ├── location/                # Chọn/xác minh vị trí trên bản đồ (dùng chung auth + profile)
+│   │   ├── location_picker_screen.dart   # map picker (flutter_map) + LocationResult
+│   │   └── geocode.dart                   # seam forward/reverse geocode (điểm nâng cấp web)
 │   ├── profile/screens/         # profile, edit_profile, address_list, add_address,
 │   │                            # wishlist, wishlist_empty, notifications
 │   └── admin/screens/           # admin_dashboard, admin_product_list, admin_product_edit,
