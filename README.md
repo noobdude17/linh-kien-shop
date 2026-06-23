@@ -195,6 +195,7 @@ Component có sẵn trong `core/widgets/` — tái dùng, đừng viết lại: 
 | 4 | _(tên)_ | `feature/admin` | `features/admin/` |
 | 5 | **Trần Minh Huy** | `feature/ui-profile` | `features/profile/`, `core/widgets/` (polish), `AddressRepository` |
 | 6 | **Trần Minh Huy** | `PartPicker` |  |
+| 7 | **Khoa (Lead)** | `feature/map-location-address` | `features/location/` — xác minh vị trí trên bản đồ (auth + CRUD địa chỉ) |
 
 ### 1 · Lead — Auth & nền tảng (`feature/auth`)
 - **Màn:** Splash, Onboarding, Login, Register, Forgot password.
@@ -242,22 +243,17 @@ Component có sẵn trong `core/widgets/` — tái dùng, đừng viết lại: 
   - Rà soát & polish các `core/widgets/` dùng chung (báo nhóm trước khi sửa widget chung).
 - **Xong khi:** sửa profile lưu được; thêm/xóa địa chỉ & wishlist hoạt động.
 
-#### 🗺️ Xác minh địa chỉ bằng bản đồ (Map location verification)
-Mọi địa chỉ giao hàng đều gắn toạ độ `(lat, lng)` đã xác nhận, không chỉ chữ.
-Dùng ở **đăng ký / hoàn tất hồ sơ** và **CRUD địa chỉ giao hàng**.
-
-- **Hai cách chọn:**
-  1. **Chạm trên bản đồ** → suy ra địa chỉ chữ (reverse geocode toạ độ → chữ).
-  2. **Gõ địa chỉ** → bản đồ/ghim nhảy tới đó (forward geocode chữ → toạ độ).
-     Không tra được = địa chỉ không hợp lệ → báo nhập lại. *Forward geocode chính
-     là bộ kiểm tra hợp lệ;* ghim ở giữa màn để người dùng xác nhận lần cuối.
-- **Stack:** `flutter_map` (tiles OSM) + `latlong2` + `geocoding` — **không cần
-  API key, không tính phí**. Ghim mặc định: Đà Nẵng `(16.0333, 108.2114)`.
-- **Màn/khe nối:** `features/location/location_picker_screen.dart` (UI bản đồ,
-  trả `LocationResult`), `features/location/geocode.dart` (khe geocode duy nhất).
-- **⚠️ Giới hạn:** plugin `geocoding` chỉ chạy **Android/iOS** (không có web).
-  Trên web — hoặc khi tiles/geocode lỗi — màn tự **xuống chế độ chữ**: hiện banner
-  "Bản đồ hiện không khả dụng…" kèm lỗi cụ thể, vẫn nhập tay & lưu được (toạ độ `null`).
+### 7 · Bản đồ & xác minh vị trí (`feature/map-location-address`)
+- **Màn:** Location Picker (dùng chung) — mở từ Register, Hoàn tất hồ sơ, Thêm/Sửa địa chỉ. Mọi địa chỉ lưu kèm toạ độ `(lat, lng)` đã xác nhận, không chỉ chữ.
+- **Việc:**
+  - Picker `flutter_map` (tiles OSM) + `geocoding` với **hai cách chọn:**
+    1. **Chạm/di chuyển bản đồ** → suy ra địa chỉ chữ (reverse geocode toạ độ → chữ).
+    2. **Gõ/tìm địa chỉ** → ghim nhảy tới đó (forward geocode chữ → toạ độ). Không tra được = không hợp lệ → bắt nhập lại. *Forward geocode chính là bộ kiểm tra hợp lệ;* ghim giữa màn để xác nhận lần cuối.
+  - Ô địa chỉ **chỉ đọc** ở chế độ bản đồ (chỉ nhận text đã geocode, chặn nhập bừa); nút zoom +/- không cần pinch. Ghim mặc định: Đà Nẵng `(16.0333, 108.2114)`.
+  - `AddressRepository` ghi `(lat, lng)` vào subcollection `users/{uid}/addresses`; mirror địa chỉ mặc định sang `users/{uid}.defaultAddress` cho reader cũ (checkout/profile).
+  - Mọi geocode đi qua **một khe duy nhất** `features/location/geocode.dart` (điểm nâng cấp web → Nominatim).
+- **⚠️ Giới hạn:** plugin `geocoding` chỉ chạy **Android/iOS** (không có web). Trên web — hoặc khi tiles/geocode lỗi — màn tự **xuống chế độ nhập tay**: banner "Bản đồ hiện không khả dụng…" kèm lỗi cụ thể, vẫn nhập & lưu được (toạ độ `null`), không chết luồng.
+- **Xong khi:** chọn trên bản đồ HOẶC gõ địa chỉ đều ra `(lat, lng, text)` đã xác nhận; CRUD địa chỉ lưu kèm toạ độ; đổi mặc định phản ánh đúng ở checkout; web không kẹt.
 
 ---
 
