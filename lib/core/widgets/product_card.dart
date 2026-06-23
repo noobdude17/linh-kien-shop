@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/product_model.dart';
 import '../../core/utils/formatter.dart';
+import '../../features/product/providers/wishlist_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
 import '../theme/app_text_styles.dart';
 import 'image_placeholder.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerWidget {
   final ProductModel product;
   final VoidCallback? onTap;
   final bool showWishlistHeart;
@@ -19,8 +21,12 @@ class ProductCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final discount = product.discountPercent;
+    final isWishlisted = showWishlistHeart
+        ? ref.watch(wishlistProvider).contains(product.id)
+        : false;
+
     return InkWell(
       onTap: onTap,
       borderRadius: AppDimens.brCard,
@@ -47,17 +53,44 @@ class ProductCard extends StatelessWidget {
                     left: 8,
                     child: _badge('-$discount%'),
                   ),
+                if (!product.inStock)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black26,
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorBg,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text('Hết hàng',
+                            style: TextStyle(
+                                color: AppColors.error,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                  ),
                 if (showWishlistHeart)
-                  const Positioned(
+                  Positioned(
                     top: 8,
                     right: 8,
-                    child: CircleAvatar(
-                      radius: 16,
-                      backgroundColor: Color(0xCCFFFFFF),
-                      child: Icon(
-                        Icons.favorite_border,
-                        size: 18,
-                        color: AppColors.bodyText,
+                    child: GestureDetector(
+                      onTap: () => ref
+                          .read(wishlistProvider.notifier)
+                          .toggle(product.id),
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: const Color(0xCCFFFFFF),
+                        child: Icon(
+                          isWishlisted
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          size: 18,
+                          color: isWishlisted ? Colors.red : AppColors.bodyText,
+                        ),
                       ),
                     ),
                   ),
@@ -103,6 +136,16 @@ class ProductCard extends StatelessWidget {
                         product.rating.toStringAsFixed(1),
                         style: AppTextStyles.productCardMeta,
                       ),
+                      if (product.stockStatus == StockStatus.lowStock) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          'Sắp hết',
+                          style: const TextStyle(
+                              fontSize: 10,
+                              color: AppColors.warning,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ],
                   ),
                 ],

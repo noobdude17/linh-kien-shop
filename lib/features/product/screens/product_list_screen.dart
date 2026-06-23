@@ -6,8 +6,11 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_chip.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../data/models/product_model.dart';
+import '../../../features/product/providers/compare_provider.dart';
 import '../../../features/product/providers/product_providers.dart';
 import '../../../routes/app_routes.dart';
+import '../widgets/compare_bar.dart';
+import '../widgets/filter_sheet.dart';
 
 enum _SortOption {
   popular('Phổ biến', Icons.local_fire_department_outlined),
@@ -30,6 +33,7 @@ class ProductListScreen extends ConsumerStatefulWidget {
 class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   int _selected = 0;
   _SortOption _sort = _SortOption.popular;
+  FilterOptions _filter = const FilterOptions();
 
   @override
   void didUpdateWidget(ProductListScreen old) {
@@ -37,6 +41,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     if (old.categoryId != widget.categoryId) {
       _selected = 0;
       _sort = _SortOption.popular;
+      _filter = const FilterOptions();
     }
   }
 
@@ -50,10 +55,21 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     return ['Tất cả', ...brands];
   }
 
-  List<ProductModel> _applyFilter(List<ProductModel> list, List<String> labels) {
+  List<ProductModel> _applyBrandFilter(
+      List<ProductModel> list, List<String> labels) {
     if (_selected == 0) return list;
     final label = labels[_selected];
     return list.where((p) => p.brand == label).toList();
+  }
+
+  List<ProductModel> _applyAdvancedFilter(List<ProductModel> list) {
+    return list.where((p) {
+      if (_filter.inStockOnly && !p.inStock) return false;
+      if (p.price < _filter.priceRange.start ||
+          p.price > _filter.priceRange.end) return false;
+      if (p.rating < _filter.minRating) return false;
+      return true;
+    }).toList();
   }
 
   List<ProductModel> _applySort(List<ProductModel> list) {
@@ -67,6 +83,20 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         sorted.sort((a, b) => b.price.compareTo(a.price));
     }
     return sorted;
+  }
+
+  Future<void> _showFilterSheet() async {
+    final result = await showModalBottomSheet<FilterOptions>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => FilterSheet(initial: _filter),
+    );
+    if (result != null && mounted) {
+      setState(() => _filter = result);
+    }
   }
 
   void _showSortSheet() {
@@ -94,20 +124,28 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text('Sắp xếp',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
               ),
             ),
             ..._SortOption.values.map(
               (opt) => ListTile(
                 leading: Icon(opt.icon,
-                    color: _sort == opt ? AppColors.primary : AppColors.textSecondary,
+                    color: _sort == opt
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
                     size: 20),
                 title: Text(opt.label,
                     style: TextStyle(
-                        color: _sort == opt ? AppColors.primary : AppColors.textPrimary,
-                        fontWeight: _sort == opt ? FontWeight.w600 : FontWeight.normal)),
+                        color: _sort == opt
+                            ? AppColors.primary
+                            : AppColors.textPrimary,
+                        fontWeight: _sort == opt
+                            ? FontWeight.w600
+                            : FontWeight.normal)),
                 trailing: _sort == opt
-                    ? const Icon(Icons.check, color: AppColors.primary, size: 18)
+                    ? const Icon(Icons.check,
+                        color: AppColors.primary, size: 18)
                     : null,
                 onTap: () {
                   setState(() => _sort = opt);
@@ -124,18 +162,48 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productsAsync = ref.watch(productsByCategoryProvider(widget.categoryId));
+    final productsAsync =
+        ref.watch(productsByCategoryProvider(widget.categoryId));
     final cats = ref.watch(categoriesProvider).asData?.value;
     final title = cats == null || widget.categoryId == null
         ? 'Sản phẩm'
-        : cats.where((c) => c.id == widget.categoryId).map((c) => c.name).firstOrNull
-            ?? 'Sản phẩm';
+        : cats
+                .where((c) => c.id == widget.categoryId)
+                .map((c) => c.name)
+                .firstOrNull ??
+            'Sản phẩm';
 
+    final compareList = ref.watch(compareProvider);
     return Scaffold(
+      bottomNavigationBar:
+          compareList.isNotEmpty ? const CompareBar() : null,
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
         title: Text(title),
-        actions: [IconButton(icon: const Icon(Icons.tune), onPressed: () {})],
+        actions: [
+          IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.tune),
+                if (!_filter.isDefault)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: _showFilterSheet,
+          ),
+        ],
       ),
       body: productsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -146,8 +214,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               Text('Lỗi: $e'),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.invalidate(
-                    productsByCategoryProvider(widget.categoryId)),
+                onPressed: () => ref
+                    .invalidate(productsByCategoryProvider(widget.categoryId)),
                 child: const Text('Thử lại'),
               ),
             ],
@@ -156,7 +224,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         data: (list) {
           final labels = _buildFilterLabels(list);
           final clampedSelected = _selected.clamp(0, labels.length - 1);
-          final filtered = _applySort(_applyFilter(list, labels));
+          final filtered = _applyAdvancedFilter(
+              _applySort(_applyBrandFilter(list, labels)));
 
           return Column(
             children: [
@@ -180,7 +249,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               ),
               Container(
                 color: AppColors.surface,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -210,7 +280,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                 child: filtered.isEmpty
                     ? const Center(child: Text('Không có sản phẩm'))
                     : GridView.builder(
-                        padding: const EdgeInsets.all(AppDimens.screenPadding),
+                        padding:
+                            const EdgeInsets.all(AppDimens.screenPadding),
                         itemCount: filtered.length,
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
@@ -220,6 +291,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                           childAspectRatio: 0.62,
                         ),
                         itemBuilder: (_, i) => ProductCard(
+                          key: ValueKey(filtered[i].id),
                           product: filtered[i],
                           onTap: () => context
                               .go('${AppRoutes.detail}/${filtered[i].id}'),

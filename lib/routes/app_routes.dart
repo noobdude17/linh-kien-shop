@@ -22,6 +22,7 @@ class AppRoutes {
 
   // C · Product Detail
   static const detail = '/detail'; // /detail/:id
+  static const compare = '/compare';
 
   // D · Cart & Checkout
   static const cart = '/cart';

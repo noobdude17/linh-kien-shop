@@ -21,6 +21,7 @@ import '../features/home/screens/search_results_screen.dart';
 import '../features/home/screens/empty_results_screen.dart';
 import '../features/product/screens/product_list_screen.dart';
 import '../features/product/screens/product_detail_screen.dart';
+import '../features/product/screens/compare_screen.dart';
 import '../features/cart/screens/cart_screen.dart';
 import '../features/order/screens/checkout_screen.dart';
 import '../features/order/screens/vnpay_gateway_screen.dart';
@@ -93,6 +94,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => _withBackScope(
           ProductDetailScreen(productId: state.pathParameters['id']!),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.compare,
+        builder: (_, _) => _withBackScope(const CompareScreen()),
       ),
 
       // D · Cart & Checkout
