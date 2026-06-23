@@ -52,7 +52,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 4),
     );
   }
 
@@ -92,7 +92,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 4),
     );
   }
 

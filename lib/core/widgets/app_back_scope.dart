@@ -43,6 +43,11 @@ class _AppBackScopeState extends State<AppBackScope> {
       return;
     }
 
+    if (path.startsWith('${AppRoutes.partPickerSelect}/')) {
+      context.go(AppRoutes.partPicker);
+      return;
+    }
+
     if (_isExitRoute(path)) {
       _exitOnSecondBack();
       return;

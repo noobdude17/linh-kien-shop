@@ -16,6 +16,7 @@ class ProductModel {
   final int stock;
   final bool isActive;
   final Map<String, String> specs;
+  final Map<String, dynamic> compatibility;
 
   const ProductModel({
     required this.id,
@@ -33,6 +34,7 @@ class ProductModel {
     this.stock = 0,
     this.isActive = true,
     this.specs = const {},
+    this.compatibility = const {},
   });
 
   bool get inStock => isActive;
@@ -61,6 +63,7 @@ class ProductModel {
       stock: data['stock'] ?? 0,
       isActive: data['isActive'] ?? true,
       specs: Map<String, String>.from(data['specs'] ?? {}),
+      compatibility: Map<String, dynamic>.from(data['compatibility'] ?? {}),
     );
   }
 
@@ -79,5 +82,6 @@ class ProductModel {
         'stock': stock,
         'isActive': isActive,
         'specs': specs,
+        'compatibility': compatibility,
       };
 }
