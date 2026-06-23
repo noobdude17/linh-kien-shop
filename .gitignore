@@ -1,3 +1,8 @@
+# Secrets — real Firebase config (keep *.example.json tracked)
+/firebase_config.json
+**/firebase_config.json
+!**/firebase_config.example.json
+
 # Miscellaneous
 *.class
 *.log
