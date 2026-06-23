@@ -48,6 +48,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     _address.text = widget.initialText ?? '';
     if (!geocodingSupported) {
       _mapError = 'Bản đồ chưa hỗ trợ trên nền web.';
+    } else if (widget.initial == null) {
+      // Vị trí mới → tự dời về GPS (post-frame: chờ MapController sẵn sàng).
+      WidgetsBinding.instance.addPostFrameCallback((_) => _goToCurrentLocation(initial: true));
     }
   }
 
@@ -77,6 +80,18 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     } finally {
       if (mounted) setState(() => _resolving = false);
     }
+  }
+
+  /// Lấy GPS → dời pin về vị trí hiện tại. `initial`: gọi lúc mở màn (im lặng nếu lỗi).
+  Future<void> _goToCurrentLocation({bool initial = false}) async {
+    final p = await currentLatLng();
+    if (p == null) {
+      if (!initial) _snack('Không lấy được vị trí hiện tại');
+      return;
+    }
+    _map.move(p, 16);
+    _picked = p;
+    await _resolveCenter(p);
   }
 
   void _onPositionChanged(MapCamera camera, bool hasGesture) {
@@ -184,6 +199,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
             bottom: 12,
             child: Column(
               children: [
+                _zoomButton(Icons.my_location, 'recenter', () => _goToCurrentLocation()),
+                const SizedBox(height: 8),
                 _zoomButton(Icons.add, 'zoomIn', () => _zoom(1)),
                 const SizedBox(height: 8),
                 _zoomButton(Icons.remove, 'zoomOut', () => _zoom(-1)),
