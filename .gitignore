@@ -73,3 +73,10 @@ coverage/
 
 # VSCode (uncomment if team doesn't share launch configs)
 # .vscode/
+
+# Local debug/tool artifacts (browser profiles, codex, debug screenshots)
+.chrome-debug-profile*/
+.codex_appdata/
+.codex_gitconfig
+flutter_app_*.png
+flutter_cdp.png

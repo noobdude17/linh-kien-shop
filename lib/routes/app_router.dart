@@ -12,6 +12,7 @@ import '../features/auth/screens/onboarding_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
+import '../features/auth/screens/verify_email_screen.dart';
 import '../features/auth/screens/complete_profile_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/home/screens/categories_screen.dart';
@@ -40,24 +41,7 @@ import '../features/admin/screens/admin_product_edit_screen.dart';
 import '../features/admin/screens/admin_order_management_screen.dart';
 import '../features/admin/screens/admin_order_detail_screen.dart';
 import 'app_routes.dart';
-
-/// Route CẦN đăng nhập (theo prefix). Khách (guest) duyệt thoải mái phần còn lại;
-/// chỉ chặn khu vực tài khoản, đặt hàng và admin.
-const _protectedPrefixes = <String>[
-  // /profile (tab Tài khoản) cho khách vào được — màn tự hiện prompt đăng nhập.
-  AppRoutes.editProfile, // /profile/edit
-  AppRoutes.orders, // gồm /orders/detail/:id
-  AppRoutes.addresses, // gồm /addresses/add
-  AppRoutes.wishlist,
-  AppRoutes.notifications,
-  AppRoutes.checkout,
-  AppRoutes.vnpay,
-  AppRoutes.processing,
-  AppRoutes.admin, // gồm /admin/*
-];
-
-bool _needsAuth(String loc) =>
-    _protectedPrefixes.any((p) => loc == p || loc.startsWith('$p/'));
+import 'auth_guard.dart';
 
 Widget _withBackScope(Widget child) => AppBackScope(child: child);
 
@@ -67,28 +51,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.splash,
     refreshListenable: GoRouterRefreshStream(authRepo.authStateChanges()),
     redirect: (context, state) {
-      final loggedIn = authRepo.currentUser != null;
-      final loc = state.matchedLocation;
-
-      // Splash & onboarding tự điều hướng, không chặn.
-      if (loc == AppRoutes.splash || loc == AppRoutes.onboarding) return null;
-
-      // Đã đăng nhập nhưng thiếu thông tin (vd: đăng nhập Google) → buộc hoàn tất.
       final user = authRepo.currentUser;
-      if (user != null &&
-          !user.profileComplete &&
-          loc != AppRoutes.completeProfile) {
-        return AppRoutes.completeProfile;
-      }
-
-      // Khách vào khu vực cần đăng nhập → chuyển sang Login.
-      if (!loggedIn && _needsAuth(loc)) return AppRoutes.login;
-
-      // Đã đăng nhập mà còn ở Login/Register → về Home.
-      if (loggedIn && (loc == AppRoutes.login || loc == AppRoutes.register)) {
-        return AppRoutes.home;
-      }
-      return null;
+      return authRedirect(
+        loc: state.matchedLocation,
+        loggedIn: user != null,
+        emailVerified: user?.emailVerified ?? true,
+        profileComplete: user?.profileComplete ?? false,
+      );
     },
     routes: [
       // A · Auth
@@ -97,6 +66,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: AppRoutes.login, builder: (_, _) => _withBackScope(const LoginScreen())),
       GoRoute(path: AppRoutes.register, builder: (_, _) => _withBackScope(const RegisterScreen())),
       GoRoute(path: AppRoutes.forgot, builder: (_, _) => _withBackScope(const ForgotPasswordScreen())),
+      GoRoute(path: AppRoutes.verifyEmail, builder: (_, _) => _withBackScope(const VerifyEmailScreen())),
       GoRoute(path: AppRoutes.completeProfile, builder: (_, _) => _withBackScope(const CompleteProfileScreen())),
 
       // B · Home & Browse

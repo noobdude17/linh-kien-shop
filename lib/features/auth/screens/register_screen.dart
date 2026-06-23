@@ -92,7 +92,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             lat: _lat,
             lng: _lng,
           );
-      // Đăng ký xong → tự đăng nhập → router redirect sang Home.
+      // Đăng ký xong → đã đăng nhập nhưng email chưa xác nhận →
+      // router tự đưa sang màn "Xác nhận email" (liên kết đã gửi trong signUp).
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

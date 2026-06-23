@@ -43,6 +43,15 @@ abstract class AuthRepository {
 
   Future<void> signOut();
 
+  /// Gửi email đặt lại mật khẩu (kèm liên kết đặt lại do Firebase host).
+  Future<void> sendPasswordReset(String email);
+
+  /// Gửi email xác nhận địa chỉ email cho tài khoản hiện tại.
+  Future<void> sendEmailVerification();
+
+  /// Tải lại trạng thái user từ máy chủ (kiểm tra email đã xác nhận chưa).
+  Future<void> reloadUser();
+
   /// Xóa hẳn tài khoản (Auth + hồ sơ Firestore). Dùng để test lại từ đầu.
   Future<void> deleteAccount();
 }
@@ -98,8 +107,12 @@ class FirebaseAuthRepository implements AuthRepository {
         _cached = null;
       } else if (_cached?.id != fbUser.uid) {
         // Chỉ tải khi chưa có hồ sơ cho uid này (vd: khôi phục phiên lúc mở app).
-        // signIn/signUp/google tự set _cached trước → tránh ghi đè bằng fallback.
-        _cached = await _loadOrCreateProfile(fbUser);
+        final loaded = await _loadOrCreateProfile(fbUser);
+        // TOCTOU: trong lúc await ở trên, signUp/signIn/google có thể đã _emit hồ
+        // sơ ĐẦY ĐỦ cho đúng uid này. Kiểm tra LẠI trước khi gán — nếu không,
+        // fallback (thiếu phone/address) ghi đè hồ sơ thật → bug bắt nhập lại
+        // form sau khi xác nhận email.
+        if (_cached?.id != fbUser.uid) _cached = loaded;
       }
       _resolved = true;
       _controller.add(_cached);
@@ -134,12 +147,17 @@ class FirebaseAuthRepository implements AuthRepository {
       name: fbUser.displayName ?? '',
       email: fbUser.email ?? '',
       role: AppConstants.roleCustomer,
+      emailVerified: fbUser.emailVerified,
     );
     // Đọc/ghi Firestore là TÙY CHỌN: nếu lỗi (rules/chưa bật/mạng) vẫn cho đăng nhập.
     try {
       final ref = _db.collection(AppConstants.colUsers).doc(fbUser.uid);
       final doc = await ref.get().timeout(const Duration(seconds: 5));
-      if (doc.exists) return UserModel.fromFirestore(doc);
+      // emailVerified là trạng thái Auth (không lưu Firestore) → lấy từ fbUser.
+      if (doc.exists) {
+        return UserModel.fromFirestore(doc)
+            .copyWith(emailVerified: fbUser.emailVerified);
+      }
       await ref.set(fallback.toFirestore());
       return fallback;
     } catch (e) {
@@ -179,10 +197,23 @@ class FirebaseAuthRepository implements AuthRepository {
       phone: phone,
       address: address,
       dob: dob,
+      emailVerified: cred.user!.emailVerified, // false khi vừa tạo bằng email
       defaultAddress: _defaultFrom(name, phone, address?.trim(), lat, lng),
     );
     // Set _cached NGAY (đồng bộ) để listener authState bỏ qua, không ghi fallback.
+    // QUAN TRỌNG: TUYỆT ĐỐI không await giữa createUser và _emit — nếu yield event
+    // loop ở đây, listener chạy lúc _cached còn null → ghi hồ sơ fallback thiếu
+    // phone/address, phá profileComplete (bug "bắt nhập lại + địa chỉ thứ 2").
     _emit(user);
+    // Gửi email xác nhận SAU _emit (await ở đây đã an toàn). Google xác thực sẵn
+    // nên chỉ tài khoản đăng ký bằng email cần bước này; lỗi gửi mail không được
+    // làm hỏng việc tạo tài khoản.
+    try {
+      await cred.user!.sendEmailVerification();
+    } catch (e) {
+      // ignore: avoid_print
+      print('⚠️ Không gửi được email xác nhận: $e');
+    }
     await _db
         .collection(AppConstants.colUsers)
         .doc(user.id)
@@ -231,6 +262,24 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<void> signOut() async {
     await GoogleSignIn().signOut();
     await _auth.signOut(); // listener authState sẽ phát null
+  }
+
+  @override
+  Future<void> sendPasswordReset(String email) =>
+      _auth.sendPasswordResetEmail(email: email.trim());
+
+  @override
+  Future<void> sendEmailVerification() =>
+      _auth.currentUser?.sendEmailVerification() ?? Future.value();
+
+  @override
+  Future<void> reloadUser() async {
+    final u = _auth.currentUser;
+    if (u == null || _cached == null) return;
+    await u.reload();
+    // Sau reload phải đọc lại currentUser để lấy emailVerified mới nhất.
+    final verified = _auth.currentUser?.emailVerified ?? false;
+    _emit(_cached!.copyWith(emailVerified: verified));
   }
 
   @override
@@ -378,6 +427,21 @@ class MockAuthRepository implements AuthRepository {
     _current = null;
     _controller.add(null);
   }
+
+  @override
+  Future<void> sendPasswordReset(String email) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (!_accounts.containsKey(email.trim().toLowerCase())) {
+      throw fb.FirebaseAuthException(
+          code: 'user-not-found', message: 'Tài khoản không tồn tại');
+    }
+  }
+
+  @override
+  Future<void> sendEmailVerification() async {}
+
+  @override
+  Future<void> reloadUser() async {}
 
   @override
   Future<void> deleteAccount() async {

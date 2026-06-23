@@ -13,6 +13,9 @@ class UserModel {
   // Địa chỉ giao hàng mặc định — chốt MỘT LẦN lúc tạo tài khoản, sửa hồ sơ
   // không đụng tới.
   final AddressModel? defaultAddress;
+  // Email đã xác nhận chưa. Mặc định true để Mock/Google/admin không bị chặn;
+  // chỉ tài khoản đăng ký bằng email (Firebase) mới khởi đầu ở false.
+  final bool emailVerified;
 
   const UserModel({
     required this.id,
@@ -23,6 +26,7 @@ class UserModel {
     this.phone,
     this.dob,
     this.defaultAddress,
+    this.emailVerified = true,
   });
 
   bool get isAdmin => role == 'admin';
@@ -59,4 +63,24 @@ class UserModel {
         'dob': dob,
         'defaultAddress': defaultAddress?.toFirestore(),
       };
+
+  UserModel copyWith({
+    String? name,
+    String? phone,
+    String? address,
+    String? dob,
+    AddressModel? defaultAddress,
+    bool? emailVerified,
+  }) =>
+      UserModel(
+        id: id,
+        name: name ?? this.name,
+        email: email,
+        role: role,
+        address: address ?? this.address,
+        phone: phone ?? this.phone,
+        dob: dob ?? this.dob,
+        defaultAddress: defaultAddress ?? this.defaultAddress,
+        emailVerified: emailVerified ?? this.emailVerified,
+      );
 }
