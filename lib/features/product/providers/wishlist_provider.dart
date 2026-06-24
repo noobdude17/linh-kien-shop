@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../data/mock_data.dart';
 import '../../../data/models/product_model.dart';
+import 'product_providers.dart';
 
 const _kWishlistKey = 'wishlist_ids';
 
@@ -35,9 +35,10 @@ class WishlistNotifier extends Notifier<Set<String>> {
 final wishlistProvider =
     NotifierProvider<WishlistNotifier, Set<String>>(WishlistNotifier.new);
 
-final wishlistProductsProvider = Provider<List<ProductModel>>((ref) {
+final wishlistProductsProvider = FutureProvider<List<ProductModel>>((ref) async {
   final ids = ref.watch(wishlistProvider);
   if (ids.isEmpty) return [];
-  final all = [...MockData.featured, ...MockData.gpuList];
-  return all.where((p) => ids.contains(p.id)).toList();
+  final repo = ref.watch(productRepositoryProvider);
+  final products = await Future.wait(ids.map(repo.getById));
+  return products.whereType<ProductModel>().toList();
 });

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../data/mock_data.dart';
 import '../../../data/models/product_model.dart';
+import '../../product/providers/product_providers.dart';
 
 const _kRecentKey = 'recently_viewed';
 const _kRecentMax = 10;
@@ -38,10 +38,12 @@ final recentlyViewedProvider =
     NotifierProvider<RecentlyViewedNotifier, List<String>>(
         RecentlyViewedNotifier.new);
 
-final recentlyViewedProductsProvider = Provider<List<ProductModel>>((ref) {
+final recentlyViewedProductsProvider =
+    FutureProvider<List<ProductModel>>((ref) async {
   final ids = ref.watch(recentlyViewedProvider);
   if (ids.isEmpty) return [];
-  final all = [...MockData.featured, ...MockData.gpuList];
-  final map = {for (final p in all) p.id: p};
-  return ids.map((id) => map[id]).whereType<ProductModel>().toList();
+  final repo = ref.watch(productRepositoryProvider);
+  // Giữ thứ tự MRU: Future.wait theo thứ tự id đầu vào.
+  final products = await Future.wait(ids.map(repo.getById));
+  return products.whereType<ProductModel>().toList();
 });

@@ -12,14 +12,17 @@ class WishlistScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final products = ref.watch(wishlistProductsProvider);
+    final productsAsync = ref.watch(wishlistProductsProvider);
 
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.go(AppRoutes.profile)),
         title: const Text('Sản phẩm yêu thích'),
       ),
-      body: products.isEmpty
+      body: productsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Lỗi: $e')),
+        data: (products) => products.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -53,6 +56,7 @@ class WishlistScreen extends ConsumerWidget {
                     context.go('${AppRoutes.detail}/${products[i].id}'),
               ),
             ),
+      ),
     );
   }
 }

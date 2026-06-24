@@ -7,6 +7,7 @@ import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../data/models/product_model.dart';
 import '../providers/compare_provider.dart';
+import '../utils/spec_display.dart';
 import '../../../routes/app_routes.dart';
 
 class CompareScreen extends ConsumerWidget {
@@ -76,7 +77,7 @@ class CompareScreen extends ConsumerWidget {
                     label: 'Thương hiệu',
                     values: products.map((p) => p.brand).toList(),
                   ),
-                  if (products.any((p) => p.specs.isNotEmpty)) ...[
+                  if (products.any((p) => displaySpecs(p).isNotEmpty)) ...[
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Text('Thông số kỹ thuật',
@@ -92,14 +93,16 @@ class CompareScreen extends ConsumerWidget {
   }
 
   List<Widget> _buildSpecRows(List<ProductModel> products) {
+    final specs = {for (final p in products) p.id: displaySpecs(p)};
     final allKeys = <String>{};
-    for (final p in products) {
-      allKeys.addAll(p.specs.keys);
+    for (final s in specs.values) {
+      allKeys.addAll(s.keys);
     }
     return allKeys
         .map((key) => _CompareRow(
-              label: key,
-              values: products.map((p) => p.specs[key] ?? '—').toList(),
+              label: formatSpecLabel(key),
+              values:
+                  products.map((p) => specs[p.id]?[key] ?? '—').toList(),
             ))
         .toList();
   }
