@@ -55,35 +55,51 @@ class OrderDetailScreen extends ConsumerWidget {
   }
 }
 
-class _OrderDetailBody extends StatelessWidget {
+class _OrderDetailBody extends ConsumerStatefulWidget {
   final OrderModel order;
   const _OrderDetailBody({required this.order});
 
-  List<(String, String, bool, bool)> _buildTimeline() {
-    const statuses = [
-      AppConstants.statusPending,
-      AppConstants.statusConfirmed,
-      AppConstants.statusShipping,
-      AppConstants.statusDelivered,
-    ];
-    const labels = ['Đặt hàng thành công', 'Đã xác nhận', 'Đang giao hàng', 'Đã giao'];
+  @override
+  ConsumerState<_OrderDetailBody> createState() => _OrderDetailBodyState();
+}
 
-    final statusIndex = statuses.indexOf(order.status);
-    final isCancelled = order.status == AppConstants.statusCancelled;
+class _OrderDetailBodyState extends ConsumerState<_OrderDetailBody> {
+  OrderModel get order => widget.order;
+  bool _cancelling = false;
 
-    if (isCancelled) {
-      return [
-        ('Đặt hàng', Formatter.date(order.createdAt), true, false),
-        ('Đã hủy', '', false, true),
-      ];
+  Future<void> _cancelOrder() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Hủy đơn hàng'),
+        content: Text('Xác nhận hủy đơn ${order.code}?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Không')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child:
+                  const Text('Hủy đơn', style: TextStyle(color: AppColors.error))),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _cancelling = true);
+    try {
+      await ref.read(orderRepositoryProvider).cancelOrder(order.id);
+      ref.invalidate(userOrdersProvider);
+      ref.invalidate(orderDetailProvider(order.id));
+      if (mounted) context.go(AppRoutes.orders);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hủy thất bại: $e'), backgroundColor: AppColors.error),
+        );
+        setState(() => _cancelling = false);
+      }
     }
-
-    return List.generate(labels.length, (i) {
-      final done = statusIndex > i;
-      final active = statusIndex == i;
-      final timeStr = i == 0 ? Formatter.date(order.createdAt) : '';
-      return (labels[i], timeStr, done, active);
-    });
   }
 
   @override
@@ -186,22 +202,56 @@ class _OrderDetailBody extends StatelessWidget {
             Expanded(
                 child: OutlinedButton(
                     onPressed: () {}, child: const Text('Liên hệ shop'))),
-            const SizedBox(width: 8),
-            if (isCancellable)
+            if (isCancellable) ...[
+              const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.error,
                       side: const BorderSide(color: AppColors.error)),
-                  onPressed: () {},
-                  child: const Text('Hủy đơn'),
+                  onPressed: _cancelling ? null : _cancelOrder,
+                  child: _cancelling
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppColors.error))
+                      : const Text('Hủy đơn'),
                 ),
               ),
+            ],
           ],
         ),
         const SizedBox(height: 24),
       ],
     );
+  }
+
+  List<(String, String, bool, bool)> _buildTimeline() {
+    const statuses = [
+      AppConstants.statusPending,
+      AppConstants.statusConfirmed,
+      AppConstants.statusShipping,
+      AppConstants.statusDelivered,
+    ];
+    const labels = ['Đặt hàng thành công', 'Đã xác nhận', 'Đang giao hàng', 'Đã giao'];
+
+    final statusIndex = statuses.indexOf(order.status);
+    final isCancelled = order.status == AppConstants.statusCancelled;
+
+    if (isCancelled) {
+      return [
+        ('Đặt hàng', Formatter.date(order.createdAt), true, false),
+        ('Đã hủy', '', false, true),
+      ];
+    }
+
+    return List.generate(labels.length, (i) {
+      final done = statusIndex > i;
+      final active = statusIndex == i;
+      final timeStr = i == 0 ? Formatter.date(order.createdAt) : '';
+      return (labels[i], timeStr, done, active);
+    });
   }
 
   String _paymentLabel(String method, bool paid) {

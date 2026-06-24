@@ -50,6 +50,22 @@ class OrderModel {
 
   int get itemCount => items.fold(0, (s, e) => s + e.quantity);
 
+  OrderModel copyWith({String? status}) => OrderModel(
+        id: id,
+        code: code,
+        userId: userId,
+        customerName: customerName,
+        items: items,
+        subtotal: subtotal,
+        discount: discount,
+        totalAmount: totalAmount,
+        status: status ?? this.status,
+        address: address,
+        paymentMethod: paymentMethod,
+        paid: paid,
+        createdAt: createdAt,
+      );
+
   factory OrderModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return OrderModel(
