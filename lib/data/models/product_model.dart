@@ -68,6 +68,33 @@ class ProductModel {
     return (((oldPrice! - price) / oldPrice!) * 100).round();
   }
 
+  /// Applies a selected variant to the values used by cart and PC Builder.
+  ProductModel withVariant(ProductVariant variant) {
+    final variantSpecs = variant.attributes.map(
+      (key, value) =>
+          MapEntry(key, value is Iterable ? value.join(', ') : '$value'),
+    );
+    return ProductModel(
+      id: '$id::${variant.id}',
+      name: name,
+      brand: brand,
+      description: description,
+      price: variant.price,
+      oldPrice: variant.oldPrice,
+      rating: rating,
+      reviewCount: reviewCount,
+      imageLabel: imageLabel,
+      imageUrl: imageUrl,
+      images: images,
+      categoryId: categoryId,
+      categoryName: categoryName,
+      stock: variant.stock,
+      isActive: isActive,
+      specs: {...specs, ...variantSpecs},
+      compatibility: {...compatibility, ...variant.attributes},
+    );
+  }
+
   factory ProductModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return ProductModel(
@@ -95,22 +122,22 @@ class ProductModel {
   }
 
   Map<String, dynamic> toFirestore() => {
-        'name': name,
-        'brand': brand,
-        'description': description,
-        'price': price,
-        'oldPrice': oldPrice,
-        'rating': rating,
-        'reviewCount': reviewCount,
-        'imageLabel': imageLabel,
-        'imageUrl': imageUrl,
-        'images': images,
-        'categoryId': categoryId,
-        'categoryName': categoryName,
-        'stock': stock,
-        'isActive': isActive,
-        'specs': specs,
-        'variants': variants.map((v) => v.toMap()).toList(),
-        'compatibility': compatibility,
-      };
+    'name': name,
+    'brand': brand,
+    'description': description,
+    'price': price,
+    'oldPrice': oldPrice,
+    'rating': rating,
+    'reviewCount': reviewCount,
+    'imageLabel': imageLabel,
+    'imageUrl': imageUrl,
+    'images': images,
+    'categoryId': categoryId,
+    'categoryName': categoryName,
+    'stock': stock,
+    'isActive': isActive,
+    'specs': specs,
+    'variants': variants.map((v) => v.toMap()).toList(),
+    'compatibility': compatibility,
+  };
 }
