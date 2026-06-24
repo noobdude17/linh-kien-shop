@@ -21,6 +21,7 @@ import '../../../features/product/providers/wishlist_provider.dart';
 import '../../../features/product/widgets/product_image_gallery.dart';
 import '../../../features/product/widgets/review_card.dart';
 import '../../../features/product/widgets/variant_selector.dart';
+import '../utils/spec_display.dart';
 import '../../../routes/app_routes.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -183,20 +184,23 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               const SizedBox(height: 16),
               PrimaryButton(
                 label: 'Gửi đánh giá',
-                onPressed: () {
+                onPressed: () async {
                   if (selectedRating == 0) return;
-                  ref.read(reviewProvider(p.id).notifier).addReview(
-                        ReviewModel(
-                          id: 'r_${DateTime.now().millisecondsSinceEpoch}',
-                          productId: p.id,
-                          userId: 'me',
-                          userName: 'Bạn',
-                          rating: selectedRating,
-                          comment: controller.text.trim(),
-                          createdAt: DateTime.now(),
-                        ),
-                      );
+                  final user = ref.read(authRepositoryProvider).currentUser;
+                  final review = ReviewModel(
+                    id: 'r_${DateTime.now().millisecondsSinceEpoch}',
+                    productId: p.id,
+                    userId: user?.id ?? 'me',
+                    userName: user?.name.isNotEmpty == true ? user!.name : 'Bạn',
+                    rating: selectedRating,
+                    comment: controller.text.trim(),
+                    createdAt: DateTime.now(),
+                  );
                   Navigator.of(ctx).pop();
+                  await ref.read(reviewRepositoryProvider).add(review);
+                  // Tải lại đánh giá + sản phẩm để rating/số lượng cập nhật.
+                  ref.invalidate(reviewProvider(p.id));
+                  ref.invalidate(productDetailProvider(p.id));
                 },
               ),
             ],
@@ -277,6 +281,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final canBuy = effectiveInStock &&
         (p.variants.isEmpty || _selectedVariant != null) &&
         !_isAdding;
+    // Sản phẩm thật chứa thông số trong `compatibility`; helper tự fallback.
+    final specs = displaySpecs(p);
 
     return Scaffold(
       body: Stack(
@@ -366,7 +372,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         // Variant selector
                         if (p.variants.isNotEmpty)
                           _buildVariantSection(p),
-                        if (p.specs.isNotEmpty) ...[
+                        if (specs.isNotEmpty) ...[
                           const Divider(height: 24),
                           Text(
                             'Thông số kỹ thuật',
@@ -374,7 +380,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                 .copyWith(fontSize: 14),
                           ),
                           const SizedBox(height: 10),
-                          _buildSpecTable(p.specs),
+                          _buildSpecTable(specs),
                         ],
                         const SizedBox(height: 16),
                         Row(
@@ -590,7 +596,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   }
 
   Widget _buildReviewsSection(ProductModel p) {
-    final reviews = ref.watch(reviewProvider(p.id));
+    final reviews =
+        ref.watch(reviewProvider(p.id)).asData?.value ?? const <ReviewModel>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -621,58 +628,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  static const _skipSpecKeys = {
-    'sourceUrl',
-    'sourceType',
-    'inclusionScope',
-  };
-
-  static const _specLabelMap = {
-    'caseMaxGpuLengthMm': 'Max GPU (mm)',
-    'casePsuFormFactor': 'PSU Form Factor',
-    'caseSupportedMotherboardFormFactors': 'Motherboard',
-    'caseFanSupport': 'Fan Support',
-    'releaseYear': 'Năm ra mắt',
-    'caseMaxCoolerHeightMm': 'Max Tản Nhiệt (mm)',
-    'caseDriveBays': 'Khe ổ cứng',
-    'caseExpansionSlots': 'Khe mở rộng',
-    'caseType': 'Loại case',
-    'caseWeight': 'Trọng lượng',
-    'gpuChipset': 'Chipset',
-    'gpuMemoryGb': 'VRAM (GB)',
-    'gpuMemoryType': 'Loại bộ nhớ',
-    'gpuCoreClock': 'Xung nhân',
-    'gpuBoostClock': 'Boost Clock',
-    'gpuTdp': 'TDP',
-    'cpuSocket': 'Socket',
-    'cpuCores': 'Số nhân',
-    'cpuThreads': 'Số luồng',
-    'cpuBaseClock': 'Xung cơ bản',
-    'cpuBoostClock': 'Boost Clock',
-    'memoryType': 'Loại RAM',
-    'memorySpeed': 'Tốc độ',
-    'memoryCapacityGb': 'Dung lượng (GB)',
-    'storageCapacityGb': 'Dung lượng (GB)',
-    'storageInterface': 'Giao tiếp',
-    'storageFormFactor': 'Form Factor',
-    'storageReadSpeed': 'Tốc độ đọc',
-    'storageWriteSpeed': 'Tốc độ ghi',
-  };
-
-  String _formatSpecLabel(String key) {
-    if (_specLabelMap.containsKey(key)) return _specLabelMap[key]!;
-    final spaced = key.replaceAllMapped(
-      RegExp(r'([A-Z])'),
-      (m) => ' ${m.group(0)!}',
-    ).trim();
-    if (spaced.isEmpty) return key;
-    return '${spaced[0].toUpperCase()}${spaced.substring(1)}';
-  }
-
   Widget _buildSpecTable(Map<String, String> specs) {
-    final entries = specs.entries
-        .where((e) => !_skipSpecKeys.contains(e.key))
-        .toList();
+    final entries = specs.entries.toList();
     if (entries.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -694,7 +651,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 SizedBox(
                   width: 130,
                   child: Text(
-                    _formatSpecLabel(e.key),
+                    formatSpecLabel(e.key),
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,

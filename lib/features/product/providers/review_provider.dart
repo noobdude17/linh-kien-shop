@@ -1,18 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/mock_data.dart';
+
+import '../../../core/config/app_config.dart';
 import '../../../data/models/review_model.dart';
+import '../../../data/repositories/review_repository.dart';
 
-class ReviewNotifier extends FamilyNotifier<List<ReviewModel>, String> {
-  @override
-  List<ReviewModel> build(String productId) {
-    return MockData.reviews.where((r) => r.productId == productId).toList();
+final reviewRepositoryProvider = Provider<ReviewRepository>((ref) {
+  if (AppConfig.firebaseEnabled) {
+    return FirestoreReviewRepository(FirebaseFirestore.instance);
   }
-
-  void addReview(ReviewModel review) {
-    state = [review, ...state];
-  }
-}
+  return MockReviewRepository();
+});
 
 final reviewProvider =
-    NotifierProvider.family<ReviewNotifier, List<ReviewModel>, String>(
-        ReviewNotifier.new);
+    FutureProvider.family<List<ReviewModel>, String>((ref, productId) {
+  return ref.watch(reviewRepositoryProvider).getForProduct(productId);
+});

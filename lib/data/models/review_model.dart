@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ReviewModel {
   final String id;
   final String productId;
@@ -16,4 +18,27 @@ class ReviewModel {
     required this.comment,
     required this.createdAt,
   });
+
+  factory ReviewModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return ReviewModel(
+      id: doc.id,
+      productId: data['productId'] ?? '',
+      userId: data['userId'] ?? '',
+      userName: data['userName'] ?? '',
+      rating: (data['rating'] ?? 0).toDouble(),
+      comment: data['comment'] ?? '',
+      createdAt:
+          (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() => {
+        'productId': productId,
+        'userId': userId,
+        'userName': userName,
+        'rating': rating,
+        'comment': comment,
+        'createdAt': Timestamp.fromDate(createdAt),
+      };
 }
