@@ -63,7 +63,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           priceOverride: _selectedVariant?.price,
         );
     if (buyNow) {
-      context.go(AppRoutes.cart);
+      context.go(AppRoutes.checkout);
     } else {
       setState(() => _isAdding = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -561,7 +561,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final relatedAsync = ref.watch(relatedProductsProvider(p.id));
     return relatedAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
       data: (related) {
         if (related.isEmpty) return const SizedBox.shrink();
         return Column(
@@ -577,7 +577,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: related.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (_, i) => SizedBox(
                   key: ValueKey(related[i].id),
                   width: 150,

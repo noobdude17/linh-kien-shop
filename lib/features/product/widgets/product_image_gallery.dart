@@ -52,7 +52,7 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                 urls[i],
                 fit: BoxFit.cover,
                 width: double.infinity,
-                errorBuilder: (_, __, ___) => ImagePlaceholder(
+                errorBuilder: (_, _, _) => ImagePlaceholder(
                   label: widget.fallbackLabel,
                   height: widget.height,
                   radius: 0,
@@ -76,7 +76,7 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                     decoration: BoxDecoration(
                       color: _current == i
                           ? Colors.white
-                          : Colors.white.withOpacity(0.5),
+                          : Colors.white.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   );

@@ -31,14 +31,19 @@ class SummaryRow extends StatelessWidget {
                 ? AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)
                 : AppTextStyles.meta.copyWith(fontSize: 13),
           ),
-          Text(
-            value,
-            style: isTotal
-                ? AppTextStyles.total
-                : AppTextStyles.body.copyWith(
-                    fontSize: 13,
-                    color: valueColor ?? AppColors.textPrimary,
-                  ),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              style: isTotal
+                  ? AppTextStyles.total
+                  : AppTextStyles.body.copyWith(
+                      fontSize: 13,
+                      color: valueColor ?? AppColors.textPrimary,
+                    ),
+            ),
           ),
         ],
       ),
