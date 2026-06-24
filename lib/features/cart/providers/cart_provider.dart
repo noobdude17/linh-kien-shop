@@ -6,17 +6,19 @@ import '../../../data/models/product_model.dart';
 /// Quản lý state giỏ hàng toàn app (badge, màn Cart, Checkout đều đọc chung).
 class CartNotifier extends Notifier<List<CartItemModel>> {
   @override
-  List<CartItemModel> build() => []; // bắt đầu rỗng; user thêm qua add()
+  List<CartItemModel> build() => [];
+
+  bool _matches(CartItemModel e, String productId, String variantId) =>
+      e.productId == productId && e.variantId == variantId;
 
   void add(
     ProductModel p, {
     int qty = 1,
     String variant = '',
+    String variantId = '',
     double? priceOverride,
   }) {
-    final idx = state.indexWhere(
-      (e) => e.productId == p.id && e.variant == variant,
-    );
+    final idx = state.indexWhere((e) => _matches(e, p.id, variantId));
     if (idx >= 0) {
       final updated = [...state];
       updated[idx].quantity += qty;
@@ -28,6 +30,7 @@ class CartNotifier extends Notifier<List<CartItemModel>> {
           productId: p.id,
           name: p.name,
           variant: variant,
+          variantId: variantId,
           price: priceOverride ?? p.price,
           imageLabel: p.imageLabel,
           quantity: qty,
@@ -36,42 +39,46 @@ class CartNotifier extends Notifier<List<CartItemModel>> {
     }
   }
 
-  void remove(String productId) {
-    state = state.where((e) => e.productId != productId).toList();
+  void remove(String productId, {String variantId = ''}) {
+    state = state
+        .where((e) => !_matches(e, productId, variantId))
+        .toList();
   }
 
-  void setQuantity(String productId, int qty) {
+  void setQuantity(String productId, int qty, {String variantId = ''}) {
     if (qty < 1) return;
     state = [
       for (final e in state)
-        if (e.productId == productId)
-          (CartItemModel(
+        if (_matches(e, productId, variantId))
+          CartItemModel(
             productId: e.productId,
             name: e.name,
             variant: e.variant,
+            variantId: e.variantId,
             price: e.price,
             imageLabel: e.imageLabel,
             quantity: qty,
             selected: e.selected,
-          ))
+          )
         else
           e,
     ];
   }
 
-  void toggleSelected(String productId) {
+  void toggleSelected(String productId, {String variantId = ''}) {
     state = [
       for (final e in state)
-        if (e.productId == productId)
-          (CartItemModel(
+        if (_matches(e, productId, variantId))
+          CartItemModel(
             productId: e.productId,
             name: e.name,
             variant: e.variant,
+            variantId: e.variantId,
             price: e.price,
             imageLabel: e.imageLabel,
             quantity: e.quantity,
             selected: !e.selected,
-          ))
+          )
         else
           e,
     ];
