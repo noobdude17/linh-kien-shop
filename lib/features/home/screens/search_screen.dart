@@ -27,7 +27,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final q = query.trim();
     if (q.isEmpty) return;
     ref.read(recentSearchesProvider.notifier).add(q);
-    context.go('${AppRoutes.results}?q=${Uri.encodeComponent(q)}');
+    context.push('${AppRoutes.results}?q=${Uri.encodeComponent(q)}');
   }
 
   @override

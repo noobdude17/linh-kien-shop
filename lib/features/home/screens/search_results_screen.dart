@@ -18,7 +18,10 @@ class SearchResultsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go(AppRoutes.search)),
+        leading: BackButton(
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go(AppRoutes.search),
+        ),
         title: results.maybeWhen(
           data: (list) => Text(
             'Kết quả cho "$query" (${list.length})',
@@ -85,7 +88,7 @@ class SearchResultsScreen extends ConsumerWidget {
             ),
             itemBuilder: (_, i) => ProductCard(
               product: list[i],
-              onTap: () => context.go('${AppRoutes.detail}/${list[i].id}'),
+              onTap: () => context.push('${AppRoutes.detail}/${list[i].id}'),
             ),
           );
         },

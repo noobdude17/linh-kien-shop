@@ -63,7 +63,7 @@ class CartScreen extends ConsumerWidget {
         children: [
           Checkbox(
             value: item.selected,
-            onChanged: (_) => notifier.toggleSelected(item.productId),
+            onChanged: (_) => notifier.toggleSelected(item.productId, variantId: item.variantId),
           ),
           ImagePlaceholder(label: item.imageLabel, height: 64, radius: 8),
           const SizedBox(width: 12),
@@ -80,14 +80,14 @@ class CartScreen extends ConsumerWidget {
                 const SizedBox(height: 6),
                 QuantityStepper(
                   value: item.quantity,
-                  onChanged: (v) => notifier.setQuantity(item.productId, v),
+                  onChanged: (v) => notifier.setQuantity(item.productId, v, variantId: item.variantId),
                 ),
               ],
             ),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: AppColors.textTertiary),
-            onPressed: () => notifier.remove(item.productId),
+            onPressed: () => notifier.remove(item.productId, variantId: item.variantId),
           ),
         ],
       ),

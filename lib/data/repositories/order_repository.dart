@@ -15,6 +15,8 @@ abstract class OrderRepository {
     required String paymentMethod,
   });
   Future<List<OrderModel>> getByUser(String userId);
+  Future<OrderModel?> getById(String id);
+  Future<void> cancelOrder(String id);
 }
 
 class MockOrderRepository implements OrderRepository {
@@ -66,6 +68,25 @@ class MockOrderRepository implements OrderRepository {
     await Future.delayed(const Duration(milliseconds: 200));
     return _store.where((o) => o.userId == userId).toList().reversed.toList();
   }
+
+  @override
+  Future<OrderModel?> getById(String id) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    try {
+      return _store.firstWhere((o) => o.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> cancelOrder(String id) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    final idx = _store.indexWhere((o) => o.id == id);
+    if (idx != -1) {
+      _store[idx] = _store[idx].copyWith(status: AppConstants.statusCancelled);
+    }
+  }
 }
 
 class FirestoreOrderRepository implements OrderRepository {
@@ -116,5 +137,20 @@ class FirestoreOrderRepository implements OrderRepository {
         .orderBy('createdAt', descending: true)
         .get();
     return snap.docs.map(OrderModel.fromFirestore).toList();
+  }
+
+  @override
+  Future<OrderModel?> getById(String id) async {
+    final doc = await _db.collection(AppConstants.colOrders).doc(id).get();
+    if (!doc.exists) return null;
+    return OrderModel.fromFirestore(doc);
+  }
+
+  @override
+  Future<void> cancelOrder(String id) async {
+    await _db
+        .collection(AppConstants.colOrders)
+        .doc(id)
+        .update({'status': AppConstants.statusCancelled});
   }
 }

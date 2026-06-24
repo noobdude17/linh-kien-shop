@@ -67,7 +67,7 @@ class HomeScreen extends ConsumerWidget {
                         separatorBuilder: (_, _) => const SizedBox(width: 8),
                         itemBuilder: (_, i) => CategoryChip(
                           category: list[i],
-                          onTap: () => context.go(
+                          onTap: () => context.push(
                             '${AppRoutes.list}?categoryId=${list[i].id}',
                           ),
                         ),
@@ -105,7 +105,7 @@ class HomeScreen extends ConsumerWidget {
                         (_, i) => ProductCard(
                           product: list[i],
                           onTap: () =>
-                              context.go('${AppRoutes.detail}/${list[i].id}'),
+                              context.push('${AppRoutes.detail}/${list[i].id}'),
                         ),
                         childCount: list.length,
                       ),

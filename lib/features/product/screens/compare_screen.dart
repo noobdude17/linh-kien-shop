@@ -19,7 +19,10 @@ class CompareScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
+        leading: BackButton(
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go(AppRoutes.home),
+        ),
         title: const Text('So sánh sản phẩm'),
         actions: [
           if (products.isNotEmpty)

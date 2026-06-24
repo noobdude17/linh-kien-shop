@@ -2,6 +2,7 @@ class CartItemModel {
   final String productId;
   final String name;
   final String variant;
+  final String variantId;
   final double price;
   final String imageLabel;
   int quantity;
@@ -11,6 +12,7 @@ class CartItemModel {
     required this.productId,
     required this.name,
     this.variant = '',
+    this.variantId = '',
     required this.price,
     this.imageLabel = '',
     this.quantity = 1,
@@ -23,6 +25,7 @@ class CartItemModel {
         'productId': productId,
         'name': name,
         'variant': variant,
+        'variantId': variantId,
         'price': price,
         'imageLabel': imageLabel,
         'quantity': quantity,
@@ -32,6 +35,7 @@ class CartItemModel {
         productId: m['productId'] ?? '',
         name: m['name'] ?? '',
         variant: m['variant'] ?? '',
+        variantId: m['variantId'] ?? '',
         price: (m['price'] ?? 0).toDouble(),
         imageLabel: m['imageLabel'] ?? '',
         quantity: m['quantity'] ?? 1,

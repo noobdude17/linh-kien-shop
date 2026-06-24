@@ -60,6 +60,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           p,
           qty: _qty,
           variant: _selectedVariant?.name ?? p.brand,
+          variantId: _selectedVariant?.id ?? '',
           priceOverride: _selectedVariant?.price,
         );
     if (buyNow) {
@@ -423,7 +424,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       Icons.arrow_back,
                       () => context.canPop()
                           ? context.pop()
-                          : context.go(AppRoutes.list),
+                          : context.go(AppRoutes.home),
                     ),
                     Row(
                       children: [

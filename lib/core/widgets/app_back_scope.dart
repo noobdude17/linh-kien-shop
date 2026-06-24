@@ -35,6 +35,12 @@ class _AppBackScopeState extends State<AppBackScope> {
   }
 
   void _handleBack() {
+    // Pushed route on the stack — pop it and return to wherever we came from.
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
     final router = GoRouter.of(context);
     final path = router.routerDelegate.currentConfiguration.uri.path;
 

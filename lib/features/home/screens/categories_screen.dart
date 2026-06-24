@@ -51,7 +51,7 @@ class CategoriesScreen extends ConsumerWidget {
                 return _BrandTile(
                   name: name,
                   logo: logo,
-                  onTap: () => context.go(
+                  onTap: () => context.push(
                     '${AppRoutes.results}?q=${Uri.encodeComponent(name)}',
                   ),
                 );
@@ -74,7 +74,7 @@ class CategoriesScreen extends ConsumerWidget {
               itemBuilder: (_, i) => _TypeTile(
                 category: list[i] as CategoryModel,
                 onTap: () =>
-                    context.go('${AppRoutes.list}?categoryId=${list[i].id}'),
+                    context.push('${AppRoutes.list}?categoryId=${list[i].id}'),
               ),
             ),
           ),
@@ -96,7 +96,7 @@ class CategoriesScreen extends ConsumerWidget {
                 child: ProductCard(
                   product: list[i],
                   onTap: () =>
-                      context.go('${AppRoutes.detail}/${list[i].id}'),
+                      context.push('${AppRoutes.detail}/${list[i].id}'),
                 ),
               ),
             ),

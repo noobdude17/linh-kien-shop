@@ -178,7 +178,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
       bottomNavigationBar:
           compareList.isNotEmpty ? const CompareBar() : null,
       appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
+        leading: BackButton(
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go(AppRoutes.home),
+        ),
         title: Text(title),
         actions: [
           IconButton(
@@ -294,7 +297,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                           key: ValueKey(filtered[i].id),
                           product: filtered[i],
                           onTap: () => context
-                              .go('${AppRoutes.detail}/${filtered[i].id}'),
+                              .push('${AppRoutes.detail}/${filtered[i].id}'),
                         ),
                       ),
               ),

@@ -51,3 +51,16 @@ final orderCreationProvider =
     AsyncNotifierProvider<OrderCreationNotifier, OrderModel?>(
   OrderCreationNotifier.new,
 );
+
+/// Danh sách đơn hàng của user hiện tại. Tự refetch khi user thay đổi.
+final userOrdersProvider = FutureProvider<List<OrderModel>>((ref) async {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return const [];
+  return ref.read(orderRepositoryProvider).getByUser(user.id);
+});
+
+/// Chi tiết 1 đơn hàng theo id.
+final orderDetailProvider =
+    FutureProvider.family<OrderModel?, String>((ref, orderId) async {
+  return ref.read(orderRepositoryProvider).getById(orderId);
+});

@@ -93,15 +93,18 @@ class FirestoreProductRepository implements ProductRepository {
 
   @override
   Future<List<ProductModel>> search(String query) async {
-    // Firestore không hỗ trợ full-text search.
-    // Dùng prefix range trên field 'name' — đủ dùng cho tìm kiếm đơn giản.
+    // Firestore không hỗ trợ full-text search nên fetch toàn bộ active
+    // rồi filter client-side (case-insensitive). Ổn với catalog nhỏ.
     // Production nên dùng Algolia / Typesense.
-    final end = '$query';
-    final snap = await _col
-        .orderBy('name')
-        .startAt([query])
-        .endAt([end])
-        .get();
-    return snap.docs.map(ProductModel.fromFirestore).toList();
+    final q = query.toLowerCase();
+    final snap = await _col.where('isActive', isEqualTo: true).get();
+    return snap.docs
+        .map(ProductModel.fromFirestore)
+        .where((p) =>
+            p.name.toLowerCase().contains(q) ||
+            p.brand.toLowerCase().contains(q) ||
+            p.categoryName.toLowerCase().contains(q))
+        .toList();
+
   }
 }
