@@ -4,6 +4,7 @@ class ProductVariant {
   final double price;
   final double? oldPrice;
   final int stock;
+  final Map<String, dynamic> attributes;
 
   const ProductVariant({
     required this.id,
@@ -11,6 +12,7 @@ class ProductVariant {
     required this.price,
     this.oldPrice,
     required this.stock,
+    this.attributes = const {},
   });
 
   bool get isAvailable => stock > 0;
@@ -21,18 +23,20 @@ class ProductVariant {
   }
 
   factory ProductVariant.fromMap(Map<String, dynamic> m) => ProductVariant(
-        id: m['id'] ?? '',
-        name: m['name'] ?? '',
-        price: (m['price'] ?? 0).toDouble(),
-        oldPrice: (m['oldPrice'] as num?)?.toDouble(),
-        stock: m['stock'] ?? 0,
-      );
+    id: m['id'] ?? '',
+    name: m['name'] ?? '',
+    price: (m['price'] ?? 0).toDouble(),
+    oldPrice: (m['oldPrice'] as num?)?.toDouble(),
+    stock: m['stock'] ?? 0,
+    attributes: Map<String, dynamic>.from(m['attributes'] ?? {}),
+  );
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'name': name,
-        'price': price,
-        'oldPrice': oldPrice,
-        'stock': stock,
-      };
+    'id': id,
+    'name': name,
+    'price': price,
+    'oldPrice': oldPrice,
+    'stock': stock,
+    'attributes': attributes,
+  };
 }

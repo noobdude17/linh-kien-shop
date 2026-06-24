@@ -56,7 +56,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       return;
     }
     setState(() => _isAdding = true);
-    ref.read(cartProvider.notifier).add(
+    ref
+        .read(cartProvider.notifier)
+        .add(
           p,
           qty: _qty,
           variant: _selectedVariant?.name ?? p.brand,
@@ -93,7 +95,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Chỉ so sánh sản phẩm cùng danh mục (${notifier.categoryName})'),
+              'Chỉ so sánh sản phẩm cùng danh mục (${notifier.categoryName})',
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -103,8 +106,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     notifier.toggle(p);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:
-            Text(isIn ? 'Đã xóa khỏi so sánh' : 'Đã thêm vào so sánh'),
+        content: Text(isIn ? 'Đã xóa khỏi so sánh' : 'Đã thêm vào so sánh'),
         duration: const Duration(seconds: 2),
         action: isIn
             ? null
@@ -132,7 +134,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
-              20, 12, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+            20,
+            12,
+            20,
+            MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,16 +154,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text('Viết đánh giá',
-                  style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              const Text(
+                'Viết đánh giá',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 12),
               Row(
                 children: List.generate(5, (i) {
                   final star = (i + 1).toDouble();
                   return GestureDetector(
-                    onTap: () =>
-                        setModalState(() => selectedRating = star),
+                    onTap: () => setModalState(() => selectedRating = star),
                     child: Padding(
                       padding: const EdgeInsets.only(right: 4),
                       child: Icon(
@@ -176,8 +182,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 decoration: InputDecoration(
                   hintText: 'Nhận xét của bạn...',
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppDimens.radiusInput),
+                    borderRadius: BorderRadius.circular(AppDimens.radiusInput),
                   ),
                 ),
               ),
@@ -191,7 +196,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     id: 'r_${DateTime.now().millisecondsSinceEpoch}',
                     productId: p.id,
                     userId: user?.id ?? 'me',
-                    userName: user?.name.isNotEmpty == true ? user!.name : 'Bạn',
+                    userName: user?.name.isNotEmpty == true
+                        ? user!.name
+                        : 'Bạn',
                     rating: selectedRating,
                     comment: controller.text.trim(),
                     createdAt: DateTime.now(),
@@ -215,9 +222,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final productAsync = ref.watch(productDetailProvider(widget.productId));
 
     return productAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: Center(
@@ -246,9 +252,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           _tracked = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              ref
-                  .read(recentlyViewedProvider.notifier)
-                  .add(widget.productId);
+              ref.read(recentlyViewedProvider.notifier).add(widget.productId);
             }
           });
         }
@@ -258,31 +262,36 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   }
 
   Widget _buildDetail(ProductModel p) {
-    final isWishlisted =
-        ref.watch(wishlistProvider.select((ids) => ids.contains(p.id)));
+    final isWishlisted = ref.watch(
+      wishlistProvider.select((ids) => ids.contains(p.id)),
+    );
     final isComparing = ref.watch(
-        compareProvider.select((list) => list.any((c) => c.id == p.id)));
+      compareProvider.select((list) => list.any((c) => c.id == p.id)),
+    );
 
     // Effective price/stock based on selected variant
     final effectivePrice = _selectedVariant?.price ?? p.price;
     final effectiveOldPrice = _selectedVariant?.oldPrice ?? p.oldPrice;
-    final effectiveStock =
-        _selectedVariant != null ? _selectedVariant!.stock : p.stock;
+    final effectiveStock = _selectedVariant != null
+        ? _selectedVariant!.stock
+        : p.stock;
     final effectiveInStock = _selectedVariant != null
         ? _selectedVariant!.isAvailable
         : p.inStock;
     final effectiveDiscount =
         effectiveOldPrice != null && effectiveOldPrice > effectivePrice
-            ? (((effectiveOldPrice - effectivePrice) / effectiveOldPrice) *
-                    100)
-                .round()
-            : null;
+        ? (((effectiveOldPrice - effectivePrice) / effectiveOldPrice) * 100)
+              .round()
+        : null;
     // Must select variant if product has variants
-    final canBuy = effectiveInStock &&
+    final canBuy =
+        effectiveInStock &&
         (p.variants.isEmpty || _selectedVariant != null) &&
         !_isAdding;
     // Sản phẩm thật chứa thông số trong `compatibility`; helper tự fallback.
-    final specs = displaySpecs(p);
+    final specs = displaySpecs(
+      _selectedVariant == null ? p : p.withVariant(_selectedVariant!),
+    );
 
     return Scaffold(
       body: Stack(
@@ -301,8 +310,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   child: Container(
                     decoration: const BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
                     padding: const EdgeInsets.all(20),
                     child: Column(
@@ -317,15 +327,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text(p.name,
-                            style: const TextStyle(
-                                fontSize: 19, fontWeight: FontWeight.w700)),
+                        Text(
+                          p.name,
+                          style: const TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         const SizedBox(height: 10),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(Formatter.price(effectivePrice),
-                                style: AppTextStyles.priceDetail),
+                            Text(
+                              Formatter.price(effectivePrice),
+                              style: AppTextStyles.priceDetail,
+                            ),
                             const SizedBox(width: 8),
                             if (effectiveOldPrice != null)
                               Padding(
@@ -339,7 +355,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             if (effectiveDiscount != null)
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.accent,
                                   borderRadius: BorderRadius.circular(8),
@@ -347,9 +365,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                 child: Text(
                                   '-$effectiveDiscount%',
                                   style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600),
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                           ],
@@ -357,27 +376,33 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         const SizedBox(height: 10),
                         Row(
                           children: [
-                            const Icon(Icons.star,
-                                color: AppColors.star, size: 16),
+                            const Icon(
+                              Icons.star,
+                              color: AppColors.star,
+                              size: 16,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${p.rating} (${p.reviewCount} đánh giá)',
                               style: AppTextStyles.meta,
                             ),
                             const SizedBox(width: 12),
-                            _stockBadge(effectiveInStock, effectiveStock,
-                                p.variants.isNotEmpty && _selectedVariant == null),
+                            _stockBadge(
+                              effectiveInStock,
+                              effectiveStock,
+                              p.variants.isNotEmpty && _selectedVariant == null,
+                            ),
                           ],
                         ),
                         // Variant selector
-                        if (p.variants.isNotEmpty)
-                          _buildVariantSection(p),
+                        if (p.variants.isNotEmpty) _buildVariantSection(p),
                         if (specs.isNotEmpty) ...[
                           const Divider(height: 24),
                           Text(
                             'Thông số kỹ thuật',
-                            style: AppTextStyles.sectionHeading
-                                .copyWith(fontSize: 14),
+                            style: AppTextStyles.sectionHeading.copyWith(
+                              fontSize: 14,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           _buildSpecTable(specs),
@@ -386,10 +411,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Số lượng',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600)),
+                            const Text(
+                              'Số lượng',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             QuantityStepper(
                               value: _qty,
                               onChanged: canBuy
@@ -414,8 +442,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             right: 0,
             child: SafeArea(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -436,14 +466,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         ),
                         const SizedBox(width: 8),
                         _circleBtn(
-                          isWishlisted
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          () => ref
-                              .read(wishlistProvider.notifier)
-                              .toggle(p.id),
-                          iconColor:
-                              isWishlisted ? Colors.red : Colors.white,
+                          isWishlisted ? Icons.favorite : Icons.favorite_border,
+                          () =>
+                              ref.read(wishlistProvider.notifier).toggle(p.id),
+                          iconColor: isWishlisted ? Colors.red : Colors.white,
                         ),
                         const SizedBox(width: 8),
                         _cartBtn(context),
@@ -478,11 +504,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       label: _isAdding
                           ? 'Đang xử lý...'
                           : !effectiveInStock
-                              ? 'Hết hàng'
-                              : p.variants.isNotEmpty &&
-                                      _selectedVariant == null
-                                  ? 'Chọn phiên bản'
-                                  : 'Mua ngay',
+                          ? 'Hết hàng'
+                          : p.variants.isNotEmpty && _selectedVariant == null
+                          ? 'Chọn phiên bản'
+                          : 'Mua ngay',
                       onPressed: canBuy
                           ? () => _addToCart(p, buyNow: true)
                           : null,
@@ -498,23 +523,30 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   }
 
   Widget _buildVariantSection(ProductModel p) {
+    final selectorLabel = switch (p.categoryId) {
+      'ram' => 'Dung lượng / Tốc độ:',
+      'storage' => 'Dung lượng:',
+      _ => 'Phiên bản:',
+    };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
         Row(
           children: [
-            const Text('Phiên bản:',
-                style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(
+              selectorLabel,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
             if (_selectedVariant != null) ...[
               const SizedBox(width: 8),
               Text(
                 _selectedVariant!.name,
                 style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.accentBlue,
-                    fontWeight: FontWeight.w600),
+                  fontSize: 14,
+                  color: AppColors.accentBlue,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ],
@@ -529,7 +561,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           const Padding(
             padding: EdgeInsets.only(top: 6),
             child: Text(
-              'Vui lòng chọn phiên bản để tiếp tục',
+              'Vui lòng chọn một tùy chọn để tiếp tục',
               style: TextStyle(color: AppColors.warning, fontSize: 12),
             ),
           ),
@@ -541,21 +573,26 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     if (pending) return const SizedBox.shrink();
     if (!inStock) return _chip('Hết hàng', AppColors.errorBg, AppColors.error);
     if (stock <= 5) {
-      return _chip('Sắp hết (còn $stock)', AppColors.warningBg, AppColors.warning);
+      return _chip(
+        'Sắp hết (còn $stock)',
+        AppColors.warningBg,
+        AppColors.warning,
+      );
     }
     return _chip('Còn hàng ($stock)', AppColors.successBg, AppColors.success);
   }
 
   Widget _chip(String text, Color bg, Color fg) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(text,
-            style: TextStyle(
-                color: fg, fontSize: 11, fontWeight: FontWeight.w600)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    decoration: BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w600),
+    ),
+  );
 
   Widget _buildRelatedSection(ProductModel p) {
     final relatedAsync = ref.watch(relatedProductsProvider(p.id));
@@ -568,9 +605,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Divider(height: 24),
-            Text('Sản phẩm liên quan',
-                style:
-                    AppTextStyles.sectionHeading.copyWith(fontSize: 14)),
+            Text(
+              'Sản phẩm liên quan',
+              style: AppTextStyles.sectionHeading.copyWith(fontSize: 14),
+            ),
             const SizedBox(height: 10),
             SizedBox(
               height: 300,
@@ -583,8 +621,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   width: 150,
                   child: ProductCard(
                     product: related[i],
-                    onTap: () => context
-                        .go('${AppRoutes.detail}/${related[i].id}'),
+                    onTap: () =>
+                        context.go('${AppRoutes.detail}/${related[i].id}'),
                   ),
                 ),
               ),
@@ -605,22 +643,26 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Đánh giá (${reviews.length})',
-                style:
-                    AppTextStyles.sectionHeading.copyWith(fontSize: 14)),
+            Text(
+              'Đánh giá (${reviews.length})',
+              style: AppTextStyles.sectionHeading.copyWith(fontSize: 14),
+            ),
             TextButton(
               onPressed: () => _showWriteReview(p),
-              child: const Text('Viết đánh giá',
-                  style: TextStyle(
-                      color: AppColors.accentBlue, fontSize: 13)),
+              child: const Text(
+                'Viết đánh giá',
+                style: TextStyle(color: AppColors.accentBlue, fontSize: 13),
+              ),
             ),
           ],
         ),
         if (reviews.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Text('Chưa có đánh giá nào',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              'Chưa có đánh giá nào',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
           )
         else
           ...reviews.take(3).map((r) => ReviewCard(review: r)),
@@ -643,8 +685,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           final e = entries[i];
           return Container(
             color: i.isEven ? AppColors.background : AppColors.surface,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -682,15 +723,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     VoidCallback onTap, {
     Color bgColor = Colors.black38,
     Color iconColor = Colors.white,
-  }) =>
-      InkWell(
-        onTap: onTap,
-        child: CircleAvatar(
-          radius: 20,
-          backgroundColor: bgColor,
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-      );
+  }) => InkWell(
+    onTap: onTap,
+    child: CircleAvatar(
+      radius: 20,
+      backgroundColor: bgColor,
+      child: Icon(icon, color: iconColor, size: 20),
+    ),
+  );
 
   Widget _cartBtn(BuildContext context) {
     final count = ref.watch(cartCountProvider);
@@ -702,8 +742,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.black38,
-            child: const Icon(Icons.shopping_cart_outlined,
-                color: Colors.white, size: 20),
+            child: const Icon(
+              Icons.shopping_cart_outlined,
+              color: Colors.white,
+              size: 20,
+            ),
           ),
           if (count > 0)
             Positioned(
@@ -718,9 +761,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 child: Text(
                   '$count',
                   style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700),
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

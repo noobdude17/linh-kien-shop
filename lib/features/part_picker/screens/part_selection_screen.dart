@@ -183,7 +183,7 @@ class _PartSelectionScreenState extends ConsumerState<PartSelectionScreen> {
                 _engine.evaluate(
                   build.select(
                     category.id,
-                    product,
+                    _compatibilityProduct(product),
                     multiple: category.multiple,
                   ),
                 ),
@@ -346,6 +346,17 @@ class _PartSelectionScreenState extends ConsumerState<PartSelectionScreen> {
                     color: AppColors.textSecondary,
                   ),
                 ),
+                if (product.variants.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '${product.variants.length} tùy chọn',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 5),
                 Wrap(
                   spacing: 10,
@@ -386,13 +397,79 @@ class _PartSelectionScreenState extends ConsumerState<PartSelectionScreen> {
           const SizedBox(width: 8),
           IconButton.filled(
             tooltip: 'Chọn sản phẩm',
-            onPressed: () {
-              ref.read(pcBuildProvider.notifier).select(category, product);
+            onPressed: () async {
+              final selected = await _selectVariant(product);
+              if (selected == null || !mounted) return;
+              ref.read(pcBuildProvider.notifier).select(category, selected);
               context.go(AppRoutes.partPicker);
             },
             icon: const Icon(Icons.add, size: 20),
           ),
         ],
+      ),
+    );
+  }
+
+  ProductModel _compatibilityProduct(ProductModel product) {
+    if (product.variants.isEmpty) return product;
+    final available = product.variants.where((variant) => variant.isAvailable);
+    final variant = available.isEmpty
+        ? product.variants.first
+        : available.first;
+    return product.withVariant(variant);
+  }
+
+  Future<ProductModel?> _selectVariant(ProductModel product) async {
+    if (product.variants.isEmpty) return product;
+    return showModalBottomSheet<ProductModel>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                product.categoryId == 'ram'
+                    ? 'Chọn dung lượng và tốc độ'
+                    : product.categoryId == 'storage'
+                    ? 'Chọn dung lượng'
+                    : 'Chọn phiên bản',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: product.variants.map((variant) {
+                  return ListTile(
+                    enabled: variant.isAvailable,
+                    title: Text(variant.name),
+                    subtitle: Text(
+                      variant.isAvailable
+                          ? Formatter.price(variant.price)
+                          : 'Hết hàng',
+                    ),
+                    trailing: variant.isAvailable
+                        ? const Icon(Icons.chevron_right)
+                        : null,
+                    onTap: variant.isAvailable
+                        ? () => Navigator.pop(
+                            context,
+                            product.withVariant(variant),
+                          )
+                        : null,
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
