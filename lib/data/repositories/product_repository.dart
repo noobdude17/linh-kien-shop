@@ -105,5 +105,6 @@ class FirestoreProductRepository implements ProductRepository {
             p.brand.toLowerCase().contains(q) ||
             p.categoryName.toLowerCase().contains(q))
         .toList();
+
   }
 }
