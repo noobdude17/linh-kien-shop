@@ -112,7 +112,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           const SizedBox(height: 12),
           trending.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
             data: (list) => Wrap(
               spacing: 8,
               runSpacing: 8,

@@ -17,7 +17,6 @@ abstract class ProductRepository {
 
 /// Hiện thực bằng dữ liệu mẫu — dùng cho skeleton & test khi chưa có backend.
 class MockProductRepository implements ProductRepository {
-  // Giả lập độ trễ mạng để UI lộ rõ trạng thái loading.
   Future<T> _delayed<T>(T value) =>
       Future.delayed(const Duration(milliseconds: 300), () => value);
 
@@ -48,16 +47,17 @@ class MockProductRepository implements ProductRepository {
     final q = query.toLowerCase();
     final all = [...MockData.featured, ...MockData.gpuList];
     return _delayed(
-      all.where((p) =>
-          p.name.toLowerCase().contains(q) ||
-          p.brand.toLowerCase().contains(q) ||
-          p.categoryName.toLowerCase().contains(q)).toList(),
+      all
+          .where((p) =>
+              p.name.toLowerCase().contains(q) ||
+              p.brand.toLowerCase().contains(q) ||
+              p.categoryName.toLowerCase().contains(q))
+          .toList(),
     );
   }
 }
 
 /// Hiện thực bằng Firestore — bật khi đã cấu hình Firebase.
-/// Mỗi thành viên có thể hoàn thiện các truy vấn còn thiếu theo nhu cầu.
 class FirestoreProductRepository implements ProductRepository {
   final FirebaseFirestore _db;
   FirestoreProductRepository(this._db);
@@ -93,11 +93,15 @@ class FirestoreProductRepository implements ProductRepository {
 
   @override
   Future<List<ProductModel>> search(String query) async {
-    // Firestore không hỗ trợ full-text; ở production nên dùng Algolia/Typesense.
-    // Tạm lọc theo tiền tố tên.
+    // Firestore không hỗ trợ full-text search.
+    // Dùng prefix range trên field 'name' — đủ dùng cho tìm kiếm đơn giản.
+    // Production nên dùng Algolia / Typesense.
+    final end = '$query';
     final snap = await _col
         .orderBy('name')
-        .startAt([query]).endAt(['$query']).get();
+        .startAt([query])
+        .endAt([end])
+        .get();
     return snap.docs.map(ProductModel.fromFirestore).toList();
   }
 }

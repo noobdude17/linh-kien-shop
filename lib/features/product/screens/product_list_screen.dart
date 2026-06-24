@@ -66,7 +66,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     return list.where((p) {
       if (_filter.inStockOnly && !p.inStock) return false;
       if (p.price < _filter.priceRange.start ||
-          p.price > _filter.priceRange.end) return false;
+          p.price > _filter.priceRange.end) { return false; }
       if (p.rating < _filter.minRating) return false;
       return true;
     }).toList();

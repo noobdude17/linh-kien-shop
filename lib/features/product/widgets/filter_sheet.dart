@@ -154,7 +154,7 @@ class _FilterSheetState extends State<FilterSheet> {
                   value: _opts.inStockOnly,
                   onChanged: (v) =>
                       setState(() => _opts = _opts.copyWith(inStockOnly: v)),
-                  activeColor: AppColors.accentBlue,
+                  activeThumbColor: AppColors.accentBlue,
                 ),
               ],
             ),
