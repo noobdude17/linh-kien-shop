@@ -424,7 +424,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       Icons.arrow_back,
                       () => context.canPop()
                           ? context.pop()
-                          : context.go(AppRoutes.list),
+                          : context.go(AppRoutes.home),
                     ),
                     Row(
                       children: [
