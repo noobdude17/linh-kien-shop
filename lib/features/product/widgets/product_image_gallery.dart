@@ -48,15 +48,13 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                   radius: 0,
                 );
               }
-              return Image.network(
-                urls[i],
-                fit: BoxFit.cover,
+              return ImagePlaceholder(
+                imageUrl: urls[i],
+                label: widget.fallbackLabel,
                 width: double.infinity,
-                errorBuilder: (_, _, _) => ImagePlaceholder(
-                  label: widget.fallbackLabel,
-                  height: widget.height,
-                  radius: 0,
-                ),
+                height: widget.height,
+                fit: BoxFit.contain,
+                radius: 0,
               );
             },
           ),

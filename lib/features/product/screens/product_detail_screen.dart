@@ -302,7 +302,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ProductImageGallery(
-                  images: p.images,
+                  images: [
+                    if (p.primaryImageUrl.isNotEmpty) p.primaryImageUrl,
+                    ...p.images.where((url) => url.trim() != p.primaryImageUrl),
+                  ],
                   fallbackLabel: p.imageLabel,
                   height: AppDimens.heroImageHeight,
                 ),

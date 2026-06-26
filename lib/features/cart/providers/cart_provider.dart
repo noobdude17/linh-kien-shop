@@ -33,6 +33,7 @@ class CartNotifier extends Notifier<List<CartItemModel>> {
           variantId: variantId,
           price: priceOverride ?? p.price,
           imageLabel: p.imageLabel,
+          imageUrl: p.primaryImageUrl,
           quantity: qty,
         ),
       ];
@@ -40,9 +41,7 @@ class CartNotifier extends Notifier<List<CartItemModel>> {
   }
 
   void remove(String productId, {String variantId = ''}) {
-    state = state
-        .where((e) => !_matches(e, productId, variantId))
-        .toList();
+    state = state.where((e) => !_matches(e, productId, variantId)).toList();
   }
 
   void setQuantity(String productId, int qty, {String variantId = ''}) {
@@ -57,6 +56,7 @@ class CartNotifier extends Notifier<List<CartItemModel>> {
             variantId: e.variantId,
             price: e.price,
             imageLabel: e.imageLabel,
+            imageUrl: e.imageUrl,
             quantity: qty,
             selected: e.selected,
           )
@@ -76,6 +76,7 @@ class CartNotifier extends Notifier<List<CartItemModel>> {
             variantId: e.variantId,
             price: e.price,
             imageLabel: e.imageLabel,
+            imageUrl: e.imageUrl,
             quantity: e.quantity,
             selected: !e.selected,
           )
@@ -87,8 +88,9 @@ class CartNotifier extends Notifier<List<CartItemModel>> {
   void clear() => state = [];
 }
 
-final cartProvider =
-    NotifierProvider<CartNotifier, List<CartItemModel>>(CartNotifier.new);
+final cartProvider = NotifierProvider<CartNotifier, List<CartItemModel>>(
+  CartNotifier.new,
+);
 
 /// Tổng tiền các item được chọn.
 final cartSubtotalProvider = Provider<double>((ref) {

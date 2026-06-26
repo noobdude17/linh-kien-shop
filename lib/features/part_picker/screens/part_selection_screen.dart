@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatter.dart';
+import '../../../core/widgets/image_placeholder.dart';
 import '../../../data/models/product_model.dart';
 import '../../../features/product/providers/product_providers.dart';
 import '../../../routes/app_routes.dart';
@@ -308,21 +309,14 @@ class _PartSelectionScreenState extends ConsumerState<PartSelectionScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
+          ImagePlaceholder(
+            label: product.imageLabel.isEmpty
+                ? product.brand
+                : product.imageLabel,
+            imageUrl: product.primaryImageUrl,
             width: 54,
             height: 54,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.inputFill,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              product.imageLabel.isEmpty ? product.brand : product.imageLabel,
-              maxLines: 2,
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700),
-            ),
+            radius: 8,
           ),
           const SizedBox(width: 12),
           Expanded(
