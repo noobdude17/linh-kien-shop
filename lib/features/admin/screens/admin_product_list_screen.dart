@@ -38,38 +38,92 @@ class AdminProductListScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(AppDimens.cardPadding),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: AppDimens.brCard, boxShadow: AppDimens.cardShadow),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppDimens.brCard,
+        boxShadow: AppDimens.cardShadow,
+      ),
       child: Row(
         children: [
-          ImagePlaceholder(label: p.imageLabel, height: 54, radius: 8),
+          ImagePlaceholder(
+            label: p.imageLabel,
+            imageUrl: p.primaryImageUrl,
+            width: 54,
+            height: 54,
+            radius: 8,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                Text(p.categoryName, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                Text(
+                  p.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  p.categoryName,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(Formatter.price(p.price), style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13)),
+                    Text(
+                      Formatter.price(p.price),
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: outOfStock ? AppColors.errorBg : AppColors.successBg,
+                        color: outOfStock
+                            ? AppColors.errorBg
+                            : AppColors.successBg,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text(outOfStock ? 'Hết hàng' : 'Còn ${p.stock}',
-                          style: TextStyle(color: outOfStock ? AppColors.error : AppColors.success, fontSize: 10, fontWeight: FontWeight.w700)),
+                      child: Text(
+                        outOfStock ? 'Hết hàng' : 'Còn ${p.stock}',
+                        style: TextStyle(
+                          color: outOfStock
+                              ? AppColors.error
+                              : AppColors.success,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          IconButton(icon: const Icon(Icons.edit, color: AppColors.primary, size: 20), onPressed: () => context.go(AppRoutes.adminProductEdit)),
-          IconButton(icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 20), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.edit, color: AppColors.primary, size: 20),
+            onPressed: () => context.go(AppRoutes.adminProductEdit),
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.delete_outline,
+              color: AppColors.error,
+              size: 20,
+            ),
+            onPressed: () {},
+          ),
         ],
       ),
     );

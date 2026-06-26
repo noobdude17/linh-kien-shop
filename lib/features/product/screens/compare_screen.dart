@@ -28,8 +28,10 @@ class CompareScreen extends ConsumerWidget {
           if (products.isNotEmpty)
             TextButton(
               onPressed: () => ref.read(compareProvider.notifier).clear(),
-              child: const Text('Xóa tất cả',
-                  style: TextStyle(color: AppColors.accent)),
+              child: const Text(
+                'Xóa tất cả',
+                style: TextStyle(color: AppColors.accent),
+              ),
             ),
         ],
       ),
@@ -38,15 +40,20 @@ class CompareScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.compare_arrows,
-                      size: 64, color: AppColors.border),
+                  Icon(Icons.compare_arrows, size: 64, color: AppColors.border),
                   SizedBox(height: 16),
-                  Text('Chưa chọn sản phẩm để so sánh',
-                      style: TextStyle(color: AppColors.textSecondary)),
+                  Text(
+                    'Chưa chọn sản phẩm để so sánh',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                   SizedBox(height: 6),
-                  Text('Tối đa 3 sản phẩm',
-                      style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12)),
+                  Text(
+                    'Tối đa 3 sản phẩm',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             )
@@ -66,8 +73,7 @@ class CompareScreen extends ConsumerWidget {
                   _CompareRow(
                     label: 'Đánh giá',
                     values: products
-                        .map((p) =>
-                            '${p.rating}★ (${p.reviewCount})')
+                        .map((p) => '${p.rating}★ (${p.reviewCount})')
                         .toList(),
                   ),
                   _CompareRow(
@@ -83,9 +89,13 @@ class CompareScreen extends ConsumerWidget {
                   if (products.any((p) => displaySpecs(p).isNotEmpty)) ...[
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Text('Thông số kỹ thuật',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 13)),
+                      child: Text(
+                        'Thông số kỹ thuật',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                     ..._buildSpecRows(products),
                   ],
@@ -102,11 +112,12 @@ class CompareScreen extends ConsumerWidget {
       allKeys.addAll(s.keys);
     }
     return allKeys
-        .map((key) => _CompareRow(
-              label: formatSpecLabel(key),
-              values:
-                  products.map((p) => specs[p.id]?[key] ?? '—').toList(),
-            ))
+        .map(
+          (key) => _CompareRow(
+            label: formatSpecLabel(key),
+            values: products.map((p) => specs[p.id]?[key] ?? '—').toList(),
+          ),
+        )
         .toList();
   }
 }
@@ -134,22 +145,33 @@ class _ProductHeaderRow extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: ImagePlaceholder(
-                            label: p.imageLabel, height: 100, radius: 8),
+                          label: p.imageLabel,
+                          imageUrl: p.primaryImageUrl,
+                          height: 100,
+                          radius: 8,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(p.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 11, fontWeight: FontWeight.w600)),
+                    Text(
+                      p.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     GestureDetector(
                       onTap: () => ref.read(compareProvider.notifier).toggle(p),
                       child: const Padding(
                         padding: EdgeInsets.only(top: 2),
-                        child: Icon(Icons.close,
-                            size: 16, color: AppColors.textSecondary),
+                        child: Icon(
+                          Icons.close,
+                          size: 16,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   ],
@@ -180,18 +202,25 @@ class _CompareRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 90,
-            child: Text(label,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary)),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
           ...values.map(
             (v) => Expanded(
-              child: Text(v,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w500)),
+              child: Text(
+                v,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ),
         ],

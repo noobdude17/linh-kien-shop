@@ -10,18 +10,54 @@ import '../models/product_model.dart';
 abstract class ProductRepository {
   Future<List<ProductModel>> getFeatured();
   Future<List<ProductModel>> getByCategory(String? categoryId);
+  Future<ProductPage> getByCategoryPage(
+    String? categoryId, {
+    required int limit,
+    Object? cursor,
+  });
   Future<ProductModel?> getById(String id);
   Future<List<CategoryModel>> getCategories();
   Future<List<ProductModel>> search(String query);
+  Future<ProductPage> searchPage(
+    String query, {
+    required int limit,
+    Object? cursor,
+  });
+}
+
+class ProductPage {
+  final List<ProductModel> items;
+  final Object? cursor;
+  final bool hasMore;
+
+  const ProductPage({
+    required this.items,
+    required this.cursor,
+    required this.hasMore,
+  });
 }
 
 /// Hiện thực bằng dữ liệu mẫu — dùng cho skeleton & test khi chưa có backend.
 class MockProductRepository implements ProductRepository {
+  static const _featuredCategoryIds = ['gpu', 'cpu', 'ram', 'storage'];
+
   Future<T> _delayed<T>(T value) =>
       Future.delayed(const Duration(milliseconds: 300), () => value);
 
   @override
-  Future<List<ProductModel>> getFeatured() => _delayed(MockData.featured);
+  Future<List<ProductModel>> getFeatured() {
+    final products =
+        [
+            ...MockData.featured,
+            ...MockData.gpuList,
+          ].where((p) => _featuredCategoryIds.contains(p.categoryId)).toList()
+          ..sort((a, b) {
+            final price = b.price.compareTo(a.price);
+            if (price != 0) return price;
+            return b.rating.compareTo(a.rating);
+          });
+    return _delayed(products.take(12).toList());
+  }
 
   @override
   Future<List<ProductModel>> getByCategory(String? categoryId) {
@@ -30,6 +66,22 @@ class MockProductRepository implements ProductRepository {
         ? all
         : all.where((p) => p.categoryId == categoryId).toList();
     return _delayed(filtered);
+  }
+
+  @override
+  Future<ProductPage> getByCategoryPage(
+    String? categoryId, {
+    required int limit,
+    Object? cursor,
+  }) async {
+    final all = await getByCategory(categoryId);
+    final start = cursor is int ? cursor : 0;
+    final end = (start + limit).clamp(0, all.length);
+    return ProductPage(
+      items: all.sublist(start, end),
+      cursor: end,
+      hasMore: end < all.length,
+    );
   }
 
   @override
@@ -48,11 +100,29 @@ class MockProductRepository implements ProductRepository {
     final all = [...MockData.featured, ...MockData.gpuList];
     return _delayed(
       all
-          .where((p) =>
-              p.name.toLowerCase().contains(q) ||
-              p.brand.toLowerCase().contains(q) ||
-              p.categoryName.toLowerCase().contains(q))
+          .where(
+            (p) =>
+                p.name.toLowerCase().contains(q) ||
+                p.brand.toLowerCase().contains(q) ||
+                p.categoryName.toLowerCase().contains(q),
+          )
           .toList(),
+    );
+  }
+
+  @override
+  Future<ProductPage> searchPage(
+    String query, {
+    required int limit,
+    Object? cursor,
+  }) async {
+    final all = await search(query);
+    final start = cursor is int ? cursor : 0;
+    final end = (start + limit).clamp(0, all.length);
+    return ProductPage(
+      items: all.sublist(start, end),
+      cursor: end,
+      hasMore: end < all.length,
     );
   }
 }
@@ -62,13 +132,50 @@ class FirestoreProductRepository implements ProductRepository {
   final FirebaseFirestore _db;
   FirestoreProductRepository(this._db);
 
+  static const _featuredCategoryIds = ['gpu', 'cpu', 'ram', 'storage'];
+  static const _featuredCategoryWeight = {
+    'gpu': 0,
+    'cpu': 1,
+    'ram': 2,
+    'storage': 3,
+  };
+
   CollectionReference<Map<String, dynamic>> get _col =>
       _db.collection(AppConstants.colProducts);
 
   @override
   Future<List<ProductModel>> getFeatured() async {
-    final snap = await _col.where('isActive', isEqualTo: true).limit(10).get();
-    return snap.docs.map(ProductModel.fromFirestore).toList();
+    final groups = await Future.wait(
+      _featuredCategoryIds.map((categoryId) async {
+        final snap = await _col
+            .where('isActive', isEqualTo: true)
+            .where('categoryId', isEqualTo: categoryId)
+            .get();
+        final products = snap.docs.map(ProductModel.fromFirestore).toList()
+          ..sort(_compareFeaturedByPrice);
+        return products.take(3);
+      }),
+    );
+
+    final products = groups.expand((items) => items).toList()
+      ..sort(_compareFeatured);
+    return products.take(12).toList();
+  }
+
+  int _compareFeaturedByPrice(ProductModel a, ProductModel b) {
+    final price = b.price.compareTo(a.price);
+    if (price != 0) return price;
+    final rating = b.rating.compareTo(a.rating);
+    if (rating != 0) return rating;
+    return a.name.compareTo(b.name);
+  }
+
+  int _compareFeatured(ProductModel a, ProductModel b) {
+    final category = (_featuredCategoryWeight[a.categoryId] ?? 99).compareTo(
+      _featuredCategoryWeight[b.categoryId] ?? 99,
+    );
+    if (category != 0) return category;
+    return _compareFeaturedByPrice(a, b);
   }
 
   @override
@@ -77,6 +184,27 @@ class FirestoreProductRepository implements ProductRepository {
     if (categoryId != null) q = q.where('categoryId', isEqualTo: categoryId);
     final snap = await q.get();
     return snap.docs.map(ProductModel.fromFirestore).toList();
+  }
+
+  @override
+  Future<ProductPage> getByCategoryPage(
+    String? categoryId, {
+    required int limit,
+    Object? cursor,
+  }) async {
+    Query<Map<String, dynamic>> q = _col.where('isActive', isEqualTo: true);
+    if (categoryId != null) q = q.where('categoryId', isEqualTo: categoryId);
+    q = q.orderBy(FieldPath.documentId).limit(limit);
+    if (cursor is DocumentSnapshot<Map<String, dynamic>>) {
+      q = q.startAfterDocument(cursor);
+    }
+
+    final snap = await q.get();
+    return ProductPage(
+      items: snap.docs.map(ProductModel.fromFirestore).toList(),
+      cursor: snap.docs.isEmpty ? cursor : snap.docs.last,
+      hasMore: snap.docs.length == limit,
+    );
   }
 
   @override
@@ -100,11 +228,60 @@ class FirestoreProductRepository implements ProductRepository {
     final snap = await _col.where('isActive', isEqualTo: true).get();
     return snap.docs
         .map(ProductModel.fromFirestore)
-        .where((p) =>
-            p.name.toLowerCase().contains(q) ||
-            p.brand.toLowerCase().contains(q) ||
-            p.categoryName.toLowerCase().contains(q))
+        .where(
+          (p) =>
+              p.name.toLowerCase().contains(q) ||
+              p.brand.toLowerCase().contains(q) ||
+              p.categoryName.toLowerCase().contains(q),
+        )
         .toList();
+  }
 
+  @override
+  Future<ProductPage> searchPage(
+    String query, {
+    required int limit,
+    Object? cursor,
+  }) async {
+    final qText = query.toLowerCase().trim();
+    if (qText.isEmpty) {
+      return const ProductPage(items: [], cursor: null, hasMore: false);
+    }
+
+    const scanBatchSize = 80;
+    final matches = <ProductModel>[];
+    Object? nextCursor = cursor;
+    var hasMoreDocs = true;
+
+    while (matches.length < limit && hasMoreDocs) {
+      Query<Map<String, dynamic>> q = _col
+          .where('isActive', isEqualTo: true)
+          .orderBy(FieldPath.documentId)
+          .limit(scanBatchSize);
+      if (nextCursor is DocumentSnapshot<Map<String, dynamic>>) {
+        q = q.startAfterDocument(nextCursor);
+      }
+
+      final snap = await q.get();
+      hasMoreDocs = snap.docs.length == scanBatchSize;
+      if (snap.docs.isEmpty) break;
+      nextCursor = snap.docs.last;
+
+      for (final doc in snap.docs) {
+        final product = ProductModel.fromFirestore(doc);
+        if (product.name.toLowerCase().contains(qText) ||
+            product.brand.toLowerCase().contains(qText) ||
+            product.categoryName.toLowerCase().contains(qText)) {
+          matches.add(product);
+          if (matches.length == limit) break;
+        }
+      }
+    }
+
+    return ProductPage(
+      items: matches,
+      cursor: nextCursor,
+      hasMore: hasMoreDocs,
+    );
   }
 }
