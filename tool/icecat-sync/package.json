@@ -1,0 +1,15 @@
+{
+  "name": "icecat-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Sync product photos: Icecat -> Cloudinary -> Firestore",
+  "scripts": {
+    "sync": "node index.js"
+  },
+  "dependencies": {
+    "cloudinary": "^2.10.0",
+    "firebase-admin": "^14.0.0",
+    "icecat": "^1.4.5"
+  }
+}

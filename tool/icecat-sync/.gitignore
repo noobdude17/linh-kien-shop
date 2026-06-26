@@ -1,0 +1,5 @@
+node_modules/
+package-lock.json
+key.json
+sync.log
+image_results.csv
