@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -82,7 +82,7 @@ class CategoriesScreen extends ConsumerWidget {
           // 3 · Sản phẩm thịnh hành (ảnh + tên + giá)
           _AsyncSlider(
             title: 'Sản phẩm thịnh hành',
-            height: 264,
+            height: 292,
             value: trending,
             builder: (list) => ListView.separated(
               scrollDirection: Axis.horizontal,
@@ -217,8 +217,8 @@ class _TypeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = AppColors.categoryBgs[category.colorIndex %
-        AppColors.categoryBgs.length];
+    final bg = AppColors
+        .categoryBgs[category.colorIndex % AppColors.categoryBgs.length];
     return InkWell(
       onTap: onTap,
       borderRadius: AppDimens.brCard,

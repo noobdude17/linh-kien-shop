@@ -68,6 +68,16 @@ class ProductModel {
     return (((oldPrice! - price) / oldPrice!) * 100).round();
   }
 
+  String get primaryImageUrl {
+    final primary = imageUrl.trim();
+    if (primary.isNotEmpty) return primary;
+    for (final url in images) {
+      final value = url.trim();
+      if (value.isNotEmpty) return value;
+    }
+    return '';
+  }
+
   /// Applies a selected variant to the values used by cart and PC Builder.
   ProductModel withVariant(ProductVariant variant) {
     final variantSpecs = variant.attributes.map(

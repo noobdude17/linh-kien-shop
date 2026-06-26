@@ -44,15 +44,12 @@ class ProductCard extends ConsumerWidget {
               children: [
                 ImagePlaceholder(
                   label: product.imageLabel,
+                  imageUrl: product.primaryImageUrl,
                   height: AppDimens.productImageHeight,
                   radius: 0,
                 ),
                 if (discount != null)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: _badge('-$discount%'),
-                  ),
+                  Positioned(top: 8, left: 8, child: _badge('-$discount%')),
                 if (!product.inStock)
                   Positioned.fill(
                     child: Container(
@@ -60,16 +57,21 @@ class ProductCard extends ConsumerWidget {
                       alignment: Alignment.center,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.errorBg,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text('Hết hàng',
-                            style: TextStyle(
-                                color: AppColors.error,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700)),
+                        child: const Text(
+                          'Hết hàng',
+                          style: TextStyle(
+                            color: AppColors.error,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -85,9 +87,7 @@ class ProductCard extends ConsumerWidget {
                         radius: 16,
                         backgroundColor: const Color(0xCCFFFFFF),
                         child: Icon(
-                          isWishlisted
-                              ? Icons.favorite
-                              : Icons.favorite_border,
+                          isWishlisted ? Icons.favorite : Icons.favorite_border,
                           size: 18,
                           color: isWishlisted ? Colors.red : AppColors.bodyText,
                         ),
@@ -141,9 +141,10 @@ class ProductCard extends ConsumerWidget {
                         Text(
                           'Sắp hết',
                           style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.warning,
-                              fontWeight: FontWeight.w600),
+                            fontSize: 10,
+                            color: AppColors.warning,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ],
@@ -158,11 +159,11 @@ class ProductCard extends ConsumerWidget {
   }
 
   Widget _badge(String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: AppColors.accent,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(text, style: AppTextStyles.badge.copyWith(fontSize: 11)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    decoration: BoxDecoration(
+      color: AppColors.accent,
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Text(text, style: AppTextStyles.badge.copyWith(fontSize: 11)),
+  );
 }
