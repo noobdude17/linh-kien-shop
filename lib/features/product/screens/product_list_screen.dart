@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_chip.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../data/mock_data.dart';
 import '../../../data/models/product_model.dart';
 import '../../../features/product/providers/compare_provider.dart';
 import '../../../features/product/providers/product_providers.dart';
@@ -242,11 +243,55 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     itemCount: labels.length,
                     separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (_, i) => AppChip(
-                      label: labels[i],
-                      selected: i == clampedSelected,
-                      onTap: () => setState(() => _selected = i),
-                    ),
+                    itemBuilder: (_, i) {
+                      final brandName = labels[i];
+                      final logoPath = MockData.brands
+                          .where((b) => b.$1 == brandName)
+                          .map((b) => b.$2)
+                          .firstOrNull;
+                      final isSelected = i == clampedSelected;
+                      if (i == 0 || logoPath == null) {
+                        return AppChip(
+                          label: brandName,
+                          selected: isSelected,
+                          onTap: () => setState(() => _selected = i),
+                        );
+                      }
+                      return GestureDetector(
+                        onTap: () => setState(() => _selected = i),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          width: 60,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primary.withValues(alpha: 0.08)
+                                : AppColors.surface,
+                            borderRadius: AppDimens.brChip,
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.border,
+                              width: isSelected ? 1.5 : 1,
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Image.asset(
+                            logoPath,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, _, _) => Text(
+                              brandName,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.bodyText,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

@@ -234,7 +234,19 @@ class _TypeTile extends StatelessWidget {
                 borderRadius: AppDimens.brCard,
               ),
               alignment: Alignment.center,
-              child: Text(category.icon, style: const TextStyle(fontSize: 32)),
+              child: category.imageAsset != null
+                  ? ClipRRect(
+                      borderRadius: AppDimens.brCard,
+                      child: Image.asset(
+                        category.imageAsset!,
+                        width: 84,
+                        height: 84,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            Text(category.icon, style: const TextStyle(fontSize: 32)),
+                      ),
+                    )
+                  : Text(category.icon, style: const TextStyle(fontSize: 32)),
             ),
             const SizedBox(height: 6),
             Text(

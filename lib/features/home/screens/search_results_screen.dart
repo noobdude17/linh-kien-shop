@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_buttons.dart';
-import '../../../core/widgets/app_chip.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../data/models/product_model.dart';
 import '../../../features/product/providers/product_providers.dart';
@@ -30,25 +29,7 @@ class SearchResultsScreen extends ConsumerStatefulWidget {
 }
 
 class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
-  int _selected = 0;
   _SortOption _sort = _SortOption.popular;
-
-  List<String> _buildBrandLabels(List<ProductModel> products) {
-    final brands = products
-        .map((p) => p.brand)
-        .where((b) => b.isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
-    return ['Tất cả', ...brands];
-  }
-
-  List<ProductModel> _applyBrandFilter(
-      List<ProductModel> list, List<String> labels) {
-    if (_selected == 0) return list;
-    final label = labels[_selected];
-    return list.where((p) => p.brand == label).toList();
-  }
 
   List<ProductModel> _applySort(List<ProductModel> list) {
     final sorted = List<ProductModel>.from(list);
@@ -190,32 +171,10 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             );
           }
 
-          final labels = _buildBrandLabels(list);
-          final clampedSelected = _selected.clamp(0, labels.length - 1);
-          final filtered =
-              _applySort(_applyBrandFilter(list, labels));
+          final filtered = _applySort(list);
 
           return Column(
             children: [
-              // Brand filter chips
-              Container(
-                color: AppColors.surface,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: SizedBox(
-                  height: 34,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: labels.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (_, i) => AppChip(
-                      label: labels[i],
-                      selected: i == clampedSelected,
-                      onTap: () => setState(() => _selected = i),
-                    ),
-                  ),
-                ),
-              ),
               // Count + sort row
               Container(
                 color: AppColors.surface,

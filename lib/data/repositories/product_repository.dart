@@ -67,7 +67,11 @@ class FirestoreProductRepository implements ProductRepository {
 
   @override
   Future<List<ProductModel>> getFeatured() async {
-    final snap = await _col.where('isActive', isEqualTo: true).limit(10).get();
+    final snap = await _col
+        .where('isActive', isEqualTo: true)
+        .orderBy('rating', descending: true)
+        .limit(10)
+        .get();
     return snap.docs.map(ProductModel.fromFirestore).toList();
   }
 
