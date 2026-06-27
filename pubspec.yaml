@@ -60,5 +60,6 @@ flutter:
   assets:
     - assets/images/
     - assets/images/brands/
+    - assets/images/categories/
     - assets/icons/
     - assets/config/

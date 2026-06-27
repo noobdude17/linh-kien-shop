@@ -7,7 +7,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_buttons.dart';
-import '../../../core/widgets/app_chip.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../data/models/product_model.dart';
@@ -39,10 +38,6 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
   final _scrollController = ScrollController();
   final List<ProductModel> _results = [];
-  final List<ProductModel> _allResults = [];
-  List<String> _brandLabels = const ['Tất cả'];
-
-  int _selected = 0;
   _SortOption _sort = _SortOption.popular;
   Object? _cursor;
   bool _isInitialLoading = true;
@@ -62,7 +57,6 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   void didUpdateWidget(SearchResultsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.query != widget.query) {
-      _selected = 0;
       _sort = _SortOption.popular;
       _loadFirstPage();
     }
@@ -88,8 +82,6 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     final requestId = ++_requestId;
     setState(() {
       _results.clear();
-      _allResults.clear();
-      _brandLabels = const ['Tất cả'];
       _cursor = null;
       _hasMore = true;
       _error = null;
@@ -99,14 +91,10 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
     try {
       final repo = ref.read(productRepositoryProvider);
-      final allResultsFuture = repo.search(widget.query);
       final page = await repo.searchPage(widget.query, limit: _pageSize);
-      final allResults = await allResultsFuture;
       if (!mounted || requestId != _requestId) return;
       setState(() {
-        _allResults.addAll(allResults);
         _results.addAll(page.items);
-        _brandLabels = _buildBrandLabels(allResults);
         _cursor = page.cursor;
         _hasMore = page.hasMore;
         _isInitialLoading = false;
@@ -167,22 +155,6 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     await Future.wait(
       futures,
     ).timeout(const Duration(milliseconds: 1100), onTimeout: () => <void>[]);
-  }
-
-  List<String> _buildBrandLabels(List<ProductModel> products) {
-    final brands =
-        products.map((p) => p.brand).where((b) => b.isNotEmpty).toSet().toList()
-          ..sort();
-    return ['Tất cả', ...brands];
-  }
-
-  List<ProductModel> _applyBrandFilter(
-    List<ProductModel> list,
-    List<String> labels,
-  ) {
-    if (_selected == 0 || _selected >= labels.length) return list;
-    final label = labels[_selected];
-    return list.where((p) => p.brand == label).toList();
   }
 
   List<ProductModel> _applySort(List<ProductModel> list) {
@@ -341,45 +313,16 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       );
     }
 
-    final labels = _brandLabels;
-    final clampedSelected = _selected.clamp(0, labels.length - 1);
-    final source = _selected == 0 ? _results : _allResults;
-    final filtered = _applySort(_applyBrandFilter(source, labels));
+    final filtered = _applySort(_results);
 
     return Column(
       children: [
-        Container(
-          color: AppColors.surface,
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: SizedBox(
-            height: 34,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: labels.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (_, i) => AppChip(
-                label: labels[i],
-                selected: i == clampedSelected,
-                onTap: () => setState(() => _selected = i),
-              ),
-            ),
-          ),
-        ),
         Container(
           color: AppColors.surface,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (DateTime.now().microsecondsSinceEpoch < 0)
-                Text(
-                  '${filtered.length} sản phẩm',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
               const Spacer(),
               GestureDetector(
                 onTap: _showSortSheet,
