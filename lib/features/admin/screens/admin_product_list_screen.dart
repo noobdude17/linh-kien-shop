@@ -1,19 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/image_placeholder.dart';
-import '../../../data/mock_data.dart';
 import '../../../data/models/product_model.dart';
+import '../../../data/repositories/admin_repository.dart';
 import '../../../routes/app_routes.dart';
+import '../providers/admin_providers.dart';
 
-class AdminProductListScreen extends StatelessWidget {
+class AdminProductListScreen extends ConsumerStatefulWidget {
   const AdminProductListScreen({super.key});
 
   @override
+  ConsumerState<AdminProductListScreen> createState() =>
+      _AdminProductListScreenState();
+}
+
+class _AdminProductListScreenState
+    extends ConsumerState<AdminProductListScreen> {
+  final _search = TextEditingController();
+  bool? _active;
+
+  AdminProductQuery get _query => AdminProductQuery(
+    search: _search.text.trim(),
+    active: _active,
+    limit: 80,
+  );
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final products = MockData.featured;
+    final products = ref.watch(adminProductsProvider(_query));
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.adminAccent,
@@ -21,9 +46,32 @@ class AdminProductListScreen extends StatelessWidget {
         leading: BackButton(onPressed: () => context.go(AppRoutes.admin)),
         title: const Text('Quản lý sản phẩm'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppDimens.screenPadding),
-        children: products.map((p) => _row(context, p)).toList(),
+      body: Column(
+        children: [
+          _filters(),
+          Expanded(
+            child: products.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => _error('Không tải được sản phẩm'),
+              data: (page) => page.items.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Không có sản phẩm',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () async =>
+                          ref.invalidate(adminProductsProvider),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(AppDimens.screenPadding),
+                        itemCount: page.items.length,
+                        itemBuilder: (_, i) => _row(page.items[i]),
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.adminAccent,
@@ -33,7 +81,47 @@ class AdminProductListScreen extends StatelessWidget {
     );
   }
 
-  Widget _row(BuildContext context, ProductModel p) {
+  Widget _filters() {
+    return Container(
+      color: AppColors.surface,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+      child: Column(
+        children: [
+          TextField(
+            controller: _search,
+            decoration: const InputDecoration(
+              hintText: 'Tìm tên hoặc thương hiệu',
+              prefixIcon: Icon(Icons.search),
+            ),
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: [
+              ChoiceChip(
+                label: const Text('Tất cả'),
+                selected: _active == null,
+                onSelected: (_) => setState(() => _active = null),
+              ),
+              ChoiceChip(
+                label: const Text('Đang bán'),
+                selected: _active == true,
+                onSelected: (_) => setState(() => _active = true),
+              ),
+              ChoiceChip(
+                label: const Text('Đã ẩn'),
+                selected: _active == false,
+                onSelected: (_) => setState(() => _active = false),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(ProductModel p) {
     final outOfStock = !p.inStock;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -67,14 +155,19 @@ class AdminProductListScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  p.categoryName,
+                  '${p.categoryName} · ${p.brand}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
                       Formatter.price(p.price),
@@ -84,28 +177,15 @@ class AdminProductListScreen extends StatelessWidget {
                         fontSize: 13,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: outOfStock
-                            ? AppColors.errorBg
-                            : AppColors.successBg,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        outOfStock ? 'Hết hàng' : 'Còn ${p.stock}',
-                        style: TextStyle(
-                          color: outOfStock
-                              ? AppColors.error
-                              : AppColors.success,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                    _badge(
+                      p.isActive ? 'Đang bán' : 'Đã ẩn',
+                      p.isActive ? AppColors.successBg : AppColors.doneBg,
+                      p.isActive ? AppColors.success : AppColors.textSecondary,
+                    ),
+                    _badge(
+                      outOfStock ? 'Hết hàng' : 'Còn ${p.stock}',
+                      outOfStock ? AppColors.errorBg : AppColors.successBg,
+                      outOfStock ? AppColors.error : AppColors.success,
                     ),
                   ],
                 ),
@@ -114,15 +194,69 @@ class AdminProductListScreen extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.edit, color: AppColors.primary, size: 20),
-            onPressed: () => context.go(AppRoutes.adminProductEdit),
+            onPressed: () =>
+                context.go('${AppRoutes.adminProductEdit}/${p.id}'),
           ),
           IconButton(
             icon: const Icon(
-              Icons.delete_outline,
+              Icons.visibility_off_outlined,
               color: AppColors.error,
               size: 20,
             ),
-            onPressed: () {},
+            onPressed: p.isActive ? () => _confirmHide(p) : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _badge(String label, Color bg, Color fg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: fg, fontSize: 10, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  Future<void> _confirmHide(ProductModel p) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ẩn sản phẩm?'),
+        content: Text('Sản phẩm "${p.name}" sẽ không còn hiển thị cho khách.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Ẩn', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await ref.read(adminRepositoryProvider).softDeleteProduct(p.id);
+    invalidateAdminData(ref);
+  }
+
+  Widget _error(String message) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(message, style: const TextStyle(color: AppColors.textSecondary)),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => ref.invalidate(adminProductsProvider),
+            child: const Text('Thử lại'),
           ),
         ],
       ),

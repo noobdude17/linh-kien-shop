@@ -19,6 +19,8 @@ class UserModel {
   // Email đã xác nhận chưa. Mặc định true để Mock/Google/admin không bị chặn;
   // chỉ tài khoản đăng ký bằng email (Firebase) mới khởi đầu ở false.
   final bool emailVerified;
+  // Khóa mềm bởi admin. Không xóa Firebase Auth; app tự chặn sau đăng nhập.
+  final bool isLocked;
 
   const UserModel({
     required this.id,
@@ -31,6 +33,7 @@ class UserModel {
     this.photoUrl,
     this.defaultAddress,
     this.emailVerified = true,
+    this.isLocked = false,
   });
 
   bool get isAdmin => role == 'admin';
@@ -54,20 +57,24 @@ class UserModel {
       photoUrl: data['photoUrl'],
       defaultAddress: data['defaultAddress'] != null
           ? AddressModel.fromMap(
-              'default', data['defaultAddress'] as Map<String, dynamic>)
+              'default',
+              data['defaultAddress'] as Map<String, dynamic>,
+            )
           : null,
+      isLocked: data['isLocked'] ?? false,
     );
   }
 
   Map<String, dynamic> toFirestore() => {
-        'name': name,
-        'email': email,
-        'role': role,
-        'address': address,
-        'phone': phone,
-        'dob': dob,
-        'defaultAddress': defaultAddress?.toFirestore(),
-      };
+    'name': name,
+    'email': email,
+    'role': role,
+    'address': address,
+    'phone': phone,
+    'dob': dob,
+    'defaultAddress': defaultAddress?.toFirestore(),
+    'isLocked': isLocked,
+  };
 
   UserModel copyWith({
     String? name,
@@ -77,17 +84,18 @@ class UserModel {
     String? photoUrl,
     AddressModel? defaultAddress,
     bool? emailVerified,
-  }) =>
-      UserModel(
-        id: id,
-        name: name ?? this.name,
-        email: email,
-        role: role,
-        address: address ?? this.address,
-        phone: phone ?? this.phone,
-        dob: dob ?? this.dob,
-        photoUrl: photoUrl ?? this.photoUrl,
-        defaultAddress: defaultAddress ?? this.defaultAddress,
-        emailVerified: emailVerified ?? this.emailVerified,
-      );
+    bool? isLocked,
+  }) => UserModel(
+    id: id,
+    name: name ?? this.name,
+    email: email,
+    role: role,
+    address: address ?? this.address,
+    phone: phone ?? this.phone,
+    dob: dob ?? this.dob,
+    photoUrl: photoUrl ?? this.photoUrl,
+    defaultAddress: defaultAddress ?? this.defaultAddress,
+    emailVerified: emailVerified ?? this.emailVerified,
+    isLocked: isLocked ?? this.isLocked,
+  );
 }

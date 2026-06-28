@@ -15,7 +15,9 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
-    return user != null ? _profileView(context, ref, user) : _loginView(context);
+    return user != null
+        ? _profileView(context, ref, user)
+        : _loginView(context);
   }
 
   Scaffold _loginView(BuildContext context) {
@@ -30,11 +32,17 @@ class ProfileScreen extends ConsumerWidget {
               const CircleAvatar(
                 radius: 36,
                 backgroundColor: AppColors.surface,
-                child: Icon(Icons.person_outline, size: 40, color: AppColors.textSecondary),
+                child: Icon(
+                  Icons.person_outline,
+                  size: 40,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 20),
-              const Text('Đăng nhập để tiếp tục',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const Text(
+                'Đăng nhập để tiếp tục',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 8),
               const Text(
                 'Đăng nhập để xem đơn hàng, địa chỉ, sản phẩm yêu thích và thanh toán.',
@@ -42,7 +50,10 @@ class ProfileScreen extends ConsumerWidget {
                 style: TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
-              PrimaryButton(label: 'Đăng nhập', onPressed: () => context.go(AppRoutes.login)),
+              PrimaryButton(
+                label: 'Đăng nhập',
+                onPressed: () => context.go(AppRoutes.login),
+              ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => context.go(AppRoutes.register),
@@ -66,26 +77,69 @@ class ProfileScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 _menuCard([
-                  _tile(context, Icons.inventory_2_outlined, 'Đơn hàng của tôi', AppRoutes.orders),
-                  _tile(context, Icons.location_on_outlined, 'Địa chỉ giao hàng', AppRoutes.addresses),
-                  _tile(context, Icons.favorite_border, 'Sản phẩm yêu thích', AppRoutes.wishlist),
-                  _tile(context, Icons.notifications_outlined, 'Thông báo', AppRoutes.notifications),
+                  _tile(
+                    context,
+                    Icons.inventory_2_outlined,
+                    'Đơn hàng của tôi',
+                    AppRoutes.orders,
+                  ),
+                  _tile(
+                    context,
+                    Icons.location_on_outlined,
+                    'Địa chỉ giao hàng',
+                    AppRoutes.addresses,
+                  ),
+                  _tile(
+                    context,
+                    Icons.favorite_border,
+                    'Sản phẩm yêu thích',
+                    AppRoutes.wishlist,
+                  ),
+                  _tile(
+                    context,
+                    Icons.notifications_outlined,
+                    'Thông báo',
+                    AppRoutes.notifications,
+                  ),
                 ]),
                 const SizedBox(height: 12),
+                if (user.isAdmin) ...[
+                  _menuCard([
+                    _tile(
+                      context,
+                      Icons.admin_panel_settings_outlined,
+                      'Quản trị (Admin)',
+                      AppRoutes.admin,
+                      color: AppColors.adminAccent,
+                    ),
+                  ]),
+                  const SizedBox(height: 12),
+                ],
                 _menuCard([
-                  _tile(context, Icons.admin_panel_settings_outlined, 'Quản trị (Admin)', AppRoutes.admin, color: AppColors.adminAccent),
-                ]),
-                const SizedBox(height: 12),
-                _menuCard([
-                  _tile(context, Icons.lock_reset, 'Đổi mật khẩu', null,
-                      color: AppColors.error,
-                      onTap: () => _changePassword(context, ref, user.email)),
-                  _tile(context, Icons.logout, 'Đăng xuất', null,
-                      color: AppColors.error,
-                      onTap: () => _confirmLogout(context, ref)),
-                  _tile(context, Icons.delete_forever, 'Xóa tài khoản', null,
-                      color: AppColors.error,
-                      onTap: () => _confirmDelete(context, ref)),
+                  _tile(
+                    context,
+                    Icons.lock_reset,
+                    'Đổi mật khẩu',
+                    null,
+                    color: AppColors.error,
+                    onTap: () => _changePassword(context, ref, user.email),
+                  ),
+                  _tile(
+                    context,
+                    Icons.logout,
+                    'Đăng xuất',
+                    null,
+                    color: AppColors.error,
+                    onTap: () => _confirmLogout(context, ref),
+                  ),
+                  _tile(
+                    context,
+                    Icons.delete_forever,
+                    'Xóa tài khoản',
+                    null,
+                    color: AppColors.error,
+                    onTap: () => _confirmDelete(context, ref),
+                  ),
                 ]),
               ],
             ),
@@ -96,52 +150,78 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _header(BuildContext context, String? name, String? email, String? photoUrl) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(bottom: BorderSide(color: AppColors.divider)),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _header(
+    BuildContext context,
+    String? name,
+    String? email,
+    String? photoUrl,
+  ) => Container(
+    decoration: const BoxDecoration(
+      color: AppColors.surface,
+      border: Border(bottom: BorderSide(color: AppColors.divider)),
+    ),
+    child: SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Tài khoản',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
               children: [
-                const Text('Tài khoản', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    UserAvatar(photoUrl: photoUrl, radius: 30),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(name?.isNotEmpty == true ? name! : 'Khách',
-                              style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
-                          Text(email ?? '',
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                        ],
+                UserAvatar(photoUrl: photoUrl, radius: 30),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name?.isNotEmpty == true ? name! : 'Khách',
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: const BorderSide(color: AppColors.primary, width: 1.5),
-                        // Theme dùng minimumSize.fromHeight (width=∞) → vỡ layout trong Row. Ép về kích thước theo nội dung.
-                        minimumSize: const Size(64, 40),
+                      Text(
+                        email ?? '',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
                       ),
-                      onPressed: () => context.go(AppRoutes.editProfile),
-                      child: const Text('Chỉnh sửa'),
+                    ],
+                  ),
+                ),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
                     ),
-                  ],
+                    // Theme dùng minimumSize.fromHeight (width=∞) → vỡ layout trong Row. Ép về kích thước theo nội dung.
+                    minimumSize: const Size(64, 40),
+                  ),
+                  onPressed: () => context.go(AppRoutes.editProfile),
+                  child: const Text('Chỉnh sửa'),
                 ),
               ],
             ),
-          ),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 
   Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
     final ok = await showDialog<bool>(
@@ -150,10 +230,17 @@ class ProfileScreen extends ConsumerWidget {
         title: const Text('Đăng xuất?'),
         content: const Text('Bạn có muốn đăng xuất khỏi tài khoản này không?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Đăng xuất', style: TextStyle(color: AppColors.error))),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Đăng xuất',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
         ],
       ),
     );
@@ -161,7 +248,11 @@ class ProfileScreen extends ConsumerWidget {
     await ref.read(authRepositoryProvider).signOut();
   }
 
-  Future<void> _changePassword(BuildContext context, WidgetRef ref, String? email) async {
+  Future<void> _changePassword(
+    BuildContext context,
+    WidgetRef ref,
+    String? email,
+  ) async {
     if (email == null || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không tìm thấy email của tài khoản')),
@@ -174,10 +265,17 @@ class ProfileScreen extends ConsumerWidget {
         title: const Text('Đổi mật khẩu?'),
         content: Text('Chúng tôi sẽ gửi liên kết đặt lại mật khẩu tới $email.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Gửi liên kết', style: TextStyle(color: AppColors.error))),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Gửi liên kết',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
         ],
       ),
     );
@@ -191,9 +289,9 @@ class ProfileScreen extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gửi thất bại, thử lại')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Gửi thất bại, thử lại')));
       }
     }
   }
@@ -204,12 +302,17 @@ class ProfileScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Xóa tài khoản?'),
         content: const Text(
-            'Hành động này không thể hoàn tác. Toàn bộ thông tin tài khoản sẽ bị xóa.'),
+          'Hành động này không thể hoàn tác. Toàn bộ thông tin tài khoản sẽ bị xóa.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Xóa', style: TextStyle(color: AppColors.error))),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xóa', style: TextStyle(color: AppColors.error)),
+          ),
         ],
       ),
     );
@@ -221,29 +324,45 @@ class ProfileScreen extends ConsumerWidget {
         final recent = e.toString().contains('requires-recent-login');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(recent
+            content: Text(
+              recent
                   ? 'Cần đăng nhập lại trước khi xóa, hãy đăng xuất rồi đăng nhập lại'
-                  : 'Xóa thất bại, thử lại')),
+                  : 'Xóa thất bại, thử lại',
+            ),
+          ),
         );
       }
     }
   }
 
   Widget _menuCard(List<Widget> children) => Container(
-        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), boxShadow: const [
-          BoxShadow(color: Color(0x0F000000), blurRadius: 4, offset: Offset(0, 1)),
-        ]),
-        child: Column(children: children),
-      );
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x0F000000),
+          blurRadius: 4,
+          offset: Offset(0, 1),
+        ),
+      ],
+    ),
+    child: Column(children: children),
+  );
 
-  Widget _tile(BuildContext context, IconData icon, String label, String? route,
-          {Color color = AppColors.textPrimary, VoidCallback? onTap}) =>
-      ListTile(
-        leading: Icon(icon, color: color),
-        title: Text(label, style: TextStyle(color: color, fontSize: 14)),
-        trailing: (route != null || onTap != null)
-            ? const Icon(Icons.chevron_right, color: AppColors.textTertiary)
-            : null,
-        onTap: onTap ?? (route != null ? () => context.go(route) : null),
-      );
+  Widget _tile(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String? route, {
+    Color color = AppColors.textPrimary,
+    VoidCallback? onTap,
+  }) => ListTile(
+    leading: Icon(icon, color: color),
+    title: Text(label, style: TextStyle(color: color, fontSize: 14)),
+    trailing: (route != null || onTap != null)
+        ? const Icon(Icons.chevron_right, color: AppColors.textTertiary)
+        : null,
+    onTap: onTap ?? (route != null ? () => context.go(route) : null),
+  );
 }
