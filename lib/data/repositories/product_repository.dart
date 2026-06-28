@@ -150,7 +150,7 @@ class FirestoreProductRepository implements ProductRepository {
         final snap = await _col
             .where('isActive', isEqualTo: true)
             .where('categoryId', isEqualTo: categoryId)
-            .get();
+            .get(const GetOptions(source: Source.server));
         final products = snap.docs.map(ProductModel.fromFirestore).toList()
           ..sort(_compareFeaturedByPrice);
         return products.take(3);
@@ -182,7 +182,7 @@ class FirestoreProductRepository implements ProductRepository {
   Future<List<ProductModel>> getByCategory(String? categoryId) async {
     Query<Map<String, dynamic>> q = _col.where('isActive', isEqualTo: true);
     if (categoryId != null) q = q.where('categoryId', isEqualTo: categoryId);
-    final snap = await q.get();
+    final snap = await q.get(const GetOptions(source: Source.server));
     return snap.docs.map(ProductModel.fromFirestore).toList();
   }
 
@@ -199,7 +199,7 @@ class FirestoreProductRepository implements ProductRepository {
       q = q.startAfterDocument(cursor);
     }
 
-    final snap = await q.get();
+    final snap = await q.get(const GetOptions(source: Source.server));
     return ProductPage(
       items: snap.docs.map(ProductModel.fromFirestore).toList(),
       cursor: snap.docs.isEmpty ? cursor : snap.docs.last,
@@ -209,13 +209,15 @@ class FirestoreProductRepository implements ProductRepository {
 
   @override
   Future<ProductModel?> getById(String id) async {
-    final doc = await _col.doc(id).get();
+    final doc = await _col.doc(id).get(const GetOptions(source: Source.server));
     return doc.exists ? ProductModel.fromFirestore(doc) : null;
   }
 
   @override
   Future<List<CategoryModel>> getCategories() async {
-    final snap = await _db.collection(AppConstants.colCategories).get();
+    final snap = await _db
+        .collection(AppConstants.colCategories)
+        .get(const GetOptions(source: Source.server));
     return snap.docs.map(CategoryModel.fromFirestore).toList();
   }
 
@@ -225,7 +227,9 @@ class FirestoreProductRepository implements ProductRepository {
     // rồi filter client-side (case-insensitive). Ổn với catalog nhỏ.
     // Production nên dùng Algolia / Typesense.
     final q = query.toLowerCase();
-    final snap = await _col.where('isActive', isEqualTo: true).get();
+    final snap = await _col
+        .where('isActive', isEqualTo: true)
+        .get(const GetOptions(source: Source.server));
     return snap.docs
         .map(ProductModel.fromFirestore)
         .where(
@@ -262,7 +266,7 @@ class FirestoreProductRepository implements ProductRepository {
         q = q.startAfterDocument(nextCursor);
       }
 
-      final snap = await q.get();
+      final snap = await q.get(const GetOptions(source: Source.server));
       hasMoreDocs = snap.docs.length == scanBatchSize;
       if (snap.docs.isEmpty) break;
       nextCursor = snap.docs.last;

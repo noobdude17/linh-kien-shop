@@ -123,7 +123,7 @@ class ProductModel {
       categoryName: data['categoryName'] ?? '',
       stock: data['stock'] ?? 0,
       isActive: data['isActive'] ?? true,
-      specs: Map<String, String>.from(data['specs'] ?? {}),
+      specs: _stringMap(data['specs']),
       variants: (data['variants'] as List<dynamic>? ?? [])
           .map((v) => ProductVariant.fromMap(v as Map<String, dynamic>))
           .toList(),
@@ -150,4 +150,16 @@ class ProductModel {
     'variants': variants.map((v) => v.toMap()).toList(),
     'compatibility': compatibility,
   };
+
+  static Map<String, String> _stringMap(Object? value) {
+    if (value is! Map) return const {};
+    return value.map((key, value) {
+      final stringValue = switch (value) {
+        null => '',
+        Iterable() => value.join(', '),
+        _ => value.toString(),
+      };
+      return MapEntry(key.toString(), stringValue);
+    });
+  }
 }
