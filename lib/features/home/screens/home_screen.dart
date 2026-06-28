@@ -197,114 +197,120 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           const _HomeHeader(),
           Expanded(
-            child: CustomScrollView(
-              controller: _scrollController,
-              scrollCacheExtent: const ScrollCacheExtent.pixels(900),
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppDimens.screenPadding,
-                      AppDimens.screenPadding,
-                      AppDimens.screenPadding,
-                      0,
-                    ),
-                    child: PromoBanner(onTap: () => context.go(AppRoutes.list)),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppDimens.screenPadding,
-                      8,
-                      AppDimens.screenPadding,
-                      0,
-                    ),
-                    child: SectionHeader(
-                      title: 'Danh mục',
-                      actionLabel: 'Xem tất cả →',
-                      onAction: () => context.go(AppRoutes.categories),
-                    ),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 92,
-                    child: categories.when(
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => Center(child: Text('Lỗi: $e')),
-                      data: (list) => ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimens.screenPadding,
-                        ),
-                        itemCount: list.length > 7 ? 7 : list.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 8),
-                        itemBuilder: (_, i) => CategoryChip(
-                          category: list[i],
-                          onTap: () => context.push(
-                            '${AppRoutes.list}?categoryId=${list[i].id}',
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppDimens.screenPadding,
-                      8,
-                      AppDimens.screenPadding,
-                      0,
-                    ),
-                    child: SectionHeader(
-                      title: 'Sản phẩm nổi bật',
-                      actionLabel: 'Xem tất cả →',
-                      onAction: () => context.go(AppRoutes.list),
-                    ),
-                  ),
-                ),
-                if (_isInitialLoading)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.all(40),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                  )
-                else if (_error != null)
+            child: RefreshIndicator(
+              onRefresh: _loadFirstPage,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                scrollCacheExtent: const ScrollCacheExtent.pixels(900),
+                slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Center(child: Text('L?i: $_error')),
-                    ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.all(AppDimens.screenPadding),
-                    sliver: SliverGrid(
-                      delegate: SliverChildBuilderDelegate(
-                        (_, i) => ProductCard(
-                          product: _products[i],
-                          onTap: () => context.push(
-                            '${AppRoutes.detail}/${_products[i].id}',
-                          ),
-                        ),
-                        childCount: _products.length,
+                      padding: const EdgeInsets.fromLTRB(
+                        AppDimens.screenPadding,
+                        AppDimens.screenPadding,
+                        AppDimens.screenPadding,
+                        0,
                       ),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: AppDimens.gap,
-                            crossAxisSpacing: AppDimens.gap,
-                            childAspectRatio: 0.62,
-                          ),
+                      child: PromoBanner(
+                        onTap: () => context.go(AppRoutes.list),
+                      ),
                     ),
                   ),
-                if (_isLoadingMore)
-                  const SliverToBoxAdapter(child: _LoadingMoreFooter()),
-              ],
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppDimens.screenPadding,
+                        8,
+                        AppDimens.screenPadding,
+                        0,
+                      ),
+                      child: SectionHeader(
+                        title: 'Danh mục',
+                        actionLabel: 'Xem tất cả →',
+                        onAction: () => context.go(AppRoutes.categories),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 92,
+                      child: categories.when(
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (e, _) => Center(child: Text('Lỗi: $e')),
+                        data: (list) => ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppDimens.screenPadding,
+                          ),
+                          itemCount: list.length > 7 ? 7 : list.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) => CategoryChip(
+                            category: list[i],
+                            onTap: () => context.push(
+                              '${AppRoutes.list}?categoryId=${list[i].id}',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppDimens.screenPadding,
+                        8,
+                        AppDimens.screenPadding,
+                        0,
+                      ),
+                      child: SectionHeader(
+                        title: 'Sản phẩm nổi bật',
+                        actionLabel: 'Xem tất cả →',
+                        onAction: () => context.go(AppRoutes.list),
+                      ),
+                    ),
+                  ),
+                  if (_isInitialLoading)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(40),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    )
+                  else if (_error != null)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Center(child: Text('L?i: $_error')),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.all(AppDimens.screenPadding),
+                      sliver: SliverGrid(
+                        delegate: SliverChildBuilderDelegate(
+                          (_, i) => ProductCard(
+                            product: _products[i],
+                            onTap: () => context.push(
+                              '${AppRoutes.detail}/${_products[i].id}',
+                            ),
+                          ),
+                          childCount: _products.length,
+                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: AppDimens.gap,
+                              crossAxisSpacing: AppDimens.gap,
+                              childAspectRatio: 0.62,
+                            ),
+                      ),
+                    ),
+                  if (_isLoadingMore)
+                    const SliverToBoxAdapter(child: _LoadingMoreFooter()),
+                ],
+              ),
             ),
           ),
         ],

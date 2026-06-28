@@ -4,7 +4,11 @@ import '../../../data/models/product_model.dart';
 /// sản phẩm thật (nhập từ template part-picker) chỉ có `compatibility` → fallback
 /// sang đó để trang chi tiết/so sánh không bị trống.
 Map<String, String> displaySpecs(ProductModel p) {
-  if (p.specs.isNotEmpty) return p.specs;
+  if (p.specs.isNotEmpty) {
+    return Map.fromEntries(
+      p.specs.entries.where((e) => !_skipKeys.contains(e.key)),
+    );
+  }
   final out = <String, String>{};
   p.compatibility.forEach((k, v) {
     if (_skipKeys.contains(k)) return;
@@ -26,6 +30,7 @@ const _skipKeys = {
   'sourceUrl',
   'sourceType',
   'inclusionScope',
+  'pcppPartNumber',
   'tags',
   'notes',
 };
