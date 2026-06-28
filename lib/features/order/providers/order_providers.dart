@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../data/models/cart_item_model.dart';
 import '../../../data/models/order_model.dart';
 import '../../../data/repositories/order_repository.dart';
@@ -44,6 +45,16 @@ class OrderCreationNotifier extends AsyncNotifier<OrderModel?> {
       state = AsyncError(e, st);
       rethrow;
     }
+  }
+
+  /// Đánh dấu đơn hiện tại đã thanh toán (gọi sau khi VNPay trả về thành công).
+  Future<void> markCurrentPaid() async {
+    final order = state.valueOrNull;
+    if (order == null) return;
+    await ref.read(orderRepositoryProvider).markPaid(order.id);
+    state = AsyncData(
+      order.copyWith(paid: true, status: AppConstants.statusConfirmed),
+    );
   }
 }
 

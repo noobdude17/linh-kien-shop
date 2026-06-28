@@ -50,7 +50,7 @@ class OrderModel {
 
   int get itemCount => items.fold(0, (s, e) => s + e.quantity);
 
-  OrderModel copyWith({String? status}) => OrderModel(
+  OrderModel copyWith({String? status, bool? paid}) => OrderModel(
         id: id,
         code: code,
         userId: userId,
@@ -62,7 +62,7 @@ class OrderModel {
         status: status ?? this.status,
         address: address,
         paymentMethod: paymentMethod,
-        paid: paid,
+        paid: paid ?? this.paid,
         createdAt: createdAt,
       );
 

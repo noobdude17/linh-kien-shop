@@ -45,6 +45,11 @@ dependencies:
   geocoding: ^4.0.0
   geolocator: ^13.0.0
 
+  # Payment (VNPay sandbox): official webview + tự ký HMAC-SHA512.
+  # Không dùng package vnpay_flutter vì nó kéo theo webview plugin cũ vỡ build AGP 8.
+  webview_flutter: ^4.0.0
+  crypto: ^3.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
