@@ -31,6 +31,7 @@ class ProductCard extends ConsumerWidget {
       onTap: onTap,
       borderRadius: AppDimens.brCard,
       child: Container(
+        width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: AppDimens.brCard,
@@ -40,61 +41,71 @@ class ProductCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                ImagePlaceholder(
-                  label: product.imageLabel,
-                  imageUrl: product.primaryImageUrl,
-                  height: AppDimens.productImageHeight,
-                  radius: 0,
-                ),
-                if (discount != null)
-                  Positioned(top: 8, left: 8, child: _badge('-$discount%')),
-                if (!product.inStock)
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.black26,
-                      alignment: Alignment.center,
+            SizedBox(
+              width: double.infinity,
+              height: AppDimens.productImageHeight,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ImagePlaceholder(
+                    label: product.imageLabel,
+                    imageUrl: product.primaryImageUrl,
+                    width: double.infinity,
+                    height: AppDimens.productImageHeight,
+                    radius: 0,
+                  ),
+                  if (discount != null)
+                    Positioned(top: 8, left: 8, child: _badge('-$discount%')),
+                  if (!product.inStock)
+                    Positioned.fill(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.errorBg,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'Hết hàng',
-                          style: TextStyle(
-                            color: AppColors.error,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
+                        color: Colors.black26,
+                        alignment: Alignment.center,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.errorBg,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'Hết hàng',
+                            style: TextStyle(
+                              color: AppColors.error,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                if (showWishlistHeart)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () => ref
-                          .read(wishlistProvider.notifier)
-                          .toggle(product.id),
-                      child: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: const Color(0xCCFFFFFF),
-                        child: Icon(
-                          isWishlisted ? Icons.favorite : Icons.favorite_border,
-                          size: 18,
-                          color: isWishlisted ? Colors.red : AppColors.bodyText,
+                  if (showWishlistHeart)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: GestureDetector(
+                        onTap: () => ref
+                            .read(wishlistProvider.notifier)
+                            .toggle(product.id),
+                        child: CircleAvatar(
+                          radius: 16,
+                          backgroundColor: const Color(0xCCFFFFFF),
+                          child: Icon(
+                            isWishlisted
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            size: 18,
+                            color: isWishlisted
+                                ? Colors.red
+                                : AppColors.bodyText,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(12),
@@ -108,33 +119,19 @@ class ProductCard extends ConsumerWidget {
                     style: AppTextStyles.productCardName,
                   ),
                   const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          Formatter.price(product.price),
-                          style: AppTextStyles.priceCard,
-                        ),
-                      ),
-                      if (product.oldPrice != null) ...[
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            Formatter.price(product.oldPrice!),
-                            style: AppTextStyles.oldPrice,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+                  _PriceBlock(product: product),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       const Icon(Icons.star, size: 12, color: AppColors.star),
                       const SizedBox(width: 2),
-                      Text(
-                        product.rating.toStringAsFixed(1),
-                        style: AppTextStyles.productCardMeta,
+                      Flexible(
+                        child: Text(
+                          product.rating.toStringAsFixed(1),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.productCardMeta,
+                        ),
                       ),
                       if (product.stockStatus == StockStatus.lowStock) ...[
                         const SizedBox(width: 6),
@@ -166,4 +163,56 @@ class ProductCard extends ConsumerWidget {
     ),
     child: Text(text, style: AppTextStyles.badge.copyWith(fontSize: 11)),
   );
+}
+
+class _PriceBlock extends StatelessWidget {
+  const _PriceBlock({required this.product});
+
+  final ProductModel product;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _SingleLinePrice(
+          text: Formatter.price(product.price),
+          style: AppTextStyles.priceCard,
+        ),
+        if (product.oldPrice != null) ...[
+          const SizedBox(height: 2),
+          _SingleLinePrice(
+            text: Formatter.price(product.oldPrice!),
+            style: AppTextStyles.oldPrice,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _SingleLinePrice extends StatelessWidget {
+  const _SingleLinePrice({required this.text, required this.style});
+
+  final String text;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: FittedBox(
+        alignment: Alignment.centerLeft,
+        fit: BoxFit.scaleDown,
+        child: Text(
+          text,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.visible,
+          style: style,
+        ),
+      ),
+    );
+  }
 }

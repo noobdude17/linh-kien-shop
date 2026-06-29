@@ -29,7 +29,10 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       if (mounted && (u == null || !u.emailVerified)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Chưa thấy xác nhận. Mở email và bấm liên kết trước nhé.')),
+            content: Text(
+              'Chưa thấy xác nhận. Mở email và bấm liên kết trước nhé.',
+            ),
+          ),
         );
       }
     } finally {
@@ -51,8 +54,10 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  'Gửi lại thất bại: ${tooMany ? 'thử lại sau ít phút' : 'vui lòng thử lại'}')),
+            content: Text(
+              'Gửi lại thất bại: ${tooMany ? 'thử lại sau ít phút' : 'vui lòng thử lại'}',
+            ),
+          ),
         );
       }
     } finally {
@@ -84,19 +89,26 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               child: const Text('✉️', style: TextStyle(fontSize: 32)),
             ),
             const SizedBox(height: 24),
-            Text('Đã gửi liên kết xác nhận tới\n$email',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+            Text(
+              'Đã gửi liên kết xác nhận tới\n$email',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 8),
-            const Text('Mở email, bấm vào liên kết, rồi quay lại đây.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary)),
+            const Text(
+              'Mở email, bấm vào liên kết, rồi quay lại đây.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
             const SizedBox(height: 28),
             _checking
                 ? const Padding(
                     padding: EdgeInsets.all(12),
-                    child: CircularProgressIndicator())
+                    child: CircularProgressIndicator(),
+                  )
                 : PrimaryButton(label: 'Tôi đã xác nhận', onPressed: _check),
             const SizedBox(height: 12),
             TextButton(

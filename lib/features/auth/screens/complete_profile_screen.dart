@@ -47,7 +47,8 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     );
     if (picked != null) {
       // dd/MM/yyyy — không cần gói intl.
-      _dob.text = '${picked.day.toString().padLeft(2, '0')}/'
+      _dob.text =
+          '${picked.day.toString().padLeft(2, '0')}/'
           '${picked.month.toString().padLeft(2, '0')}/${picked.year}';
     }
   }
@@ -57,7 +58,9 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
       MaterialPageRoute(
         builder: (_) => LocationPickerScreen(
           initial: (_lat != null && _lng != null) ? LatLng(_lat!, _lng!) : null,
-          initialText: _address.text.trim().isEmpty ? null : _address.text.trim(),
+          initialText: _address.text.trim().isEmpty
+              ? null
+              : _address.text.trim(),
         ),
       ),
     );
@@ -74,7 +77,9 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await ref.read(authRepositoryProvider).updateProfile(
+      await ref
+          .read(authRepositoryProvider)
+          .updateProfile(
             name: _name.text.trim(),
             phone: _phone.text.trim(),
             address: _address.text.trim(),
@@ -123,10 +128,13 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                   ),
                 ),
               ),
-              _field(_name, 'Họ và tên', Icons.person_outline,
-                  validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Nhập họ tên'
-                      : null),
+              _field(
+                _name,
+                'Họ và tên',
+                Icons.person_outline,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Nhập họ tên' : null,
+              ),
               // Email đồng bộ từ tài khoản — chỉ đọc.
               TextFormField(
                 enabled: false,
@@ -138,27 +146,40 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              _field(_phone, 'Số điện thoại', Icons.phone_outlined,
-                  keyboard: TextInputType.phone,
-                  validator: (v) => (v == null || v.trim().length < 9)
-                      ? 'Số điện thoại không hợp lệ'
-                      : null),
-              _field(_dob, 'Ngày sinh', Icons.cake_outlined,
-                  readOnly: true,
-                  onTap: _pickDob,
-                  validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Chọn ngày sinh'
-                      : null),
-              _field(_address, 'Địa chỉ (chọn trên bản đồ)', Icons.location_on_outlined,
-                  readOnly: true, onTap: _pickLocation,
-                  validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Chọn địa chỉ trên bản đồ'
-                      : null),
+              _field(
+                _phone,
+                'Số điện thoại',
+                Icons.phone_outlined,
+                keyboard: TextInputType.phone,
+                validator: (v) => (v == null || v.trim().length < 9)
+                    ? 'Số điện thoại không hợp lệ'
+                    : null,
+              ),
+              _field(
+                _dob,
+                'Ngày sinh',
+                Icons.cake_outlined,
+                readOnly: true,
+                onTap: _pickDob,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Chọn ngày sinh' : null,
+              ),
+              _field(
+                _address,
+                'Địa chỉ (chọn trên bản đồ)',
+                Icons.location_on_outlined,
+                readOnly: true,
+                onTap: _pickLocation,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Chọn địa chỉ trên bản đồ'
+                    : null,
+              ),
               const SizedBox(height: 8),
               _loading
                   ? const Padding(
                       padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator())
+                      child: CircularProgressIndicator(),
+                    )
                   : PrimaryButton(label: 'Tiếp tục', onPressed: _submit),
             ],
           ),
@@ -167,11 +188,15 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
     );
   }
 
-  Widget _field(TextEditingController c, String hint, IconData icon,
-      {TextInputType? keyboard,
-      bool readOnly = false,
-      VoidCallback? onTap,
-      String? Function(String?)? validator}) {
+  Widget _field(
+    TextEditingController c,
+    String hint,
+    IconData icon, {
+    TextInputType? keyboard,
+    bool readOnly = false,
+    VoidCallback? onTap,
+    String? Function(String?)? validator,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(

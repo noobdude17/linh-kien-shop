@@ -64,22 +64,54 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       // A · Auth
-      GoRoute(path: AppRoutes.splash, builder: (_, _) => _withBackScope(const SplashScreen())),
-      GoRoute(path: AppRoutes.onboarding, builder: (_, _) => _withBackScope(const OnboardingScreen())),
-      GoRoute(path: AppRoutes.login, builder: (_, _) => _withBackScope(const LoginScreen())),
-      GoRoute(path: AppRoutes.register, builder: (_, _) => _withBackScope(const RegisterScreen())),
-      GoRoute(path: AppRoutes.forgot, builder: (_, _) => _withBackScope(const ForgotPasswordScreen())),
-      GoRoute(path: AppRoutes.verifyEmail, builder: (_, _) => _withBackScope(const VerifyEmailScreen())),
-      GoRoute(path: AppRoutes.completeProfile, builder: (_, _) => _withBackScope(const CompleteProfileScreen())),
+      GoRoute(
+        path: AppRoutes.splash,
+        builder: (_, _) => _withBackScope(const SplashScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        builder: (_, _) => _withBackScope(const OnboardingScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.login,
+        builder: (_, _) => _withBackScope(const LoginScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        builder: (_, _) => _withBackScope(const RegisterScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.forgot,
+        builder: (_, _) => _withBackScope(const ForgotPasswordScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.verifyEmail,
+        builder: (_, _) => _withBackScope(const VerifyEmailScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.completeProfile,
+        builder: (_, _) => _withBackScope(const CompleteProfileScreen()),
+      ),
 
       // B · Home & Browse
-      GoRoute(path: AppRoutes.home, builder: (_, _) => _withBackScope(const HomeScreen())),
-      GoRoute(path: AppRoutes.categories, builder: (_, _) => _withBackScope(const CategoriesScreen())),
-      GoRoute(path: AppRoutes.search, builder: (_, _) => _withBackScope(const SearchScreen())),
+      GoRoute(
+        path: AppRoutes.home,
+        builder: (_, _) => _withBackScope(const HomeScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.categories,
+        builder: (_, _) => _withBackScope(const CategoriesScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.search,
+        builder: (_, _) => _withBackScope(const SearchScreen()),
+      ),
       GoRoute(
         path: AppRoutes.list,
         builder: (_, state) => _withBackScope(
-          ProductListScreen(categoryId: state.uri.queryParameters['categoryId']),
+          ProductListScreen(
+            categoryId: state.uri.queryParameters['categoryId'],
+          ),
         ),
       ),
       GoRoute(
@@ -88,7 +120,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           SearchResultsScreen(query: state.uri.queryParameters['q'] ?? ''),
         ),
       ),
-      GoRoute(path: AppRoutes.empty, builder: (_, _) => _withBackScope(const EmptyResultsScreen())),
+      GoRoute(
+        path: AppRoutes.empty,
+        builder: (_, _) => _withBackScope(const EmptyResultsScreen()),
+      ),
       GoRoute(
         path: AppRoutes.partPicker,
         builder: (_, _) => _withBackScope(const PartPickerScreen()),
@@ -113,39 +148,90 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
 
       // D · Cart & Checkout
-      GoRoute(path: AppRoutes.cart, builder: (_, _) => _withBackScope(const CartScreen())),
-      GoRoute(path: AppRoutes.checkout, builder: (_, _) => _withBackScope(const CheckoutScreen())),
-      GoRoute(path: AppRoutes.vnpay, builder: (_, _) => _withBackScope(const VnpayGatewayScreen())),
-      GoRoute(path: AppRoutes.processing, builder: (_, _) => _withBackScope(const PaymentProcessingScreen())),
-      GoRoute(path: AppRoutes.success, builder: (_, _) => _withBackScope(const OrderSuccessScreen())),
+      GoRoute(
+        path: AppRoutes.cart,
+        builder: (_, _) => _withBackScope(const CartScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.checkout,
+        builder: (_, _) => _withBackScope(const CheckoutScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.vnpay,
+        builder: (_, _) => _withBackScope(const VnpayGatewayScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.processing,
+        builder: (_, _) => _withBackScope(const PaymentProcessingScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.success,
+        builder: (_, _) => _withBackScope(const OrderSuccessScreen()),
+      ),
 
       // E · Account & Orders
-      GoRoute(path: AppRoutes.profile, builder: (_, _) => _withBackScope(const ProfileScreen())),
-      GoRoute(path: AppRoutes.editProfile, builder: (_, _) => _withBackScope(const EditProfileScreen())),
-      GoRoute(path: AppRoutes.orders, builder: (_, _) => _withBackScope(const OrderHistoryScreen())),
+      GoRoute(
+        path: AppRoutes.profile,
+        builder: (_, _) => _withBackScope(const ProfileScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.editProfile,
+        builder: (_, _) => _withBackScope(const EditProfileScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.orders,
+        builder: (_, _) => _withBackScope(const OrderHistoryScreen()),
+      ),
       GoRoute(
         path: '${AppRoutes.orderDetail}/:id',
         builder: (_, state) => _withBackScope(
           OrderDetailScreen(orderId: state.pathParameters['id']!),
         ),
       ),
-      GoRoute(path: AppRoutes.addresses, builder: (_, _) => _withBackScope(const AddressListScreen())),
+      GoRoute(
+        path: AppRoutes.addresses,
+        builder: (_, _) => _withBackScope(const AddressListScreen()),
+      ),
       GoRoute(
         path: AppRoutes.addAddress,
         builder: (_, state) => _withBackScope(
           AddAddressScreen(initial: state.extra as AddressModel?),
         ),
       ),
-      GoRoute(path: AppRoutes.wishlist, builder: (_, _) => _withBackScope(const WishlistScreen())),
-      GoRoute(path: AppRoutes.wishlistEmpty, builder: (_, _) => _withBackScope(const WishlistEmptyScreen())),
-      GoRoute(path: AppRoutes.notifications, builder: (_, _) => _withBackScope(const NotificationsScreen())),
+      GoRoute(
+        path: AppRoutes.wishlist,
+        builder: (_, _) => _withBackScope(const WishlistScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.wishlistEmpty,
+        builder: (_, _) => _withBackScope(const WishlistEmptyScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (_, _) => _withBackScope(const NotificationsScreen()),
+      ),
 
       // F · Admin
-      GoRoute(path: AppRoutes.admin, builder: (_, _) => _withBackScope(const AdminDashboardScreen())),
-      GoRoute(path: AppRoutes.adminProducts, builder: (_, _) => _withBackScope(const AdminProductListScreen())),
-      GoRoute(path: AppRoutes.adminProductEdit, builder: (_, _) => _withBackScope(const AdminProductEditScreen())),
-      GoRoute(path: AppRoutes.adminOrders, builder: (_, _) => _withBackScope(const AdminOrderManagementScreen())),
-      GoRoute(path: AppRoutes.adminOrderDetail, builder: (_, _) => _withBackScope(const AdminOrderDetailScreen())),
+      GoRoute(
+        path: AppRoutes.admin,
+        builder: (_, _) => _withBackScope(const AdminDashboardScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.adminProducts,
+        builder: (_, _) => _withBackScope(const AdminProductListScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.adminProductEdit,
+        builder: (_, _) => _withBackScope(const AdminProductEditScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.adminOrders,
+        builder: (_, _) => _withBackScope(const AdminOrderManagementScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.adminOrderDetail,
+        builder: (_, _) => _withBackScope(const AdminOrderDetailScreen()),
+      ),
     ],
   );
 });

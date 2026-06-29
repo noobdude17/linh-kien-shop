@@ -123,7 +123,7 @@ class ProductModel {
       categoryName: data['categoryName'] ?? '',
       stock: data['stock'] ?? 0,
       isActive: data['isActive'] ?? true,
-      specs: Map<String, String>.from(data['specs'] ?? {}),
+      specs: _stringMap(data['specs']),
       variants: (data['variants'] as List<dynamic>? ?? [])
           .map((v) => ProductVariant.fromMap(v as Map<String, dynamic>))
           .toList(),
@@ -150,4 +150,58 @@ class ProductModel {
     'variants': variants.map((v) => v.toMap()).toList(),
     'compatibility': compatibility,
   };
+
+  ProductModel copyWith({
+    String? id,
+    String? name,
+    String? brand,
+    String? description,
+    double? price,
+    double? oldPrice,
+    double? rating,
+    int? reviewCount,
+    String? imageLabel,
+    String? imageUrl,
+    List<String>? images,
+    String? categoryId,
+    String? categoryName,
+    int? stock,
+    bool? isActive,
+    Map<String, String>? specs,
+    List<ProductVariant>? variants,
+    Map<String, dynamic>? compatibility,
+  }) {
+    return ProductModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      brand: brand ?? this.brand,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      oldPrice: oldPrice ?? this.oldPrice,
+      rating: rating ?? this.rating,
+      reviewCount: reviewCount ?? this.reviewCount,
+      imageLabel: imageLabel ?? this.imageLabel,
+      imageUrl: imageUrl ?? this.imageUrl,
+      images: images ?? this.images,
+      categoryId: categoryId ?? this.categoryId,
+      categoryName: categoryName ?? this.categoryName,
+      stock: stock ?? this.stock,
+      isActive: isActive ?? this.isActive,
+      specs: specs ?? this.specs,
+      variants: variants ?? this.variants,
+      compatibility: compatibility ?? this.compatibility,
+    );
+  }
+
+  static Map<String, String> _stringMap(Object? value) {
+    if (value is! Map) return const {};
+    return value.map((key, value) {
+      final stringValue = switch (value) {
+        null => '',
+        Iterable() => value.join(', '),
+        _ => value.toString(),
+      };
+      return MapEntry(key.toString(), stringValue);
+    });
+  }
 }

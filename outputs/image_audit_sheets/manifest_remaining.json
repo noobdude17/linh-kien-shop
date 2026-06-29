@@ -1,0 +1,32 @@
+{
+  "gpu": [
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\gpu_01.jpg",
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\gpu_02.jpg",
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\gpu_03.jpg"
+  ],
+  "keyboard": [
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\keyboard_01.jpg"
+  ],
+  "mainboard": [
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\mainboard_01.jpg",
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\mainboard_02.jpg"
+  ],
+  "monitor": [
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\monitor_01.jpg"
+  ],
+  "mouse": [
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\mouse_01.jpg"
+  ],
+  "os": [
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\os_01.jpg"
+  ],
+  "psu": [
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\psu_01.jpg"
+  ],
+  "ram": [
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\ram_01.jpg"
+  ],
+  "storage": [
+    "C:\\Users\\Huy\\Downloads\\Programs\\Project\\linh-kien-shop\\outputs\\image_audit_sheets\\storage_01.jpg"
+  ]
+}

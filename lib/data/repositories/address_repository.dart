@@ -28,8 +28,9 @@ class FirestoreAddressRepository implements AddressRepository {
   Stream<List<AddressModel>> watch(String uid) =>
       _col(uid).snapshots().asyncMap((snap) async {
         if (snap.docs.isEmpty) return _seedFromEmbedded(uid);
-        final list =
-            snap.docs.map((d) => AddressModel.fromFirestore(d)).toList();
+        final list = snap.docs
+            .map((d) => AddressModel.fromFirestore(d))
+            .toList();
         list.sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
         return list;
       });
@@ -39,8 +40,10 @@ class FirestoreAddressRepository implements AddressRepository {
     final doc = await _db.collection(AppConstants.colUsers).doc(uid).get();
     final def = doc.data()?['defaultAddress'];
     if (def is Map<String, dynamic>) {
-      final seeded =
-          AddressModel.fromMap('default', def).copyWith(isDefault: true);
+      final seeded = AddressModel.fromMap(
+        'default',
+        def,
+      ).copyWith(isDefault: true);
       await _col(uid).doc('default').set(seeded.toFirestore());
       return [seeded];
     }
@@ -65,7 +68,9 @@ class FirestoreAddressRepository implements AddressRepository {
   @override
   Future<void> setDefault(String uid, String id) async {
     final doc = await _col(uid).doc(id).get();
-    if (doc.exists) await _makeDefault(uid, id, AddressModel.fromFirestore(doc));
+    if (doc.exists) {
+      await _makeDefault(uid, id, AddressModel.fromFirestore(doc));
+    }
   }
 
   /// Đặt [id] làm mặc định: gỡ cờ các địa chỉ khác + mirror vào user.defaultAddress.
@@ -78,10 +83,11 @@ class FirestoreAddressRepository implements AddressRepository {
     await batch.commit();
     // ponytail: mirror giữ reader cũ (checkout/profile đọc user.defaultAddress)
     // chạy được; bỏ khi mọi reader đã chuyển sang subcollection.
-    await _db.collection(AppConstants.colUsers).doc(uid).set(
-      {'defaultAddress': a.copyWith(id: 'default', isDefault: true).toFirestore()},
-      SetOptions(merge: true),
-    );
+    await _db.collection(AppConstants.colUsers).doc(uid).set({
+      'defaultAddress': a
+          .copyWith(id: 'default', isDefault: true)
+          .toFirestore(),
+    }, SetOptions(merge: true));
   }
 }
 
