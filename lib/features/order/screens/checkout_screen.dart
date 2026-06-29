@@ -130,9 +130,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 _paymentOption(AppConstants.payVnpay, 'VNPay',
                     'Thẻ ATM / Thẻ quốc tế / Ví điện tử', _vnpayLogo()),
                 const SizedBox(height: 8),
-                _paymentOption(AppConstants.payVnpayQr, 'VNPay QR',
-                    'Quét mã QR bằng app ngân hàng', _qrLogo()),
-                const SizedBox(height: 8),
                 _paymentOption(
                     AppConstants.payCod,
                     'Thanh toán khi nhận hàng',
@@ -274,9 +271,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               )
             else
               AccentButton(
-                label: _payment == AppConstants.payVnpayQr
-                    ? 'Thanh toán VNPay QR 🔒'
-                    : 'Thanh toán qua VNPay 🔒',
+                label: 'Thanh toán qua VNPay 🔒',
                 onPressed: addr != null && hasItems
                     ? () => _submit(total: subtotal, addr: addr)
                     : null,
@@ -403,16 +398,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       ),
     );
   }
-
-  Widget _qrLogo() => Container(
-        width: 48,
-        height: 28,
-        decoration: BoxDecoration(
-            color: AppColors.vnpBlue,
-            borderRadius: BorderRadius.circular(6)),
-        alignment: Alignment.center,
-        child: const Icon(Icons.qr_code_2, color: Colors.white, size: 20),
-      );
 
   Widget _vnpayLogo() => Container(
         width: 48,
