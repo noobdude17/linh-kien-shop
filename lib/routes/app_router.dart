@@ -43,6 +43,8 @@ import '../features/admin/screens/admin_product_list_screen.dart';
 import '../features/admin/screens/admin_product_edit_screen.dart';
 import '../features/admin/screens/admin_order_management_screen.dart';
 import '../features/admin/screens/admin_order_detail_screen.dart';
+import '../features/admin/screens/admin_user_list_screen.dart';
+import '../features/admin/screens/admin_review_list_screen.dart';
 import 'app_routes.dart';
 import 'auth_guard.dart';
 
@@ -60,6 +62,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         loggedIn: user != null,
         emailVerified: user?.emailVerified ?? true,
         profileComplete: user?.profileComplete ?? false,
+        isAdmin: user?.isAdmin ?? false,
+        isLocked: user?.isLocked ?? false,
       );
     },
     routes: [
@@ -225,12 +229,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => _withBackScope(const AdminProductEditScreen()),
       ),
       GoRoute(
+        path: '${AppRoutes.adminProductEdit}/:id',
+        builder: (_, state) => _withBackScope(
+          AdminProductEditScreen(productId: state.pathParameters['id']),
+        ),
+      ),
+      GoRoute(
         path: AppRoutes.adminOrders,
         builder: (_, _) => _withBackScope(const AdminOrderManagementScreen()),
       ),
       GoRoute(
-        path: AppRoutes.adminOrderDetail,
-        builder: (_, _) => _withBackScope(const AdminOrderDetailScreen()),
+        path: '${AppRoutes.adminOrderDetail}/:id',
+        builder: (_, state) => _withBackScope(
+          AdminOrderDetailScreen(orderId: state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.adminUsers,
+        builder: (_, _) => _withBackScope(const AdminUserListScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.adminReviews,
+        builder: (_, _) => _withBackScope(const AdminReviewListScreen()),
       ),
     ],
   );

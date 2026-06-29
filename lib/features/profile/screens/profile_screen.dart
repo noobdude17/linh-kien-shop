@@ -103,16 +103,18 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ]),
                 const SizedBox(height: 12),
-                _menuCard([
-                  _tile(
-                    context,
-                    Icons.admin_panel_settings_outlined,
-                    'Quản trị (Admin)',
-                    AppRoutes.admin,
-                    color: AppColors.adminAccent,
-                  ),
-                ]),
-                const SizedBox(height: 12),
+                if (user.isAdmin) ...[
+                  _menuCard([
+                    _tile(
+                      context,
+                      Icons.admin_panel_settings_outlined,
+                      'Quản trị (Admin)',
+                      AppRoutes.admin,
+                      color: AppColors.adminAccent,
+                    ),
+                  ]),
+                  const SizedBox(height: 12),
+                ],
                 _menuCard([
                   _tile(
                     context,
