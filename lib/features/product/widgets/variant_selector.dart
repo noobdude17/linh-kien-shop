@@ -19,6 +19,14 @@ class VariantSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_isGroupedRamSelector) {
+      return _GroupedRamVariantSelector(
+        variants: variants,
+        selected: selected,
+        onSelect: onSelect,
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         const spacing = 8.0;
@@ -94,5 +102,212 @@ class VariantSelector extends StatelessWidget {
         );
       },
     );
+  }
+
+  bool get _isGroupedRamSelector {
+    if (variants.length < 2) return false;
+    return variants.any((variant) {
+      final attrs = variant.attributes;
+      return attrs.containsKey('ramCapacityLabel') &&
+          attrs.containsKey('ramSpeedLabel') &&
+          attrs.containsKey('ramOptionLabel');
+    });
+  }
+}
+
+class _GroupedRamVariantSelector extends StatelessWidget {
+  final List<ProductVariant> variants;
+  final ProductVariant? selected;
+  final ValueChanged<ProductVariant> onSelect;
+
+  const _GroupedRamVariantSelector({
+    required this.variants,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final current = selected ?? _firstAvailable;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _choiceSection(
+          label: 'Capacity',
+          selectedValue: _attr(current, 'ramCapacityLabel'),
+          attributeKey: 'ramCapacityLabel',
+        ),
+        const SizedBox(height: 16),
+        _choiceSection(
+          label: 'Speed',
+          selectedValue: _attr(current, 'ramSpeedLabel'),
+          attributeKey: 'ramSpeedLabel',
+        ),
+        const SizedBox(height: 16),
+        _choiceSection(
+          label: 'CAS Latency | Color',
+          selectedValue: _attr(current, 'ramTimingColorLabel'),
+          attributeKey: 'ramTimingColorLabel',
+        ),
+      ],
+    );
+  }
+
+  ProductVariant get _firstAvailable {
+    return variants.firstWhere(
+      (variant) => variant.isAvailable,
+      orElse: () => variants.first,
+    );
+  }
+
+  Widget _choiceSection({
+    required String label,
+    required String selectedValue,
+    required String attributeKey,
+  }) {
+    final values = _orderedValues(attributeKey);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+            children: [
+              TextSpan(text: '$label:  '),
+              TextSpan(
+                text: selectedValue,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final maxChipWidth = constraints.maxWidth < 1
+                ? double.infinity
+                : constraints.maxWidth;
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: values.map((value) {
+                final matching = _bestVariantFor(attributeKey, value);
+                final isUnavailable = matching == null || !matching.isAvailable;
+                final isSelected = value == selectedValue;
+                return GestureDetector(
+                  onTap: isUnavailable ? null : () => onSelect(matching),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxChipWidth),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 9,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.accentBlue.withValues(alpha: 0.08)
+                            : isUnavailable
+                            ? AppColors.inputFill
+                            : AppColors.surface,
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.accentBlue
+                              : AppColors.border,
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          AppDimens.radiusChip,
+                        ),
+                      ),
+                      child: Text(
+                        value,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isUnavailable
+                              ? AppColors.textSecondary
+                              : AppColors.textPrimary,
+                          decoration: isUnavailable
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  List<String> _orderedValues(String key) {
+    final values = <String>[];
+    for (final variant in variants) {
+      final value = _attr(variant, key);
+      if (value.isNotEmpty && !values.contains(value)) values.add(value);
+    }
+    return values;
+  }
+
+  ProductVariant? _bestVariantFor(String changedKey, String changedValue) {
+    final current = selected ?? _firstAvailable;
+    final currentCapacity = _attr(current, 'ramCapacityLabel');
+    final currentSpeed = _attr(current, 'ramSpeedLabel');
+    final currentOption = _attr(current, 'ramTimingColorLabel');
+
+    bool matches(ProductVariant variant, {required bool strict}) {
+      final attrs = {
+        'ramCapacityLabel': currentCapacity,
+        'ramSpeedLabel': currentSpeed,
+        'ramTimingColorLabel': currentOption,
+      };
+      attrs[changedKey] = changedValue;
+      return attrs.entries.every((entry) {
+        return !strict && entry.key != changedKey
+            ? true
+            : _attr(variant, entry.key) == entry.value;
+      });
+    }
+
+    for (final variant in variants) {
+      if (matches(variant, strict: true) && variant.isAvailable) return variant;
+    }
+    for (final variant in variants) {
+      if (_attr(variant, changedKey) == changedValue && variant.isAvailable) {
+        return variant;
+      }
+    }
+    for (final variant in variants) {
+      if (matches(variant, strict: true)) return variant;
+    }
+    for (final variant in variants) {
+      if (_attr(variant, changedKey) == changedValue) return variant;
+    }
+    return null;
+  }
+
+  String _attr(ProductVariant? variant, String key) {
+    if (variant == null) return '';
+    if (key == 'ramTimingColorLabel') {
+      final latency = variant.attributes['ramCasLatency'];
+      final color = variant.attributes['ramColor']?.toString().trim() ?? '';
+      final parts = [
+        if (latency != null && latency.toString().trim().isNotEmpty)
+          'CL$latency',
+        if (color.isNotEmpty) color,
+      ];
+      if (parts.isNotEmpty) return parts.join(' | ');
+      final fallback = variant.attributes['ramOptionLabel']?.toString() ?? '';
+      return fallback
+          .replaceAll(RegExp(r'\s*\|\s*(Yes|No)\s*$', caseSensitive: false), '')
+          .trim();
+    }
+    return variant.attributes[key]?.toString().trim() ?? '';
   }
 }

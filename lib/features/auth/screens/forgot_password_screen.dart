@@ -28,9 +28,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _send() async {
     final email = _email.text.trim();
     if (!email.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email không hợp lệ')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Email không hợp lệ')));
       return;
     }
     setState(() => _loading = true);
@@ -68,23 +68,30 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,
-              child: Text(_sent ? '📬' : '🔑', style: const TextStyle(fontSize: 32)),
+              child: Text(
+                _sent ? '📬' : '🔑',
+                style: const TextStyle(fontSize: 32),
+              ),
             ),
             const SizedBox(height: 24),
             if (_sent) ...[
-              Text('Đã gửi liên kết đặt lại mật khẩu tới ${_email.text.trim()}.\n'
-                  'Mở email và làm theo hướng dẫn để đặt mật khẩu mới.',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.textSecondary)),
+              Text(
+                'Đã gửi liên kết đặt lại mật khẩu tới ${_email.text.trim()}.\n'
+                'Mở email và làm theo hướng dẫn để đặt mật khẩu mới.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
               const SizedBox(height: 20),
               PrimaryButton(
-                  label: 'Về đăng nhập',
-                  onPressed: () => context.go(AppRoutes.login)),
+                label: 'Về đăng nhập',
+                onPressed: () => context.go(AppRoutes.login),
+              ),
             ] else ...[
               const Text(
-                  'Nhập email để nhận liên kết đặt lại mật khẩu của bạn',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textSecondary)),
+                'Nhập email để nhận liên kết đặt lại mật khẩu của bạn',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
               const SizedBox(height: 24),
               TextField(
                 controller: _email,
@@ -99,7 +106,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               _loading
                   ? const Padding(
                       padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator())
+                      child: CircularProgressIndicator(),
+                    )
                   : PrimaryButton(label: 'Gửi liên kết', onPressed: _send),
             ],
           ],

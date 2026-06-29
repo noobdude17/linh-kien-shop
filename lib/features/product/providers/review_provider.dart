@@ -12,7 +12,9 @@ final reviewRepositoryProvider = Provider<ReviewRepository>((ref) {
   return MockReviewRepository();
 });
 
-final reviewProvider =
-    FutureProvider.family<List<ReviewModel>, String>((ref, productId) {
+final reviewProvider = FutureProvider.family<List<ReviewModel>, String>((
+  ref,
+  productId,
+) {
   return ref.watch(reviewRepositoryProvider).getForProduct(productId);
 });

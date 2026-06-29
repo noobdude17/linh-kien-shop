@@ -1,0 +1,682 @@
+[
+  {
+    "id": "case-asus-rog-cronox",
+    "name": "ROG Cronox",
+    "cat": "case",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/cases/all-series/",
+    "urls": []
+  },
+  {
+    "id": "case-asus-rog-hyperion-gr701",
+    "name": "ROG Hyperion GR701",
+    "cat": "case",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/cases/all-series/",
+    "urls": []
+  },
+  {
+    "id": "case-msi-mag-pano-100r-pz",
+    "name": "MAG Pano 100R PZ",
+    "cat": "case",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/PC-Cases",
+    "urls": []
+  },
+  {
+    "id": "case-msi-meg-maestro-900r",
+    "name": "MEG Maestro 900R",
+    "cat": "case",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/PC-Cases",
+    "urls": []
+  },
+  {
+    "id": "case-msi-meg-prospect-700r",
+    "name": "MEG Prospect 700R",
+    "cat": "case",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/PC-Cases",
+    "urls": []
+  },
+  {
+    "id": "case-msi-mpg-gungnir-110r",
+    "name": "MPG Gungnir 110R",
+    "cat": "case",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/PC-Cases",
+    "urls": []
+  },
+  {
+    "id": "case-msi-mpg-vixta-300r-airflow-pz",
+    "name": "MPG VIXTA 300R Airflow PZ",
+    "cat": "case",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/PC-Cases",
+    "urls": []
+  },
+  {
+    "id": "cooler-msi-mag-coreliquid-360r-v2",
+    "name": "MAG CoreLiquid 360R V2",
+    "cat": "cooler",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-mag-coreliquid-e360-black-394mm-lga-1700-am5/p/N82E16835846050",
+    "urls": []
+  },
+  {
+    "id": "cooler-msi-mag-coreliquid-c240",
+    "name": "MAG CoreLiquid C240",
+    "cat": "cooler",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-liquid-cooling-system-r-series-v2-radiator-size-272-00-x-120-00-x-32-00-mm/p/N82E16835846026",
+    "urls": []
+  },
+  {
+    "id": "cooler-msi-mag-coreliquid-c360",
+    "name": "MAG CoreLiquid C360",
+    "cat": "cooler",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-mag-coreliquid-e360-black-394mm-lga-1700-am5/p/N82E16835846050",
+    "urls": []
+  },
+  {
+    "id": "cooler-msi-mag-coreliquid-e240",
+    "name": "MAG CoreLiquid E240",
+    "cat": "cooler",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-liquid-cooling-system-r-series-v2-radiator-size-272-00-x-120-00-x-32-00-mm/p/N82E16835846026",
+    "urls": []
+  },
+  {
+    "id": "cooler-msi-meg-coreliquid-s280",
+    "name": "MEG CoreLiquid S280",
+    "cat": "cooler",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-liquid-cooling-system-mag-series/p/N82E16835846016",
+    "urls": []
+  },
+  {
+    "id": "cooler-msi-meg-coreliquid-s360",
+    "name": "MEG CoreLiquid S360",
+    "cat": "cooler",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-mag-coreliquid-e360-black-394mm-lga-1700-am5/p/N82E16835846050",
+    "urls": []
+  },
+  {
+    "id": "cooler-msi-mpg-corefrozr-ap15",
+    "name": "MPG CoreFrozr AP15",
+    "cat": "cooler",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-liquid-cooling-system-r-series-v2-radiator-size-272-00-x-120-00-x-32-00-mm/p/N82E16835846026",
+    "urls": []
+  },
+  {
+    "id": "cooler-msi-mpg-corefrozr-ap17",
+    "name": "MPG CoreFrozr AP17",
+    "cat": "cooler",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-liquid-cooling-system-r-series-v2-radiator-size-272-00-x-120-00-x-32-00-mm/p/N82E16835846026",
+    "urls": []
+  },
+  {
+    "id": "cooler-msi-mpg-coreliquid-k360",
+    "name": "MPG CoreLiquid K360",
+    "cat": "cooler",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-mag-coreliquid-e360-black-394mm-lga-1700-am5/p/N82E16835846050",
+    "urls": []
+  },
+  {
+    "id": "cpu-amd-amd-ryzen-5-5600x3d",
+    "name": "AMD Ryzen 5 5600X3D",
+    "cat": "cpu",
+    "brand": "AMD",
+    "sourceUrl": "https://www.amd.com/en/support/downloads/drivers.html/processors/ryzen/ryzen-5000-series/amd-ryzen-5-5600x3d.html",
+    "urls": []
+  },
+  {
+    "id": "cpu-intel-intel-core-i5-12600k",
+    "name": "Intel Core i5-12600K",
+    "cat": "cpu",
+    "brand": "Intel",
+    "sourceUrl": "https://www.newegg.com/intel-core-i5-12th-gen-core-i5-12600kf-alder-lake-lga-1700-desktop-cpu-processor/p/N82E16819118349",
+    "urls": []
+  },
+  {
+    "id": "cpu-intel-intel-core-ultra-7-270kf-plus",
+    "name": "Intel Core Ultra 7 270KF Plus",
+    "cat": "cpu",
+    "brand": "Intel",
+    "sourceUrl": "https://pcspecchart.com/pc_parts/cpu/126/",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-geforce-rtx-5080",
+    "name": "ASUS ROG Strix GeForce RTX 5080",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.nvidia.com/en-us/geforce/graphics-cards/",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-geforce-rtx-5090",
+    "name": "ASUS ROG Strix GeForce RTX 5090",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.nvidia.com/en-us/geforce/graphics-cards/",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-6950-xt",
+    "name": "ASUS ROG Strix Radeon RX 6950 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-7600-xt",
+    "name": "ASUS ROG Strix Radeon RX 7600 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-7700-xt",
+    "name": "ASUS ROG Strix Radeon RX 7700 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-7800-xt",
+    "name": "ASUS ROG Strix Radeon RX 7800 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-7900-gre",
+    "name": "ASUS ROG Strix Radeon RX 7900 GRE",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-7900-xt",
+    "name": "ASUS ROG Strix Radeon RX 7900 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-7900-xtx",
+    "name": "ASUS ROG Strix Radeon RX 7900 XTX",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-9060-xt",
+    "name": "ASUS ROG Strix Radeon RX 9060 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-9070",
+    "name": "ASUS ROG Strix Radeon RX 9070",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-rog-strix-radeon-rx-9070-xt",
+    "name": "ASUS ROG Strix Radeon RX 9070 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-tuf-gaming-radeon-rx-6600",
+    "name": "ASUS TUF Gaming Radeon RX 6600",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-tuf-gaming-radeon-rx-6650-xt",
+    "name": "ASUS TUF Gaming Radeon RX 6650 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-tuf-gaming-radeon-rx-6750-xt",
+    "name": "ASUS TUF Gaming Radeon RX 6750 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-tuf-gaming-radeon-rx-7600",
+    "name": "ASUS TUF Gaming Radeon RX 7600",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-tuf-gaming-radeon-rx-7900-gre",
+    "name": "ASUS TUF Gaming Radeon RX 7900 GRE",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "gpu-asus-asus-tuf-gaming-radeon-rx-9060-xt",
+    "name": "ASUS TUF Gaming Radeon RX 9060 XT",
+    "cat": "gpu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.amd.com/en/products/graphics/desktops.html",
+    "urls": []
+  },
+  {
+    "id": "keyboard-logitech-logitech-g-pro-x-tkl",
+    "name": "Logitech G Pro X TKL",
+    "cat": "keyboard",
+    "brand": "Logitech",
+    "sourceUrl": "https://www.logitechg.com/",
+    "urls": []
+  },
+  {
+    "id": "keyboard-logitech-logitech-g515-lightspeed-tkl",
+    "name": "Logitech G515 Lightspeed TKL",
+    "cat": "keyboard",
+    "brand": "Logitech",
+    "sourceUrl": "https://www.logitechg.com/",
+    "urls": []
+  },
+  {
+    "id": "keyboard-razer-razer-huntsman-signature-edition",
+    "name": "Razer Huntsman Signature Edition",
+    "cat": "keyboard",
+    "brand": "Razer",
+    "sourceUrl": "https://www.razer.com/",
+    "urls": []
+  },
+  {
+    "id": "mainboard-asus-asus-tuf-gaming-x570-plus-wifi",
+    "name": "ASUS TUF Gaming X570-Plus WiFi",
+    "cat": "mainboard",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/motherboards/all-series/",
+    "urls": []
+  },
+  {
+    "id": "mainboard-msi-msi-mpg-b660i-gaming-edge-wifi",
+    "name": "MSI MPG B660I Gaming Edge WiFi",
+    "cat": "mainboard",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/Motherboards",
+    "urls": []
+  },
+  {
+    "id": "monitor-asus-asus-rog-strix-xg27aq",
+    "name": "ASUS ROG Strix XG27AQ",
+    "cat": "monitor",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.newegg.com/asus-vg27aq-27-qhd-165-hz-tuf-gaming-ips-black/p/N82E16824236987",
+    "urls": []
+  },
+  {
+    "id": "monitor-asus-asus-rog-swift-pg259qn",
+    "name": "ASUS ROG Swift PG259QN",
+    "cat": "monitor",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.newegg.com/asus-pg27aqdm-r-27-wqhd-240-hz-oled-black/p/N82E16824281347",
+    "urls": []
+  },
+  {
+    "id": "monitor-asus-asus-tuf-gaming-vg249q1a",
+    "name": "ASUS TUF Gaming VG249Q1A",
+    "cat": "monitor",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.newegg.com/asus-vg27aq-27-qhd-165-hz-tuf-gaming-ips-black/p/N82E16824236987",
+    "urls": []
+  },
+  {
+    "id": "monitor-asus-asus-tuf-gaming-vg32uqa1a",
+    "name": "ASUS TUF Gaming VG32UQA1A",
+    "cat": "monitor",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.newegg.com/asus-90lm05r0-b013b0-32-uhd-144-hz-rog-swift-ips-black/p/N82E16824281129",
+    "urls": []
+  },
+  {
+    "id": "monitor-msi-msi-mag-274upf",
+    "name": "MSI MAG 274UPF",
+    "cat": "monitor",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-g274qpf-qd-27-qhd-170-hz-rapid-ips-metallic-black/p/N82E16824475290",
+    "urls": []
+  },
+  {
+    "id": "monitor-msi-msi-optix-g241",
+    "name": "MSI Optix G241",
+    "cat": "monitor",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-g274qpf-qd-27-qhd-170-hz-rapid-ips-metallic-black/p/N82E16824475290",
+    "urls": []
+  },
+  {
+    "id": "monitor-msi-msi-optix-mag274qrf-qd",
+    "name": "MSI Optix MAG274QRF-QD",
+    "cat": "monitor",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-g274qpf-qd-27-qhd-170-hz-rapid-ips-metallic-black/p/N82E16824475290",
+    "urls": []
+  },
+  {
+    "id": "monitor-msi-msi-optix-mpg321ur-qd",
+    "name": "MSI Optix MPG321UR-QD",
+    "cat": "monitor",
+    "brand": "MSI",
+    "sourceUrl": "https://www.newegg.com/msi-mpg-321urx-qd-oled-32-uhd-240-hz/p/N82E16824475357",
+    "urls": []
+  },
+  {
+    "id": "monitor-samsung-samsung-odyssey-g4-25",
+    "name": "Samsung Odyssey G4 25",
+    "cat": "monitor",
+    "brand": "Samsung",
+    "sourceUrl": "https://www.newegg.com/samsung-ls24dg302enxza-24-fhd-180-hz-odyssey-g3/p/N82E16824027338",
+    "urls": []
+  },
+  {
+    "id": "monitor-samsung-samsung-odyssey-neo-g8-32",
+    "name": "Samsung Odyssey Neo G8 32",
+    "cat": "monitor",
+    "brand": "Samsung",
+    "sourceUrl": "https://www.newegg.com/samsung-ls27dg602snxza-27-qhd-360-hz-odyssey-oled-g6-silver/p/N82E16824027327",
+    "urls": []
+  },
+  {
+    "id": "monitor-samsung-samsung-viewfinity-s8-32",
+    "name": "Samsung ViewFinity S8 32",
+    "cat": "monitor",
+    "brand": "Samsung",
+    "sourceUrl": "https://www.newegg.com/samsung-ls27fg500snxza-27-qhd-displayport-max-180hz-hdmi-max-144hz-black/p/N82E16824027387",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-10-home-oem-dvd-64-bit",
+    "name": "Microsoft Windows 10 Home OEM - DVD 64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-10-home-retail-download-32-64-bit",
+    "name": "Microsoft Windows 10 Home Retail - Download 32/64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-10-home-retail-usb-32-64-bit",
+    "name": "Microsoft Windows 10 Home Retail - USB 32/64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-10-pro-oem-dvd-64-bit",
+    "name": "Microsoft Windows 10 Pro OEM - DVD 64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-10-pro-retail-download-32-64-bit",
+    "name": "Microsoft Windows 10 Pro Retail - Download 32/64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-10-pro-retail-usb-32-64-bit",
+    "name": "Microsoft Windows 10 Pro Retail - USB 32/64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-11-home-oem-dvd-64-bit",
+    "name": "Microsoft Windows 11 Home OEM - DVD 64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-11-home-retail-download-64-bit",
+    "name": "Microsoft Windows 11 Home Retail - Download 64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-11-pro-oem-dvd-64-bit",
+    "name": "Microsoft Windows 11 Pro OEM - DVD 64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-11-pro-retail-download-64-bit",
+    "name": "Microsoft Windows 11 Pro Retail - Download 64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "os-microsoft-windows-11-pro-retail-usb-64-bit",
+    "name": "Microsoft Windows 11 Pro Retail - USB 64-bit",
+    "cat": "os",
+    "brand": "Microsoft",
+    "sourceUrl": "https://www.newegg.com/microsoft-windows-11-home-usb/p/N82E16832351748",
+    "urls": []
+  },
+  {
+    "id": "psu-asus-asus-prime-gold-1000w",
+    "name": "ASUS Prime Gold 1000W",
+    "cat": "psu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/power-supply-units/all-series/",
+    "urls": []
+  },
+  {
+    "id": "psu-asus-asus-rog-loki-sfx-l-platinum-1000w",
+    "name": "ASUS ROG Loki SFX-L Platinum 1000W",
+    "cat": "psu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/power-supply-units/all-series/",
+    "urls": []
+  },
+  {
+    "id": "psu-asus-asus-rog-loki-sfx-l-platinum-1200w",
+    "name": "ASUS ROG Loki SFX-L Platinum 1200W",
+    "cat": "psu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/power-supply-units/all-series/",
+    "urls": []
+  },
+  {
+    "id": "psu-asus-asus-rog-thor-platinum-ii-1000w",
+    "name": "ASUS ROG Thor Platinum II 1000W",
+    "cat": "psu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/power-supply-units/all-series/",
+    "urls": []
+  },
+  {
+    "id": "psu-asus-asus-rog-thor-platinum-ii-1200w",
+    "name": "ASUS ROG Thor Platinum II 1200W",
+    "cat": "psu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/power-supply-units/all-series/",
+    "urls": []
+  },
+  {
+    "id": "psu-asus-asus-rog-thor-platinum-ii-1600w",
+    "name": "ASUS ROG Thor Platinum II 1600W",
+    "cat": "psu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/power-supply-units/all-series/",
+    "urls": []
+  },
+  {
+    "id": "psu-asus-asus-rog-thor-platinum-ii-850w",
+    "name": "ASUS ROG Thor Platinum II 850W",
+    "cat": "psu",
+    "brand": "ASUS",
+    "sourceUrl": "https://www.asus.com/motherboards-components/power-supply-units/all-series/",
+    "urls": []
+  },
+  {
+    "id": "psu-msi-msi-mag-a-bn-750w",
+    "name": "MSI MAG A-BN 750W",
+    "cat": "psu",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/Power-Supply",
+    "urls": []
+  },
+  {
+    "id": "psu-msi-msi-mag-a-gl-pcie5-1000w",
+    "name": "MSI MAG A-GL PCIE5 1000W",
+    "cat": "psu",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/Power-Supply",
+    "urls": []
+  },
+  {
+    "id": "psu-msi-msi-mag-a-gl-pcie5-1200w",
+    "name": "MSI MAG A-GL PCIE5 1200W",
+    "cat": "psu",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/Power-Supply",
+    "urls": []
+  },
+  {
+    "id": "psu-msi-msi-mag-a-gl-pcie5-650w",
+    "name": "MSI MAG A-GL PCIE5 650W",
+    "cat": "psu",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/Power-Supply",
+    "urls": []
+  },
+  {
+    "id": "psu-msi-msi-mag-a-gl-pcie5-750w",
+    "name": "MSI MAG A-GL PCIE5 750W",
+    "cat": "psu",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/Power-Supply",
+    "urls": []
+  },
+  {
+    "id": "psu-msi-msi-mag-a-gl-pcie5-850w",
+    "name": "MSI MAG A-GL PCIE5 850W",
+    "cat": "psu",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/Power-Supply",
+    "urls": []
+  },
+  {
+    "id": "psu-msi-msi-mag-a-pls-pcie5-1000w",
+    "name": "MSI MAG A-PLS PCIE5 1000W",
+    "cat": "psu",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/Power-Supply",
+    "urls": []
+  },
+  {
+    "id": "psu-msi-msi-mag-a-pls-pcie5-1200w",
+    "name": "MSI MAG A-PLS PCIE5 1200W",
+    "cat": "psu",
+    "brand": "MSI",
+    "sourceUrl": "https://www.msi.com/Power-Supply",
+    "urls": []
+  },
+  {
+    "id": "storage-crucial-micron-crucial-p3",
+    "name": "Crucial P3",
+    "cat": "storage",
+    "brand": "Crucial / Micron",
+    "sourceUrl": "https://gzhls.at/blob/ldb/2/8/1/d/1801eb7b4575ea1779b9bfa8f2699fc5f7f2.pdf",
+    "urls": []
+  },
+  {
+    "id": "storage-crucial-micron-crucial-p3-plus",
+    "name": "Crucial P3 Plus",
+    "cat": "storage",
+    "brand": "Crucial / Micron",
+    "sourceUrl": "https://assets.micron.com/adobe/assets/urn%3Aaaid%3Aaem%3Aac83bf68-de9d-4725-a7c1-476ba03505b8/renditions/original/as/crucial-p3plus-productflyer-consumer.pdf",
+    "urls": []
+  },
+  {
+    "id": "storage-crucial-micron-crucial-p5-plus",
+    "name": "Crucial P5 Plus",
+    "cat": "storage",
+    "brand": "Crucial / Micron",
+    "sourceUrl": "https://assets.micron.com/adobe/assets/urn%3Aaaid%3Aaem%3Ac3c2e3d9-1d8e-463b-85e7-0f854ab8e845/renditions/original/as/crucial-P5-plus-productflyer-consumer.pdf.html",
+    "urls": []
+  },
+  {
+    "id": "storage-crucial-micron-crucial-t500",
+    "name": "Crucial T500",
+    "cat": "storage",
+    "brand": "Crucial / Micron",
+    "sourceUrl": "https://www.farnell.com/datasheets/4322341.pdf",
+    "urls": []
+  },
+  {
+    "id": "storage-crucial-micron-crucial-t700",
+    "name": "Crucial T700",
+    "cat": "storage",
+    "brand": "Crucial / Micron",
+    "sourceUrl": "https://assets.micron.com/adobe/assets/urn%3Aaaid%3Aaem%3A3fd11ecf-6ec7-4271-90fb-78cbdcb55b5d/renditions/original/as/crucial-t700-b2c-product-flyer-en.pdf",
+    "urls": []
+  },
+  {
+    "id": "storage-crucial-micron-crucial-t705",
+    "name": "Crucial T705",
+    "cat": "storage",
+    "brand": "Crucial / Micron",
+    "sourceUrl": "https://assets.micron.com/adobe/assets/urn%3Aaaid%3Aaem%3A8b31ab31-5c1c-4dbe-ad26-5bdc076d5ff3/renditions/original/as/crucial-t705-b2c-product-flyer-en.pdf",
+    "urls": []
+  }
+]

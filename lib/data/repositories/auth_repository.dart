@@ -66,8 +66,15 @@ abstract class AuthRepository {
 }
 
 /// Gộp thông tin mới vào hồ sơ hiện tại; trường null hoặc rỗng thì giữ nguyên.
-UserModel _merge(UserModel cur, String? name, String? phone, String? address,
-    String? dob, double? lat, double? lng) {
+UserModel _merge(
+  UserModel cur,
+  String? name,
+  String? phone,
+  String? address,
+  String? dob,
+  double? lat,
+  double? lng,
+) {
   String? keep(String? v, String? old) =>
       (v == null || v.trim().isEmpty) ? old : v.trim();
   final mergedName = keep(name, cur.name) ?? '';
@@ -84,24 +91,30 @@ UserModel _merge(UserModel cur, String? name, String? phone, String? address,
     photoUrl: cur.photoUrl, // giữ avatar khi sửa hồ sơ (tên/SĐT/ngày sinh)
     // Chốt một lần: chỉ tạo địa chỉ giao hàng mặc định khi chưa có. Sửa hồ sơ
     // (đổi tên/SĐT) KHÔNG lan sang địa chỉ giao hàng.
-    defaultAddress: cur.defaultAddress ??
+    defaultAddress:
+        cur.defaultAddress ??
         _defaultFrom(mergedName, mergedPhone, mergedAddress, lat, lng),
   );
 }
 
 /// Tạo địa chỉ giao hàng mặc định từ thông tin lúc tạo tài khoản (nếu có địa chỉ).
-AddressModel? _defaultFrom(String name, String? phone, String? address,
-        [double? lat, double? lng]) =>
-    (address != null && address.isNotEmpty)
-        ? AddressModel(
-            id: 'default',
-            name: name,
-            phone: phone ?? '',
-            detail: address,
-            isDefault: true,
-            latitude: lat,
-            longitude: lng)
-        : null;
+AddressModel? _defaultFrom(
+  String name,
+  String? phone,
+  String? address, [
+  double? lat,
+  double? lng,
+]) => (address != null && address.isNotEmpty)
+    ? AddressModel(
+        id: 'default',
+        name: name,
+        phone: phone ?? '',
+        detail: address,
+        isDefault: true,
+        latitude: lat,
+        longitude: lng,
+      )
+    : null;
 
 /// Hiện thực Firebase Auth + lưu hồ sơ user vào Firestore `users`.
 class FirebaseAuthRepository implements AuthRepository {
@@ -178,7 +191,9 @@ class FirebaseAuthRepository implements AuthRepository {
         );
       }
       await ref.set(fallback.toFirestore()); // toFirestore KHÔNG ghi photoUrl
-      return fallback.copyWith(photoUrl: fbUser.photoURL); // hiển thị avatar Google
+      return fallback.copyWith(
+        photoUrl: fbUser.photoURL,
+      ); // hiển thị avatar Google
     } catch (e) {
       // ignore: avoid_print
       print('⚠️ Bỏ qua lỗi Firestore hồ sơ user: $e');
@@ -187,10 +202,14 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<UserModel> signIn(
-      {required String email, required String password}) async {
+  Future<UserModel> signIn({
+    required String email,
+    required String password,
+  }) async {
     final cred = await _auth.signInWithEmailAndPassword(
-        email: email.trim(), password: password);
+      email: email.trim(),
+      password: password,
+    );
     _emit(await _loadOrCreateProfile(cred.user!));
     return _cached!;
   }
@@ -207,7 +226,9 @@ class FirebaseAuthRepository implements AuthRepository {
     double? lng,
   }) async {
     final cred = await _auth.createUserWithEmailAndPassword(
-        email: email.trim(), password: password);
+      email: email.trim(),
+      password: password,
+    );
     final user = UserModel(
       id: cred.user!.uid,
       name: name,
@@ -243,11 +264,14 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<UserModel> signInWithGoogle() async {
     final googleUser = await GoogleSignIn(
-      serverClientId: '605283360947-c5mniq9t6h5ij2glcrprq8eouu97n683.apps.googleusercontent.com',
+      serverClientId:
+          '605283360947-c5mniq9t6h5ij2glcrprq8eouu97n683.apps.googleusercontent.com',
     ).signIn();
     if (googleUser == null) {
       throw fb.FirebaseAuthException(
-          code: 'cancelled', message: 'Đã hủy đăng nhập Google');
+        code: 'cancelled',
+        message: 'Đã hủy đăng nhập Google',
+      );
     }
     final googleAuth = await googleUser.authentication;
     final credential = fb.GoogleAuthProvider.credential(
@@ -262,10 +286,14 @@ class FirebaseAuthRepository implements AuthRepository {
       // Email này đã đăng ký bằng mật khẩu (Scenario B). Firebase bắt xác minh
       // chủ sở hữu trước khi liên kết → giữ credential, báo UI hỏi mật khẩu.
       if (e.code == 'account-exists-with-different-credential') {
-        _pendingGoogleCred = credential; // dùng credential tự dựng (e.credential có thể null)
-        _pendingLinkEmail = googleUser.email; // tin cậy; e.email bị enum-protection xoá
+        _pendingGoogleCred =
+            credential; // dùng credential tự dựng (e.credential có thể null)
+        _pendingLinkEmail =
+            googleUser.email; // tin cậy; e.email bị enum-protection xoá
         throw fb.FirebaseAuthException(
-            code: 'link-password-required', message: googleUser.email);
+          code: 'link-password-required',
+          message: googleUser.email,
+        );
       }
       rethrow;
     }
@@ -309,10 +337,9 @@ class FirebaseAuthRepository implements AuthRepository {
     final url = await Cloudinary.uploadImage(file, folder: 'avatars');
     final updated = _cached!.copyWith(photoUrl: url);
     // Ghi riêng photoUrl (toFirestore không đụng tới trường này).
-    await _db
-        .collection(AppConstants.colUsers)
-        .doc(updated.id)
-        .set({'photoUrl': url}, SetOptions(merge: true));
+    await _db.collection(AppConstants.colUsers).doc(updated.id).set({
+      'photoUrl': url,
+    }, SetOptions(merge: true));
     _emit(updated);
     return updated;
   }
@@ -370,22 +397,24 @@ class MockAuthRepository implements AuthRepository {
     'demo@lks.vn': (
       password: '123456',
       user: UserModel(
-          id: 'mock-demo',
-          name: 'Khách Demo',
-          email: 'demo@lks.vn',
-          role: AppConstants.roleCustomer,
-          phone: '0900000000',
-          address: 'Hà Nội'),
+        id: 'mock-demo',
+        name: 'Khách Demo',
+        email: 'demo@lks.vn',
+        role: AppConstants.roleCustomer,
+        phone: '0900000000',
+        address: 'Hà Nội',
+      ),
     ),
     'admin@lks.vn': (
       password: '123456',
       user: UserModel(
-          id: 'mock-admin',
-          name: 'Quản trị viên',
-          email: 'admin@lks.vn',
-          role: AppConstants.roleAdmin,
-          phone: '0900000000',
-          address: 'Hà Nội'),
+        id: 'mock-admin',
+        name: 'Quản trị viên',
+        email: 'admin@lks.vn',
+        role: AppConstants.roleAdmin,
+        phone: '0900000000',
+        address: 'Hà Nội',
+      ),
     ),
   };
 
@@ -399,17 +428,23 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<UserModel> signIn(
-      {required String email, required String password}) async {
+  Future<UserModel> signIn({
+    required String email,
+    required String password,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 300));
     final acc = _accounts[email.trim().toLowerCase()];
     if (acc == null) {
       throw fb.FirebaseAuthException(
-          code: 'user-not-found', message: 'Tài khoản không tồn tại');
+        code: 'user-not-found',
+        message: 'Tài khoản không tồn tại',
+      );
     }
     if (acc.password != password) {
       throw fb.FirebaseAuthException(
-          code: 'wrong-password', message: 'Sai mật khẩu');
+        code: 'wrong-password',
+        message: 'Sai mật khẩu',
+      );
     }
     _current = acc.user;
     _controller.add(_current);
@@ -431,7 +466,9 @@ class MockAuthRepository implements AuthRepository {
     final key = email.trim().toLowerCase();
     if (_accounts.containsKey(key)) {
       throw fb.FirebaseAuthException(
-          code: 'email-already-in-use', message: 'Email đã được dùng');
+        code: 'email-already-in-use',
+        message: 'Email đã được dùng',
+      );
     }
     final user = UserModel(
       id: 'mock-${DateTime.now().millisecondsSinceEpoch}',
@@ -455,7 +492,8 @@ class MockAuthRepository implements AuthRepository {
     const googleEmail = 'google.user@gmail.com';
     // Scenario B (giả lập): nếu email Google đã có tài khoản → dùng lại hồ sơ đó.
     final existing = _accounts[googleEmail];
-    _current = existing?.user ??
+    _current =
+        existing?.user ??
         const UserModel(
           id: 'mock-google',
           name: 'Google User',
@@ -514,7 +552,9 @@ class MockAuthRepository implements AuthRepository {
     await Future.delayed(const Duration(milliseconds: 300));
     if (!_accounts.containsKey(email.trim().toLowerCase())) {
       throw fb.FirebaseAuthException(
-          code: 'user-not-found', message: 'Tài khoản không tồn tại');
+        code: 'user-not-found',
+        message: 'Tài khoản không tồn tại',
+      );
     }
   }
 

@@ -4,11 +4,13 @@ class CompatibilityIssue {
   final String code;
   final CompatibilitySeverity severity;
   final String message;
+  final String? suggestion;
 
   const CompatibilityIssue({
     required this.code,
     required this.severity,
     required this.message,
+    this.suggestion,
   });
 }
 

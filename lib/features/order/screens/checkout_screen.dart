@@ -38,7 +38,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
     setState(() => _placing = true);
     try {
-      await ref.read(orderCreationProvider.notifier).placeOrder(
+      await ref
+          .read(orderCreationProvider.notifier)
+          .placeOrder(
             items: items,
             totalAmount: total,
             address: '${addr.name} · ${addr.phone} — ${addr.detail}',
@@ -85,41 +87,46 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ? const Text(
                     'Không có sản phẩm nào được chọn',
                     style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13),
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   )
                 : Column(
                     children: items
-                        .map((i) => Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      i.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 13),
-                                    ),
+                        .map(
+                          (i) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    i.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 13),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'SL: ${i.quantity}',
-                                    style: const TextStyle(
-                                        fontSize: 12,
-                                        color: AppColors.textSecondary),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'SL: ${i.quantity}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    Formatter.price(i.price),
-                                    style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.textPrimary),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  Formatter.price(i.price),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
                                   ),
-                                ],
-                              ),
-                            ))
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
                         .toList(growable: false),
                   ),
           ),
@@ -127,14 +134,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             '💳 Phương thức thanh toán',
             child: Column(
               children: [
-                _paymentOption(AppConstants.payVnpay, 'VNPay',
-                    'ATM / Ví điện tử / QR Code', _vnpayLogo()),
+                _paymentOption(
+                  AppConstants.payVnpay,
+                  'VNPay',
+                  'ATM / Ví điện tử / QR Code',
+                  _vnpayLogo(),
+                ),
                 const SizedBox(height: 8),
                 _paymentOption(
-                    AppConstants.payCod,
-                    'Thanh toán khi nhận hàng',
-                    'COD · Kiểm tra hàng trước khi trả',
-                    const Text('💵', style: TextStyle(fontSize: 24))),
+                  AppConstants.payCod,
+                  'Thanh toán khi nhận hàng',
+                  'COD · Kiểm tra hàng trước khi trả',
+                  const Text('💵', style: TextStyle(fontSize: 24)),
+                ),
               ],
             ),
           ),
@@ -144,14 +156,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               children: [
                 SummaryRow(label: 'Tạm tính', value: Formatter.price(subtotal)),
                 const SummaryRow(
-                    label: 'Phí vận chuyển',
-                    value: 'Miễn phí',
-                    valueColor: AppColors.success),
+                  label: 'Phí vận chuyển',
+                  value: 'Miễn phí',
+                  valueColor: AppColors.success,
+                ),
                 const Divider(),
                 SummaryRow(
-                    label: 'Tổng cộng',
-                    value: Formatter.price(subtotal),
-                    isTotal: true),
+                  label: 'Tổng cộng',
+                  value: Formatter.price(subtotal),
+                  isTotal: true,
+                ),
               ],
             ),
           ),
@@ -166,16 +180,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       loading: () => _section(
         '📍 Địa chỉ giao hàng',
         child: const Center(
-            child: Padding(
-          padding: EdgeInsets.all(8),
-          child: CircularProgressIndicator(strokeWidth: 2),
-        )),
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
       ),
       error: (_, _) => _section(
         '📍 Địa chỉ giao hàng',
-        child: const Text('Không tải được địa chỉ',
-            style:
-                TextStyle(color: AppColors.error, fontSize: 13)),
+        child: const Text(
+          'Không tải được địa chỉ',
+          style: TextStyle(color: AppColors.error, fontSize: 13),
+        ),
       ),
       data: (list) {
         if (list.isEmpty) {
@@ -183,9 +199,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             '📍 Địa chỉ giao hàng',
             child: Column(
               children: [
-                const Text('Chưa có địa chỉ giao hàng',
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13)),
+                const Text(
+                  'Chưa có địa chỉ giao hàng',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 AppOutlinedButton(
                   label: 'Thêm địa chỉ',
@@ -200,25 +220,35 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           '📍 Địa chỉ giao hàng',
           trailing: GestureDetector(
             onTap: () => context.go(AppRoutes.addresses),
-            child: const Text('Đổi →',
-                style: TextStyle(
-                    color: AppColors.accentBlue,
-                    fontWeight: FontWeight.w500)),
+            child: const Text(
+              'Đổi →',
+              style: TextStyle(
+                color: AppColors.accentBlue,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border, width: 1.5),
-                borderRadius: BorderRadius.circular(8)),
+              border: Border.all(color: AppColors.border, width: 1.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${addr.name} · ${addr.phone}',
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(
+                  '${addr.name} · ${addr.phone}',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 4),
-                Text(addr.detail,
-                    style: const TextStyle(
-                        color: AppColors.textPrimary, fontSize: 13)),
+                Text(
+                  addr.detail,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
@@ -228,13 +258,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildBottomBar(
-      double subtotal, AsyncValue<List<AddressModel>> addrAsync) {
+    double subtotal,
+    AsyncValue<List<AddressModel>> addrAsync,
+  ) {
     final addr = addrAsync.valueOrNull?.firstOrNull;
     final hasItems = ref.watch(cartProvider).any((e) => e.selected);
 
     return Container(
       decoration: const BoxDecoration(
-          color: AppColors.surface, boxShadow: AppDimens.bottomBarShadow),
+        color: AppColors.surface,
+        boxShadow: AppDimens.bottomBarShadow,
+      ),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       child: SafeArea(
         top: false,
@@ -244,15 +278,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Tổng thanh toán',
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13)),
+                const Text(
+                  'Tổng thanh toán',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
                 Text(
                   Formatter.price(subtotal),
                   style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ],
             ),
@@ -284,78 +323,93 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Widget _stepIndicator() {
     Widget circle(String t, Color bg, Color fg) => CircleAvatar(
-        radius: 14,
-        backgroundColor: bg,
-        child: Text(t,
-            style: TextStyle(
-                color: fg, fontSize: 12, fontWeight: FontWeight.w700)));
+      radius: 14,
+      backgroundColor: bg,
+      child: Text(
+        t,
+        style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w700),
+      ),
+    );
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: AppDimens.brCard,
-          boxShadow: AppDimens.cardShadow),
+        color: AppColors.surface,
+        borderRadius: AppDimens.brCard,
+        boxShadow: AppDimens.cardShadow,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Column(children: [
-            circle('✓', AppColors.success, Colors.white),
-            const SizedBox(height: 4),
-            const Text('Giỏ hàng', style: TextStyle(fontSize: 10)),
-          ]),
+          Column(
+            children: [
+              circle('✓', AppColors.success, Colors.white),
+              const SizedBox(height: 4),
+              const Text('Giỏ hàng', style: TextStyle(fontSize: 10)),
+            ],
+          ),
           Container(
-              width: 40,
-              height: 2,
-              color: AppColors.success,
-              margin: const EdgeInsets.only(bottom: 16)),
-          Column(children: [
-            circle('2', AppColors.accentBlue, Colors.white),
-            const SizedBox(height: 4),
-            const Text('Đặt hàng', style: TextStyle(fontSize: 10)),
-          ]),
+            width: 40,
+            height: 2,
+            color: AppColors.success,
+            margin: const EdgeInsets.only(bottom: 16),
+          ),
+          Column(
+            children: [
+              circle('2', AppColors.accentBlue, Colors.white),
+              const SizedBox(height: 4),
+              const Text('Đặt hàng', style: TextStyle(fontSize: 10)),
+            ],
+          ),
           Container(
-              width: 40,
-              height: 2,
-              color: AppColors.border,
-              margin: const EdgeInsets.only(bottom: 16)),
-          Column(children: [
-            circle('3', AppColors.border, AppColors.textSecondary),
-            const SizedBox(height: 4),
-            const Text('Thanh toán', style: TextStyle(fontSize: 10)),
-          ]),
+            width: 40,
+            height: 2,
+            color: AppColors.border,
+            margin: const EdgeInsets.only(bottom: 16),
+          ),
+          Column(
+            children: [
+              circle('3', AppColors.border, AppColors.textSecondary),
+              const SizedBox(height: 4),
+              const Text('Thanh toán', style: TextStyle(fontSize: 10)),
+            ],
+          ),
         ],
       ),
     );
   }
 
   Widget _section(String title, {Widget? child, Widget? trailing}) => Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
-        decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: AppDimens.brCard,
-            boxShadow: AppDimens.cardShadow),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (title.isNotEmpty)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w700)),
-                  ?trailing,
-                ],
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: AppDimens.brCard,
+      boxShadow: AppDimens.cardShadow,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (title.isNotEmpty)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            if (title.isNotEmpty) const SizedBox(height: 12),
-            ?child,
-          ],
-        ),
-      );
+              ?trailing,
+            ],
+          ),
+        if (title.isNotEmpty) const SizedBox(height: 12),
+        ?child,
+      ],
+    ),
+  );
 
-  Widget _paymentOption(
-      String value, String name, String desc, Widget logo) {
+  Widget _paymentOption(String value, String name, String desc, Widget logo) {
     final selected = _payment == value;
     return InkWell(
       onTap: () => setState(() => _payment = value),
@@ -363,19 +417,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           border: Border.all(
-              color: selected ? AppColors.accentBlue : AppColors.border,
-              width: 1.5),
+            color: selected ? AppColors.accentBlue : AppColors.border,
+            width: 1.5,
+          ),
           borderRadius: BorderRadius.circular(8),
           color: selected ? const Color(0xFFEFF6FF) : null,
         ),
         child: Row(
           children: [
             Icon(
-                selected
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_off,
-                color: selected ? AppColors.accentBlue : AppColors.border,
-                size: 20),
+              selected ? Icons.radio_button_checked : Icons.radio_button_off,
+              color: selected ? AppColors.accentBlue : AppColors.border,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             logo,
             const SizedBox(width: 10),
@@ -383,13 +437,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name,
-                      style: const TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w600)),
-                  Text(desc,
-                      style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary)),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    desc,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -400,25 +461,34 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _vnpayLogo() => Container(
-        width: 48,
-        height: 28,
-        decoration: BoxDecoration(
-            color: AppColors.vnpBlue,
-            borderRadius: BorderRadius.circular(6)),
-        alignment: Alignment.center,
-        child: const Text.rich(TextSpan(children: [
+    width: 48,
+    height: 28,
+    decoration: BoxDecoration(
+      color: AppColors.vnpBlue,
+      borderRadius: BorderRadius.circular(6),
+    ),
+    alignment: Alignment.center,
+    child: const Text.rich(
+      TextSpan(
+        children: [
           TextSpan(
-              text: 'VN',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 11)),
+            text: 'VN',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 11,
+            ),
+          ),
           TextSpan(
-              text: 'PAY',
-              style: TextStyle(
-                  color: AppColors.vnpOrange,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 11)),
-        ])),
-      );
+            text: 'PAY',
+            style: TextStyle(
+              color: AppColors.vnpOrange,
+              fontWeight: FontWeight.w900,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

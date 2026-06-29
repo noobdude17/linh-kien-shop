@@ -75,7 +75,10 @@ class AppTheme {
       filled: true,
       fillColor: AppColors.darkInputFill,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      hintStyle: const TextStyle(color: AppColors.darkTextTertiary, fontSize: 14),
+      hintStyle: const TextStyle(
+        color: AppColors.darkTextTertiary,
+        fontSize: 14,
+      ),
       prefixIconColor: AppColors.darkTextTertiary,
       suffixIconColor: AppColors.darkTextTertiary,
       border: OutlineInputBorder(

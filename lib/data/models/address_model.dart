@@ -35,21 +35,21 @@ class AddressModel {
       );
 
   Map<String, dynamic> toFirestore() => {
-        'name': name,
-        'phone': phone,
-        'detail': detail,
-        'isDefault': isDefault,
-        'latitude': latitude,
-        'longitude': longitude,
-      };
+    'name': name,
+    'phone': phone,
+    'detail': detail,
+    'isDefault': isDefault,
+    'latitude': latitude,
+    'longitude': longitude,
+  };
 
   AddressModel copyWith({String? id, bool? isDefault}) => AddressModel(
-        id: id ?? this.id,
-        name: name,
-        phone: phone,
-        detail: detail,
-        isDefault: isDefault ?? this.isDefault,
-        latitude: latitude,
-        longitude: longitude,
-      );
+    id: id ?? this.id,
+    name: name,
+    phone: phone,
+    detail: detail,
+    isDefault: isDefault ?? this.isDefault,
+    latitude: latitude,
+    longitude: longitude,
+  );
 }

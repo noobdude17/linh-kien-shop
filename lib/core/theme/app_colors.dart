@@ -42,20 +42,20 @@ class AppColors {
   static const border = Color(0xFFE5E7EB);
 
   // ── Dark mode surfaces ──────────────────────────────────────────────────────
-  static const darkBackground   = Color(0xFF0A0F1A);
-  static const darkSurface      = Color(0xFF111827);
-  static const darkElevated     = Color(0xFF1E293B);
-  static const darkInputFill    = Color(0xFF1E293B);
+  static const darkBackground = Color(0xFF0A0F1A);
+  static const darkSurface = Color(0xFF111827);
+  static const darkElevated = Color(0xFF1E293B);
+  static const darkInputFill = Color(0xFF1E293B);
 
   // Dark mode text
-  static const darkTextPrimary  = Color(0xFFF1F5F9);
-  static const darkBodyText     = Color(0xFFCBD5E1);
-  static const darkTextSecond   = Color(0xFF94A3B8);
+  static const darkTextPrimary = Color(0xFFF1F5F9);
+  static const darkBodyText = Color(0xFFCBD5E1);
+  static const darkTextSecond = Color(0xFF94A3B8);
   static const darkTextTertiary = Color(0xFF64748B);
 
   // Dark mode borders / dividers
-  static const darkBorder       = Color(0xFF1E293B);
-  static const darkDivider      = Color(0xFF1E293B);
+  static const darkBorder = Color(0xFF1E293B);
+  static const darkDivider = Color(0xFF1E293B);
 
   // ── VNPay brand
   static const vnpBlue = Color(0xFF005BAA);

@@ -49,7 +49,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       lastDate: now,
     );
     if (picked != null) {
-      _dob.text = '${picked.day.toString().padLeft(2, '0')}/'
+      _dob.text =
+          '${picked.day.toString().padLeft(2, '0')}/'
           '${picked.month.toString().padLeft(2, '0')}/${picked.year}';
     }
   }
@@ -59,7 +60,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       MaterialPageRoute(
         builder: (_) => LocationPickerScreen(
           initial: (_lat != null && _lng != null) ? LatLng(_lat!, _lng!) : null,
-          initialText: _address.text.trim().isEmpty ? null : _address.text.trim(),
+          initialText: _address.text.trim().isEmpty
+              ? null
+              : _address.text.trim(),
         ),
       ),
     );
@@ -82,7 +85,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
     setState(() => _loading = true);
     try {
-      await ref.read(authRepositoryProvider).signUp(
+      await ref
+          .read(authRepositoryProvider)
+          .signUp(
             name: _name.text.trim(),
             email: _email.text,
             phone: _phone.text.trim(),
@@ -118,38 +123,87 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           key: _formKey,
           child: Column(
             children: [
-              _field(_name, 'Họ và tên', Icons.person_outline,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập họ tên' : null),
-              _field(_email, 'Email', Icons.email_outlined,
-                  keyboard: TextInputType.emailAddress,
-                  validator: (v) => (v == null || !v.contains('@')) ? 'Email không hợp lệ' : null),
-              _field(_phone, 'Số điện thoại', Icons.phone_outlined,
-                  keyboard: TextInputType.phone,
-                  validator: (v) => (v == null || v.trim().length < 9) ? 'Số điện thoại không hợp lệ' : null),
-              _field(_dob, 'Ngày sinh', Icons.cake_outlined,
-                  readOnly: true, onTap: _pickDob,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Chọn ngày sinh' : null),
-              _field(_address, 'Địa chỉ (chọn trên bản đồ)', Icons.location_on_outlined,
-                  readOnly: true, onTap: _pickLocation,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Chọn địa chỉ trên bản đồ' : null),
-              _field(_password, 'Mật khẩu', Icons.lock_outline,
-                  obscure: true,
-                  validator: (v) => (v == null || v.length < 6) ? 'Mật khẩu tối thiểu 6 ký tự' : null),
-              _field(_confirm, 'Nhập lại mật khẩu', Icons.lock_outline,
-                  obscure: true,
-                  validator: (v) => (v != _password.text) ? 'Mật khẩu không khớp' : null),
+              _field(
+                _name,
+                'Họ và tên',
+                Icons.person_outline,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Nhập họ tên' : null,
+              ),
+              _field(
+                _email,
+                'Email',
+                Icons.email_outlined,
+                keyboard: TextInputType.emailAddress,
+                validator: (v) => (v == null || !v.contains('@'))
+                    ? 'Email không hợp lệ'
+                    : null,
+              ),
+              _field(
+                _phone,
+                'Số điện thoại',
+                Icons.phone_outlined,
+                keyboard: TextInputType.phone,
+                validator: (v) => (v == null || v.trim().length < 9)
+                    ? 'Số điện thoại không hợp lệ'
+                    : null,
+              ),
+              _field(
+                _dob,
+                'Ngày sinh',
+                Icons.cake_outlined,
+                readOnly: true,
+                onTap: _pickDob,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Chọn ngày sinh' : null,
+              ),
+              _field(
+                _address,
+                'Địa chỉ (chọn trên bản đồ)',
+                Icons.location_on_outlined,
+                readOnly: true,
+                onTap: _pickLocation,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Chọn địa chỉ trên bản đồ'
+                    : null,
+              ),
+              _field(
+                _password,
+                'Mật khẩu',
+                Icons.lock_outline,
+                obscure: true,
+                validator: (v) => (v == null || v.length < 6)
+                    ? 'Mật khẩu tối thiểu 6 ký tự'
+                    : null,
+              ),
+              _field(
+                _confirm,
+                'Nhập lại mật khẩu',
+                Icons.lock_outline,
+                obscure: true,
+                validator: (v) =>
+                    (v != _password.text) ? 'Mật khẩu không khớp' : null,
+              ),
               Row(
                 children: [
-                  Checkbox(value: _agree, onChanged: (v) => setState(() => _agree = v ?? false)),
+                  Checkbox(
+                    value: _agree,
+                    onChanged: (v) => setState(() => _agree = v ?? false),
+                  ),
                   const Expanded(
-                    child: Text('Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật',
-                        style: TextStyle(fontSize: 13)),
+                    child: Text(
+                      'Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật',
+                      style: TextStyle(fontSize: 13),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               _loading
-                  ? const Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator())
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: CircularProgressIndicator(),
+                    )
                   : PrimaryButton(label: 'Đăng ký', onPressed: _submit),
               const SizedBox(height: 16),
               Row(
@@ -158,8 +212,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   const Text('Đã có tài khoản? '),
                   GestureDetector(
                     onTap: () => context.go(AppRoutes.login),
-                    child: const Text('Đăng nhập',
-                        style: TextStyle(color: AppColors.accentBlue, fontWeight: FontWeight.w500)),
+                    child: const Text(
+                      'Đăng nhập',
+                      style: TextStyle(
+                        color: AppColors.accentBlue,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -170,12 +229,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  Widget _field(TextEditingController c, String hint, IconData icon,
-      {bool obscure = false,
-      bool readOnly = false,
-      VoidCallback? onTap,
-      TextInputType? keyboard,
-      String? Function(String?)? validator}) {
+  Widget _field(
+    TextEditingController c,
+    String hint,
+    IconData icon, {
+    bool obscure = false,
+    bool readOnly = false,
+    VoidCallback? onTap,
+    TextInputType? keyboard,
+    String? Function(String?)? validator,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(

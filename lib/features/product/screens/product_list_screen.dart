@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -419,25 +420,29 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                           : AppColors.surface,
                       borderRadius: AppDimens.brChip,
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : AppColors.border,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.border,
                         width: isSelected ? 1.5 : 1,
                       ),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Image.asset(
-                      logoPath,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => Text(
-                        brandName,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.bodyText,
-                        ),
-                      ),
-                    ),
+                    child: logoPath.endsWith('.svg')
+                        ? SvgPicture.asset(logoPath, fit: BoxFit.contain)
+                        : Image.asset(
+                            logoPath,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, _, _) => Text(
+                              brandName,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.bodyText,
+                              ),
+                            ),
+                          ),
                   ),
                 );
               },
@@ -458,26 +463,36 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     fontSize: 12,
                   ),
                 ),
-              const Spacer(),
-              GestureDetector(
-                onTap: _showSortSheet,
-                child: Row(
-                  children: [
-                    Text(
-                      'Sắp xếp: ${_sort.label}',
-                      style: const TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: _showSortSheet,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            'Sắp xếp: ${_sort.label}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: AppColors.primary,
+                          size: 16,
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 2),
-                    const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: AppColors.primary,
-                      size: 16,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],

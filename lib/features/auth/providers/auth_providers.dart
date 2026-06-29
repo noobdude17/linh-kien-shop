@@ -10,7 +10,9 @@ import '../../../data/repositories/auth_repository.dart';
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   if (AppConfig.firebaseEnabled) {
     return FirebaseAuthRepository(
-        fb.FirebaseAuth.instance, FirebaseFirestore.instance);
+      fb.FirebaseAuth.instance,
+      FirebaseFirestore.instance,
+    );
   }
   return MockAuthRepository();
 });

@@ -6,10 +6,14 @@ void main() {
   test('Mock login từ chối tài khoản không tồn tại / sai mật khẩu', () async {
     final repo = MockAuthRepository();
 
-    expect(() => repo.signIn(email: 'random@x.com', password: 'whatever'),
-        throwsA(anything));
-    expect(() => repo.signIn(email: 'demo@lks.vn', password: 'sai'),
-        throwsA(anything));
+    expect(
+      () => repo.signIn(email: 'random@x.com', password: 'whatever'),
+      throwsA(anything),
+    );
+    expect(
+      () => repo.signIn(email: 'demo@lks.vn', password: 'sai'),
+      throwsA(anything),
+    );
 
     final u = await repo.signIn(email: 'demo@lks.vn', password: '123456');
     expect(u.email, 'demo@lks.vn');
