@@ -451,6 +451,21 @@ class FirestoreAdminRepository implements AdminRepository {
     if (query.active != null) {
       q = q.where('isActive', isEqualTo: query.active);
     }
+    final text = query.search.trim().toLowerCase();
+    // Search: Firestore can't full-text, so fetch the whole filtered set and
+    // match/paginate in memory (int cursor). Otherwise use real doc-cursor paging.
+    if (text.isNotEmpty) {
+      final snap = await q.get();
+      final items = snap.docs
+          .map(ProductModel.fromFirestore)
+          .where(
+            (p) =>
+                p.name.toLowerCase().contains(text) ||
+                p.brand.toLowerCase().contains(text),
+          )
+          .toList();
+      return _slice(items, query.limit, query.cursor);
+    }
     q = q.limit(query.limit);
     if (query.cursor is DocumentSnapshot<Map<String, dynamic>>) {
       q = q.startAfterDocument(
@@ -458,19 +473,8 @@ class FirestoreAdminRepository implements AdminRepository {
       );
     }
     final snap = await q.get();
-    var items = snap.docs.map(ProductModel.fromFirestore).toList();
-    final text = query.search.trim().toLowerCase();
-    if (text.isNotEmpty) {
-      items = items
-          .where(
-            (p) =>
-                p.name.toLowerCase().contains(text) ||
-                p.brand.toLowerCase().contains(text),
-          )
-          .toList();
-    }
     return AdminPage(
-      items: items,
+      items: snap.docs.map(ProductModel.fromFirestore).toList(),
       cursor: snap.docs.isEmpty ? query.cursor : snap.docs.last,
       hasMore: snap.docs.length == query.limit,
     );
@@ -499,6 +503,19 @@ class FirestoreAdminRepository implements AdminRepository {
     if (query.status != null) {
       q = q.where('status', isEqualTo: query.status);
     }
+    final text = query.search.trim().toLowerCase();
+    if (text.isNotEmpty) {
+      final snap = await q.get();
+      final items = snap.docs
+          .map(OrderModel.fromFirestore)
+          .where(
+            (o) =>
+                o.code.toLowerCase().contains(text) ||
+                o.customerName.toLowerCase().contains(text),
+          )
+          .toList();
+      return _slice(items, query.limit, query.cursor);
+    }
     q = q.limit(query.limit);
     if (query.cursor is DocumentSnapshot<Map<String, dynamic>>) {
       q = q.startAfterDocument(
@@ -506,19 +523,8 @@ class FirestoreAdminRepository implements AdminRepository {
       );
     }
     final snap = await q.get();
-    var items = snap.docs.map(OrderModel.fromFirestore).toList();
-    final text = query.search.trim().toLowerCase();
-    if (text.isNotEmpty) {
-      items = items
-          .where(
-            (o) =>
-                o.code.toLowerCase().contains(text) ||
-                o.customerName.toLowerCase().contains(text),
-          )
-          .toList();
-    }
     return AdminPage(
-      items: items,
+      items: snap.docs.map(OrderModel.fromFirestore).toList(),
       cursor: snap.docs.isEmpty ? query.cursor : snap.docs.last,
       hasMore: snap.docs.length == query.limit,
     );
@@ -541,6 +547,19 @@ class FirestoreAdminRepository implements AdminRepository {
     if (query.locked != null) {
       q = q.where('isLocked', isEqualTo: query.locked);
     }
+    final text = query.search.trim().toLowerCase();
+    if (text.isNotEmpty) {
+      final snap = await q.get();
+      final items = snap.docs
+          .map(UserModel.fromFirestore)
+          .where(
+            (u) =>
+                u.name.toLowerCase().contains(text) ||
+                u.email.toLowerCase().contains(text),
+          )
+          .toList();
+      return _slice(items, query.limit, query.cursor);
+    }
     q = q.limit(query.limit);
     if (query.cursor is DocumentSnapshot<Map<String, dynamic>>) {
       q = q.startAfterDocument(
@@ -548,19 +567,8 @@ class FirestoreAdminRepository implements AdminRepository {
       );
     }
     final snap = await q.get();
-    var items = snap.docs.map(UserModel.fromFirestore).toList();
-    final text = query.search.trim().toLowerCase();
-    if (text.isNotEmpty) {
-      items = items
-          .where(
-            (u) =>
-                u.name.toLowerCase().contains(text) ||
-                u.email.toLowerCase().contains(text),
-          )
-          .toList();
-    }
     return AdminPage(
-      items: items,
+      items: snap.docs.map(UserModel.fromFirestore).toList(),
       cursor: snap.docs.isEmpty ? query.cursor : snap.docs.last,
       hasMore: snap.docs.length == query.limit,
     );
