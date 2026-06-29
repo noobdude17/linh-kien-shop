@@ -6,6 +6,22 @@ import '../models/category_model.dart';
 import '../models/product_model.dart';
 import '../product_listing_adapter.dart';
 
+/// Returns true if all whitespace-separated tokens in [query] appear in at
+/// least one of: name, brand, categoryName, or any specs key/value.
+/// Handles queries like "16gb ram", "ddr5", "am4", "1tb", "6000mhz".
+bool _matchesSearchQuery(ProductModel p, String query) {
+  final tokens = query.toLowerCase().split(RegExp(r'\s+')).where((t) => t.isNotEmpty);
+  if (tokens.isEmpty) return false;
+  final fields = [
+    p.name.toLowerCase(),
+    p.brand.toLowerCase(),
+    p.categoryName.toLowerCase(),
+    ...p.specs.keys.map((k) => k.toLowerCase()),
+    ...p.specs.values.map((v) => v.toLowerCase()),
+  ];
+  return tokens.every((token) => fields.any((f) => f.contains(token)));
+}
+
 /// Hợp đồng truy xuất sản phẩm. UI/provider phụ thuộc vào abstract này,
 /// không phụ thuộc Firestore trực tiếp → dễ test & thay nguồn dữ liệu.
 abstract class ProductRepository {
@@ -100,16 +116,10 @@ class MockProductRepository implements ProductRepository {
 
   @override
   Future<List<ProductModel>> search(String query) {
-    final q = query.toLowerCase();
     final all = [...MockData.featured, ...MockData.gpuList];
     return _delayed(
       expandProductsForListing(all)
-          .where(
-            (p) =>
-                p.name.toLowerCase().contains(q) ||
-                p.brand.toLowerCase().contains(q) ||
-                p.categoryName.toLowerCase().contains(q),
-          )
+          .where((p) => _matchesSearchQuery(p, query))
           .toList(),
     );
   }
@@ -240,12 +250,7 @@ class FirestoreProductRepository implements ProductRepository {
         .where('isActive', isEqualTo: true)
         .get(const GetOptions(source: Source.server));
     return expandProductsForListing(snap.docs.map(ProductModel.fromFirestore))
-        .where(
-          (p) =>
-              p.name.toLowerCase().contains(q) ||
-              p.brand.toLowerCase().contains(q) ||
-              p.categoryName.toLowerCase().contains(q),
-        )
+        .where((p) => _matchesSearchQuery(p, query))
         .toList();
   }
 
@@ -284,9 +289,7 @@ class FirestoreProductRepository implements ProductRepository {
           ProductModel.fromFirestore(doc),
         );
         for (final product in products) {
-          if (product.name.toLowerCase().contains(qText) ||
-              product.brand.toLowerCase().contains(qText) ||
-              product.categoryName.toLowerCase().contains(qText)) {
+          if (_matchesSearchQuery(product, qText)) {
             matches.add(product);
             if (matches.length == limit) break;
           }
