@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -208,7 +207,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                scrollCacheExtent: const ScrollCacheExtent.pixels(900),
+                cacheExtent: 900,
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(

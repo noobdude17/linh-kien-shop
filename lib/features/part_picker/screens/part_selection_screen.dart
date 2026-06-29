@@ -694,6 +694,9 @@ class _PartSelectionScreenState extends ConsumerState<PartSelectionScreen> {
 
   Widget _productTile(_Candidate candidate) {
     final product = candidate.product;
+    // ponytail: chuột/bàn phím không có ràng buộc tương thích — đừng gắn nhãn
+    // trạng thái thừa hưởng từ cảnh báo của linh kiện khác trong cấu hình.
+    final showCompat = category.id != 'keyboard' && category.id != 'mouse';
     final severity = candidate.summary.severity;
     final isIncompatible = severity == CompatibilitySeverity.incompatible;
     final isWarning = severity == CompatibilitySeverity.warning;
@@ -767,14 +770,15 @@ class _PartSelectionScreenState extends ConsumerState<PartSelectionScreen> {
                         color: AppColors.accent,
                       ),
                     ),
-                    Text(
-                      status,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: statusColor,
-                        fontWeight: FontWeight.w600,
+                    if (showCompat)
+                      Text(
+                        status,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: statusColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ],
