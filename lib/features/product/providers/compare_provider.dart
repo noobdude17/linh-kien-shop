@@ -24,5 +24,6 @@ class CompareNotifier extends Notifier<List<ProductModel>> {
   void clear() => state = [];
 }
 
-final compareProvider =
-    NotifierProvider<CompareNotifier, List<ProductModel>>(CompareNotifier.new);
+final compareProvider = NotifierProvider<CompareNotifier, List<ProductModel>>(
+  CompareNotifier.new,
+);

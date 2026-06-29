@@ -81,6 +81,7 @@ coverage/
 # .vscode/
 
 # Local debug/tool artifacts (browser profiles, codex, debug screenshots)
+AGENTS.md
 .chrome-debug-profile*/
 .codex_appdata/
 .codex_gitconfig

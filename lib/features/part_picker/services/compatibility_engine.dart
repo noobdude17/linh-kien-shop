@@ -16,7 +16,6 @@ class CompatibilityEngine {
     final ram = build.items('ram');
     final storage = build.items('storage');
     final gpus = build.items('gpu');
-    final monitors = build.items('monitor');
     final os = build.single('os');
 
     if (cpu != null && mainboard != null) {
@@ -44,6 +43,8 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.incompatible,
             message:
                 '${cooler.name} không hỗ trợ socket $socket của ${cpu.name}.',
+            suggestion:
+                'Gợi ý: chọn tản nhiệt có hỗ trợ socket $socket hoặc đổi CPU/mainboard sang socket mà tản nhiệt hỗ trợ.',
           ),
         );
       }
@@ -62,6 +63,8 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.incompatible,
             message:
                 '${mainboard.name} dùng RAM $boardType, nhưng cấu hình có RAM ${wrongTypes.join(', ')}.',
+            suggestion:
+                'Gợi ý: chọn RAM $boardType cho mainboard này, hoặc đổi mainboard sang loại RAM đang chọn.',
           ),
         );
       }
@@ -78,6 +81,8 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.incompatible,
             message:
                 'Cấu hình cần $usedSlots khe RAM nhưng ${mainboard.name} chỉ có $availableSlots khe.',
+            suggestion:
+                'Gợi ý: chọn kit RAM ít thanh hơn hoặc đổi sang mainboard có nhiều khe RAM hơn.',
           ),
         );
       }
@@ -93,10 +98,15 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.incompatible,
             message:
                 'Tổng RAM ${capacity}GB vượt mức ${maxCapacity}GB của ${mainboard.name}.',
+            suggestion:
+                'Gợi ý: giảm dung lượng RAM hoặc đổi sang mainboard hỗ trợ dung lượng RAM cao hơn.',
           ),
         );
       }
-      final speeds = ram.map((item) => _number(item, 'ramSpeedMhz')).toSet();
+      final speeds = ram
+          .map((item) => _number(item, 'ramSpeedMhz'))
+          .where((speed) => speed > 0)
+          .toSet();
       if (ram.length > 1 && speeds.length > 1) {
         issues.add(
           CompatibilityIssue(
@@ -104,17 +114,15 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.warning,
             message:
                 'Các bộ RAM khác tốc độ (${speeds.join(', ')} MHz) có thể chạy ở tốc độ thấp nhất.',
+            suggestion:
+                'Gợi ý: dùng các thanh RAM cùng tốc độ để cấu hình ổn định và dễ bật XMP/EXPO hơn.',
           ),
         );
       }
     }
 
     if (mainboard != null && storage.isNotEmpty) {
-      final m2Used = storage
-          .where(
-            (item) => _string(item, 'storageSlotType').toLowerCase() == 'm2',
-          )
-          .length;
+      final m2Used = storage.where(_isM2Storage).length;
       final sataUsed = storage.length - m2Used;
       final m2Available = _number(mainboard, 'mbM2Slots');
       final sataAvailable = _number(mainboard, 'mbSataPorts');
@@ -125,6 +133,8 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.incompatible,
             message:
                 'Cấu hình cần $m2Used khe M.2 nhưng ${mainboard.name} chỉ có $m2Available khe.',
+            suggestion:
+                'Gợi ý: giảm số SSD M.2, chọn thêm SSD SATA, hoặc đổi sang mainboard có nhiều khe M.2 hơn.',
           ),
         );
       }
@@ -135,6 +145,8 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.incompatible,
             message:
                 'Cấu hình cần $sataUsed cổng SATA nhưng ${mainboard.name} chỉ có $sataAvailable cổng.',
+            suggestion:
+                'Gợi ý: giảm số ổ SATA, chọn ổ M.2 nếu còn khe, hoặc đổi sang mainboard có nhiều cổng SATA hơn.',
           ),
         );
       }
@@ -153,6 +165,8 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.incompatible,
             message:
                 '${mainboard.name} là chuẩn $boardFormRaw nhưng ${pcCase.name} chỉ hỗ trợ ${supported.join(', ')}.',
+            suggestion:
+                'Gợi ý: chọn case hỗ trợ chuẩn $boardFormRaw hoặc đổi sang mainboard có form factor phù hợp với case.',
           ),
         );
       }
@@ -175,7 +189,9 @@ class CompatibilityEngine {
               code: 'gpu_pcie_${gpu.id}',
               severity: CompatibilitySeverity.warning,
               message:
-                  '${gpu.name} dùng $gpuPcie, còn ${mainboard.name} hỗ trợ $boardPcie. Card vẫn có thể chạy nhưng không tối ưu băng thông.',
+                  '${gpu.name} dùng $gpuPcie, còn ${mainboard.name} hỗ trợ $boardPcie. Card vẫn hoạt động bình thường; nếu khe PCIe thấp hơn, băng thông tối đa sẽ bị giới hạn theo mainboard và mức ảnh hưởng thực tế thường phụ thuộc vào GPU/tác vụ.',
+              suggestion:
+                  'Gợi ý: để tối ưu cho ${gpu.name}, chọn mainboard/nền tảng có khe GPU PCIe 5.0 x16 như AM5, LGA1700 cao cấp hoặc LGA1851. Nếu muốn giữ mainboard này, chọn GPU PCIe 4.0 hoặc chấp nhận card chạy ở băng thông thấp hơn.',
             ),
           );
         }
@@ -193,20 +209,45 @@ class CompatibilityEngine {
               severity: CompatibilitySeverity.incompatible,
               message:
                   '${gpu.name} dài ${length}mm, vượt giới hạn ${maxGpu}mm của ${pcCase.name}.',
+              suggestion:
+                  'Gợi ý: chọn case hỗ trợ GPU dài hơn ${length}mm hoặc đổi sang phiên bản card ngắn hơn.',
             ),
           );
         }
       }
       if (cooler != null) {
+        final coolerType = _string(cooler, 'coolerType').toLowerCase();
+        final radiatorSize = _number(cooler, 'coolerRadiatorSizeMm');
+        final maxRadiator = _caseMaxRadiatorSize(pcCase);
+        if (coolerType.contains('aio') &&
+            radiatorSize > 0 &&
+            maxRadiator > 0 &&
+            radiatorSize > maxRadiator) {
+          issues.add(
+            CompatibilityIssue(
+              code: 'cooler_radiator',
+              severity: CompatibilitySeverity.incompatible,
+              message:
+                  '${cooler.name} dùng radiator ${radiatorSize}mm, vượt giới hạn ${maxRadiator}mm của ${pcCase.name}.',
+              suggestion:
+                  'Gợi ý: chọn case hỗ trợ radiator ${radiatorSize}mm hoặc đổi sang tản AIO/radiator nhỏ hơn.',
+            ),
+          );
+        }
+
         final maxCooler = _number(pcCase, 'caseMaxCoolerHeightMm');
         final height = _number(cooler, 'coolerHeightMm');
-        if (maxCooler > 0 && height > maxCooler) {
+        if (!coolerType.contains('aio') &&
+            maxCooler > 0 &&
+            height > maxCooler) {
           issues.add(
             CompatibilityIssue(
               code: 'cooler_height',
               severity: CompatibilitySeverity.incompatible,
               message:
                   '${cooler.name} cao ${height}mm, vượt giới hạn ${maxCooler}mm của ${pcCase.name}.',
+              suggestion:
+                  'Gợi ý: chọn case có clearance tản CPU cao hơn ${height}mm hoặc đổi sang tản thấp hơn/AIO.',
             ),
           );
         }
@@ -214,14 +255,21 @@ class CompatibilityEngine {
       if (psu != null) {
         final psuForm = _string(psu, 'psuFormFactor');
         final casePsuForm = _string(pcCase, 'casePsuFormFactor');
-        _same(
-          issues,
-          code: 'psu_form_factor',
-          left: psuForm,
-          right: casePsuForm,
-          message:
-              '${psu.name} là chuẩn $psuForm, nhưng ${pcCase.name} hỗ trợ nguồn chuẩn $casePsuForm.',
-        );
+        final supported = _strings(pcCase, 'casePsuFormFactor');
+        if (psuForm.isNotEmpty &&
+            supported.isNotEmpty &&
+            !_caseSupportsPsuFormFactor(supported, psuForm)) {
+          issues.add(
+            CompatibilityIssue(
+              code: 'psu_form_factor',
+              severity: CompatibilitySeverity.incompatible,
+              message:
+                  '${psu.name} là chuẩn $psuForm, nhưng ${pcCase.name} hỗ trợ nguồn chuẩn $casePsuForm.',
+              suggestion:
+                  'Gợi ý: chọn nguồn chuẩn ${supported.join(', ')} cho case này hoặc đổi sang case hỗ trợ nguồn $psuForm.',
+            ),
+          );
+        }
       }
     }
 
@@ -236,6 +284,8 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.incompatible,
             message:
                 '${psu.name} có ${capacity}W, thấp hơn mức tải ước tính ${estimated}W của cấu hình.',
+            suggestion:
+                'Gợi ý: chọn nguồn công suất cao hơn, tối thiểu khoảng ${recommended}W cho cấu hình này.',
           ),
         );
       } else if (capacity > 0 && capacity < recommended) {
@@ -245,6 +295,8 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.warning,
             message:
                 '${psu.name} có ${capacity}W. Nên dùng nguồn ít nhất ${recommended}W để có công suất dự phòng.',
+            suggestion:
+                'Gợi ý: nâng lên nguồn ${recommended}W hoặc cao hơn để có headroom cho GPU/CPU boost và nâng cấp sau này.',
           ),
         );
       }
@@ -258,29 +310,23 @@ class CompatibilityEngine {
           severity: CompatibilitySeverity.warning,
           message:
               'Cấu hình có nhiều card đồ họa. Vui lòng kiểm tra số khe PCIe, khoảng trống trong case và công suất nguồn.',
-        ),
-      );
-    }
-    if (monitors.length > 1) {
-      issues.add(
-        const CompatibilityIssue(
-          code: 'multiple_monitor',
-          severity: CompatibilitySeverity.warning,
-          message:
-              'Vui lòng kiểm tra số lượng cổng xuất hình trên card đồ họa.',
+          suggestion:
+              'Gợi ý: hầu hết cấu hình gaming/workstation hiện nay nên dùng một GPU mạnh thay vì nhiều GPU.',
         ),
       );
     }
     if (os != null) {
-      final version = _string(os, 'osVersion');
-      final majorVersion = int.tryParse(version);
+      final majorVersion = _osMajorVersion(os);
       if ((majorVersion != null && majorVersion < 11) ||
           _string(os, 'osSupportStatus') == 'legacy') {
         issues.add(
           const CompatibilityIssue(
             code: 'legacy_os',
             severity: CompatibilitySeverity.warning,
-            message: 'Phiên bản Windows này không còn nhận bản cập nhật mới.',
+            message:
+                'Windows 10 sẽ không còn nhận các bản cập nhật mới trong tương lai.',
+            suggestion:
+                'Gợi ý: chọn Windows 11 nếu phần cứng hỗ trợ để nhận cập nhật lâu dài hơn.',
           ),
         );
       }
@@ -302,6 +348,11 @@ class CompatibilityEngine {
           code: code,
           severity: CompatibilitySeverity.incompatible,
           message: message,
+          suggestion: switch (code) {
+            'cpu_socket' =>
+              'Gợi ý: đổi CPU hoặc mainboard để cả hai dùng cùng socket.',
+            _ => null,
+          },
         ),
       );
     }
@@ -338,6 +389,8 @@ class CompatibilityEngine {
             severity: CompatibilitySeverity.incompatible,
             message:
                 '$gpuNames cần tổng cộng ${_formatConnectorCount(needed, connector)} nhưng ${psu.name} chỉ có ${_formatConnectorCount(has, connector)}.',
+            suggestion:
+                'Gợi ý: chọn nguồn có đủ ${_formatConnectorCount(needed, connector)} cho GPU, hoặc đổi sang GPU dùng ít đầu nguồn hơn.',
           ),
         );
       }
@@ -361,7 +414,7 @@ class CompatibilityEngine {
     if (value is Iterable) return value.map((item) => item.toString()).toList();
     if (value is String) {
       return value
-          .split(',')
+          .split(RegExp(r'[,;/|]'))
           .map((item) => item.trim())
           .where((e) => e.isNotEmpty)
           .toList();
@@ -373,9 +426,38 @@ class CompatibilityEngine {
     final value =
         product.compatibility[key] ??
         (fallback == null ? null : product.compatibility[fallback]);
-    return value is num
-        ? value.round()
-        : int.tryParse(value?.toString() ?? '') ?? 0;
+    if (value is num) return value.round();
+    final text = value?.toString() ?? '';
+    final match = RegExp(r'-?\d+(\.\d+)?').firstMatch(text);
+    final parsed = num.tryParse(match?.group(0) ?? '');
+    return parsed?.round() ?? 0;
+  }
+
+  static int? _firstInteger(String value) {
+    final match = RegExp(r'\d+').firstMatch(value);
+    return int.tryParse(match?.group(0) ?? '');
+  }
+
+  static int? _osMajorVersion(ProductModel os) {
+    for (final value in [
+      _string(os, 'osVersion'),
+      os.name,
+      os.description,
+      os.imageLabel,
+    ]) {
+      final parsed = _firstInteger(value);
+      if (parsed != null) return parsed;
+    }
+    return null;
+  }
+
+  static bool _isM2Storage(ProductModel product) {
+    final slotType = _string(product, 'storageSlotType');
+    final formFactor = _string(product, 'storageFormFactor');
+    final interface = _string(product, 'storageInterface');
+    final combined = '$slotType $formFactor $interface'.toLowerCase();
+    final compact = combined.replaceAll(RegExp(r'[^a-z0-9]'), '');
+    return compact.contains('m2') || compact.contains('nvme');
   }
 
   static Map<String, int> _connectorCounts(ProductModel product, String key) {
@@ -429,13 +511,54 @@ class CompatibilityEngine {
     return '';
   }
 
+  static bool _caseSupportsPsuFormFactor(List<String> supported, String psuForm) {
+    final normalizedSupported = supported.map(_norm).toSet();
+    final normalizedPsu = _norm(psuForm);
+    if (normalizedPsu.isEmpty) return true;
+    if (normalizedSupported.contains(normalizedPsu)) return true;
+
+    // SFX/SFX-L PSUs are physically smaller than ATX. Most ATX cases can use
+    // them with a bracket/adapter, so do not mark them incompatible.
+    final caseSupportsAtx = normalizedSupported.contains('atx');
+    final psuIsSfxFamily = normalizedPsu == 'sfx' || normalizedPsu == 'sfxl';
+    if (caseSupportsAtx && psuIsSfxFamily) return true;
+
+    return false;
+  }
+
   static String _formatConnectorCount(int count, String connector) {
     return '${count}x $connector';
   }
 
   static double _pcieNumber(String value) {
-    final match = RegExp(r'(\d+(\.\d+)?)').firstMatch(value);
-    return double.tryParse(match?.group(1) ?? '') ?? 0;
+    final cleaned = value.replaceAll(
+      RegExp(r'x\s*\d+', caseSensitive: false),
+      '',
+    );
+    final matches = RegExp(r'(\d+(\.\d+)?)').allMatches(cleaned);
+    var max = 0.0;
+    for (final match in matches) {
+      final number = double.tryParse(match.group(1) ?? '') ?? 0;
+      if (number > max) max = number;
+    }
+    return max;
+  }
+
+  static int _caseMaxRadiatorSize(ProductModel pcCase) {
+    final explicit = _number(pcCase, 'caseMaxRadiatorSizeMm');
+    if (explicit > 0) return explicit;
+
+    final support = _string(pcCase, 'caseFanSupport');
+    final matches = RegExp(
+      r'(\d{3})\s*mm\s*radiator',
+      caseSensitive: false,
+    ).allMatches(support);
+    var max = 0;
+    for (final match in matches) {
+      final size = int.tryParse(match.group(1) ?? '') ?? 0;
+      if (size > max) max = size;
+    }
+    return max;
   }
 
   static String _norm(String value) =>

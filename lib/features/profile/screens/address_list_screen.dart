@@ -32,8 +32,9 @@ class AddressListScreen extends ConsumerWidget {
           children: [
             if (list.isEmpty)
               const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Center(child: Text('Chưa có địa chỉ'))),
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: Center(child: Text('Chưa có địa chỉ')),
+              ),
             ...list.map((a) => _addressCard(context, ref, a)),
             // Bảng debug (chỉ hiện ở bản debug) để soi dữ liệu đã lưu — step 4.
             if (kDebugMode)
@@ -44,8 +45,9 @@ class AddressListScreen extends ConsumerWidget {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: PrimaryButton(
-            label: '+ Thêm địa chỉ mới',
-            onPressed: () => context.go(AppRoutes.addAddress)),
+          label: '+ Thêm địa chỉ mới',
+          onPressed: () => context.go(AppRoutes.addAddress),
+        ),
       ),
     );
   }
@@ -58,59 +60,77 @@ class AddressListScreen extends ConsumerWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
           decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: AppDimens.brCard,
-              boxShadow: AppDimens.cardShadow),
+            color: AppColors.surface,
+            borderRadius: AppDimens.brCard,
+            boxShadow: AppDimens.cardShadow,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Text('${a.name} · ${a.phone}',
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(
+                    '${a.name} · ${a.phone}',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                   const SizedBox(width: 8),
                   if (a.isDefault)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(6)),
-                      child: const Text('Mặc định',
-                          style: TextStyle(
-                              color: AppColors.accentBlue,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700)),
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'Mặc định',
+                        style: TextStyle(
+                          color: AppColors.accentBlue,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: 6),
-              Text(a.detail,
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13)),
+              Text(
+                a.detail,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
               const Divider(height: 20),
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () =>
-                        context.go(AppRoutes.addAddress, extra: a),
-                    child: const Text('✏️ Sửa',
-                        style:
-                            TextStyle(color: AppColors.primary, fontSize: 13)),
+                    onTap: () => context.go(AppRoutes.addAddress, extra: a),
+                    child: const Text(
+                      '✏️ Sửa',
+                      style: TextStyle(color: AppColors.primary, fontSize: 13),
+                    ),
                   ),
                   const SizedBox(width: 20),
                   GestureDetector(
                     onTap: () => _confirmDelete(context, ref, a),
-                    child: const Text('🗑️ Xóa',
-                        style: TextStyle(color: AppColors.error, fontSize: 13)),
+                    child: const Text(
+                      '🗑️ Xóa',
+                      style: TextStyle(color: AppColors.error, fontSize: 13),
+                    ),
                   ),
                   if (!a.isDefault) ...[
                     const Spacer(),
-                    Text('Đặt mặc định',
-                        style: TextStyle(
-                            color: AppColors.accentBlue.withValues(alpha: .9),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500)),
+                    Text(
+                      'Đặt mặc định',
+                      style: TextStyle(
+                        color: AppColors.accentBlue.withValues(alpha: .9),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -120,14 +140,20 @@ class AddressListScreen extends ConsumerWidget {
       );
 
   Future<void> _setDefault(
-      BuildContext context, WidgetRef ref, AddressModel a) async {
+    BuildContext context,
+    WidgetRef ref,
+    AddressModel a,
+  ) async {
     final uid = ref.read(currentUserProvider)?.id;
     if (uid == null) return;
     await ref.read(addressRepositoryProvider).setDefault(uid, a.id);
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, WidgetRef ref, AddressModel a) async {
+    BuildContext context,
+    WidgetRef ref,
+    AddressModel a,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -135,12 +161,13 @@ class AddressListScreen extends ConsumerWidget {
         content: Text('${a.name} · ${a.detail}'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Hủy')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Xóa',
-                  style: TextStyle(color: AppColors.error))),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Xóa', style: TextStyle(color: AppColors.error)),
+          ),
         ],
       ),
     );
@@ -170,27 +197,38 @@ class _DebugPanel extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       decoration: BoxDecoration(
-          color: const Color(0xFFFFF7ED),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFFB923C))),
+        color: const Color(0xFFFFF7ED),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFFB923C)),
+      ),
       child: ExpansionTile(
-        title: const Text('🐞 DEBUG · dữ liệu địa chỉ đã lưu (step 4)',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+        title: const Text(
+          '🐞 DEBUG · dữ liệu địa chỉ đã lưu (step 4)',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+        ),
         subtitle: Text(
-            'Backend: ${fb ? "Firebase (Firestore)" : "Mock (in-memory, không lưu Firebase)"}',
-            style: const TextStyle(fontSize: 11)),
+          'Backend: ${fb ? "Firebase (Firestore)" : "Mock (in-memory, không lưu Firebase)"}',
+          style: const TextStyle(fontSize: 11),
+        ),
         childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('users/{uid}/addresses:',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+          const Text(
+            'users/{uid}/addresses:',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+          ),
           if (list.isEmpty) const Text('— trống —', style: _mono),
-          ...list.map((a) => Text(
+          ...list.map(
+            (a) => Text(
               '• id=${a.id} default=${a.isDefault} lat=${a.latitude} lng=${a.longitude}',
-              style: _mono)),
+              style: _mono,
+            ),
+          ),
           const SizedBox(height: 10),
-          const Text('Mirror users/{uid}.defaultAddress:',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+          const Text(
+            'Mirror users/{uid}.defaultAddress:',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+          ),
           if (!fb)
             const Text('— Mock: không ghi Firebase —', style: _mono)
           else if (uid == null)
@@ -210,8 +248,9 @@ class _DebugPanel extends StatelessWidget {
                   return const Text('— chưa có mirror —', style: _mono);
                 }
                 return Text(
-                    'detail=${def['detail']}\nlat=${def['latitude']} lng=${def['longitude']} default=${def['isDefault']}',
-                    style: _mono);
+                  'detail=${def['detail']}\nlat=${def['latitude']} lng=${def['longitude']} default=${def['isDefault']}',
+                  style: _mono,
+                );
               },
             ),
         ],

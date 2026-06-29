@@ -27,9 +27,9 @@ class CategoryModel {
   }
 
   Map<String, dynamic> toFirestore() => {
-        'name': name,
-        'icon': icon,
-        'colorIndex': colorIndex,
-        if (imageAsset != null) 'imageAsset': imageAsset,
-      };
+    'name': name,
+    'icon': icon,
+    'colorIndex': colorIndex,
+    if (imageAsset != null) 'imageAsset': imageAsset,
+  };
 }

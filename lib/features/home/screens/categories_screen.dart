@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -195,15 +196,20 @@ class _BrandTile extends StatelessWidget {
           boxShadow: AppDimens.cardShadow,
         ),
         alignment: Alignment.center,
-        child: Image.asset(
-          logo,
-          fit: BoxFit.contain,
-          errorBuilder: (_, _, _) => Text(
-            name,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-          ),
-        ),
+        child: logo.endsWith('.svg')
+            ? SvgPicture.asset(logo, fit: BoxFit.contain)
+            : Image.asset(
+                logo,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => Text(
+                  name,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -242,8 +248,10 @@ class _TypeTile extends StatelessWidget {
                         width: 84,
                         height: 84,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) =>
-                            Text(category.icon, style: const TextStyle(fontSize: 32)),
+                        errorBuilder: (_, _, _) => Text(
+                          category.icon,
+                          style: const TextStyle(fontSize: 32),
+                        ),
                       ),
                     )
                   : Text(category.icon, style: const TextStyle(fontSize: 32)),

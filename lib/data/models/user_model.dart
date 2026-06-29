@@ -54,20 +54,22 @@ class UserModel {
       photoUrl: data['photoUrl'],
       defaultAddress: data['defaultAddress'] != null
           ? AddressModel.fromMap(
-              'default', data['defaultAddress'] as Map<String, dynamic>)
+              'default',
+              data['defaultAddress'] as Map<String, dynamic>,
+            )
           : null,
     );
   }
 
   Map<String, dynamic> toFirestore() => {
-        'name': name,
-        'email': email,
-        'role': role,
-        'address': address,
-        'phone': phone,
-        'dob': dob,
-        'defaultAddress': defaultAddress?.toFirestore(),
-      };
+    'name': name,
+    'email': email,
+    'role': role,
+    'address': address,
+    'phone': phone,
+    'dob': dob,
+    'defaultAddress': defaultAddress?.toFirestore(),
+  };
 
   UserModel copyWith({
     String? name,
@@ -77,17 +79,16 @@ class UserModel {
     String? photoUrl,
     AddressModel? defaultAddress,
     bool? emailVerified,
-  }) =>
-      UserModel(
-        id: id,
-        name: name ?? this.name,
-        email: email,
-        role: role,
-        address: address ?? this.address,
-        phone: phone ?? this.phone,
-        dob: dob ?? this.dob,
-        photoUrl: photoUrl ?? this.photoUrl,
-        defaultAddress: defaultAddress ?? this.defaultAddress,
-        emailVerified: emailVerified ?? this.emailVerified,
-      );
+  }) => UserModel(
+    id: id,
+    name: name ?? this.name,
+    email: email,
+    role: role,
+    address: address ?? this.address,
+    phone: phone ?? this.phone,
+    dob: dob ?? this.dob,
+    photoUrl: photoUrl ?? this.photoUrl,
+    defaultAddress: defaultAddress ?? this.defaultAddress,
+    emailVerified: emailVerified ?? this.emailVerified,
+  );
 }

@@ -19,9 +19,9 @@ class MockReviewRepository implements ReviewRepository {
 
   @override
   Future<List<ReviewModel>> getForProduct(String productId) => _delayed(
-        MockData.reviews.where((r) => r.productId == productId).toList()
-          ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
-      );
+    MockData.reviews.where((r) => r.productId == productId).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+  );
 
   @override
   Future<void> add(ReviewModel review) async {
@@ -41,15 +41,17 @@ class FirestoreReviewRepository implements ReviewRepository {
 
   @override
   Future<List<ReviewModel>> getForProduct(String productId) async {
-    final snap =
-        await _col(productId).orderBy('createdAt', descending: true).get();
+    final snap = await _col(
+      productId,
+    ).orderBy('createdAt', descending: true).get();
     return snap.docs.map(ReviewModel.fromFirestore).toList();
   }
 
   @override
   Future<void> add(ReviewModel review) async {
-    final productRef =
-        _db.collection(AppConstants.colProducts).doc(review.productId);
+    final productRef = _db
+        .collection(AppConstants.colProducts)
+        .doc(review.productId);
     final reviewRef = _col(review.productId).doc(review.id);
 
     // Cập nhật rating trung bình + reviewCount trên sản phẩm trong cùng giao dịch
@@ -70,6 +72,8 @@ class FirestoreReviewRepository implements ReviewRepository {
 
   /// Trung bình mới sau khi thêm 1 đánh giá, làm tròn 1 chữ số thập phân.
   static double recomputeRating(
-          double oldRating, int oldCount, double newRating) =>
-      ((oldRating * oldCount + newRating) / (oldCount + 1) * 10).round() / 10;
+    double oldRating,
+    int oldCount,
+    double newRating,
+  ) => ((oldRating * oldCount + newRating) / (oldCount + 1) * 10).round() / 10;
 }

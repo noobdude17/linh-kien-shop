@@ -9,7 +9,10 @@ import 'package:linh_kien_shop/data/repositories/auth_repository.dart';
 // toFirestore() thì URL Google sẽ bị lưu và phá thứ tự ưu tiên → test này chặn.
 void main() {
   const u = UserModel(
-    id: '1', name: 'A', email: 'a@x.com', role: 'customer',
+    id: '1',
+    name: 'A',
+    email: 'a@x.com',
+    role: 'customer',
     photoUrl: 'https://google/avatar.jpg',
   );
 
@@ -18,9 +21,14 @@ void main() {
   });
 
   test('copyWith đặt/giữ photoUrl', () {
-    expect(u.copyWith(photoUrl: 'https://cloudinary/x.jpg').photoUrl,
-        'https://cloudinary/x.jpg');
-    expect(u.copyWith(name: 'B').photoUrl, u.photoUrl); // giữ khi sửa field khác
+    expect(
+      u.copyWith(photoUrl: 'https://cloudinary/x.jpg').photoUrl,
+      'https://cloudinary/x.jpg',
+    );
+    expect(
+      u.copyWith(name: 'B').photoUrl,
+      u.photoUrl,
+    ); // giữ khi sửa field khác
   });
 
   test('Mock updateAvatar lưu ảnh vào hồ sơ', () async {

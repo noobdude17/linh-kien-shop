@@ -17,17 +17,40 @@ class VnpayGatewayScreen extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(gradient: AppColors.vnpayGatewayGradient),
+              decoration: const BoxDecoration(
+                gradient: AppColors.vnpayGatewayGradient,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text.rich(TextSpan(children: [
-                    TextSpan(text: 'VN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
-                    TextSpan(text: 'PAY', style: TextStyle(color: AppColors.vnpOrange, fontWeight: FontWeight.w900, fontSize: 20)),
-                  ])),
+                  const Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'VN',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'PAY',
+                          style: TextStyle(
+                            color: AppColors.vnpOrange,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   GestureDetector(
                     onTap: () => context.go(AppRoutes.checkout),
-                    child: const Text('Hủy giao dịch', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    child: const Text(
+                      'Hủy giao dịch',
+                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
                   ),
                 ],
               ),
@@ -36,42 +59,81 @@ class VnpayGatewayScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  _card(Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text('Thanh toán cho', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                      Text('Linh Kiện Shop', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-                      SizedBox(height: 4),
-                      Text('Mã đơn: LKS-2024061601', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                      SizedBox(height: 8),
-                      Text('29.800.000đ', style: TextStyle(color: AppColors.textPrimary, fontSize: 28, fontWeight: FontWeight.w700)),
-                      SizedBox(height: 8),
-                      Text('⏱ Hết hạn sau 14:59', style: TextStyle(color: AppColors.accentBlue, fontSize: 12)),
-                    ],
-                  )),
+                  _card(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Thanh toán cho',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          'Linh Kiện Shop',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Mã đơn: LKS-2024061601',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          '29.800.000đ',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          '⏱ Hết hạn sau 14:59',
+                          style: TextStyle(
+                            color: AppColors.accentBlue,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 12),
-                  _card(Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(children: const [
-                        _Tab('Thẻ ATM', true),
-                        SizedBox(width: 8),
-                        _Tab('Thẻ quốc tế', false),
-                        SizedBox(width: 8),
-                        _Tab('QR Code', false),
-                      ]),
-                      const SizedBox(height: 16),
-                      _input('Ngân hàng', 'Vietcombank ▾'),
-                      _input('Số thẻ', '9704 •••• •••• ••••'),
-                      _input('Tên chủ thẻ', 'NGUYEN VAN AN'),
-                      _input('Ngày phát hành', 'MM/YY'),
-                    ],
-                  )),
+                  _card(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: const [
+                            _Tab('Thẻ ATM', true),
+                            SizedBox(width: 8),
+                            _Tab('Thẻ quốc tế', false),
+                            SizedBox(width: 8),
+                            _Tab('QR Code', false),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _input('Ngân hàng', 'Vietcombank ▾'),
+                        _input('Số thẻ', '9704 •••• •••• ••••'),
+                        _input('Tên chủ thẻ', 'NGUYEN VAN AN'),
+                        _input('Ngày phát hành', 'MM/YY'),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                      ),
                       onPressed: () => context.go(AppRoutes.processing),
                       child: const Text('Thanh toán 29.800.000đ'),
                     ),
@@ -86,27 +148,39 @@ class VnpayGatewayScreen extends StatelessWidget {
   }
 
   Widget _card(Widget child) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12)),
-        child: child,
-      );
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: child,
+  );
 
   Widget _input(String label, String value) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-            const SizedBox(height: 4),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(color: AppColors.inputFill, borderRadius: BorderRadius.circular(12)),
-              child: Text(value, style: const TextStyle(color: AppColors.textTertiary)),
-            ),
-          ],
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
-      );
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.inputFill,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            value,
+            style: const TextStyle(color: AppColors.textTertiary),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _Tab extends StatelessWidget {
@@ -122,9 +196,14 @@ class _Tab extends StatelessWidget {
         color: active ? AppColors.primary : AppColors.inputFill,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label,
-          style: TextStyle(fontSize: 12, color: active ? Colors.white : AppColors.bodyText,
-              fontWeight: FontWeight.w500)),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          color: active ? Colors.white : AppColors.bodyText,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 }

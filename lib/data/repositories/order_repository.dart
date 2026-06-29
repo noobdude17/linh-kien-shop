@@ -106,7 +106,8 @@ class FirestoreOrderRepository implements OrderRepository {
     final now = DateTime.now();
     final docRef = _db.collection(AppConstants.colOrders).doc();
     final seq = (now.millisecondsSinceEpoch % 10000).toString().padLeft(4, '0');
-    final code = 'LKS-'
+    final code =
+        'LKS-'
         '${now.year}'
         '${now.month.toString().padLeft(2, '0')}'
         '${now.day.toString().padLeft(2, '0')}'
@@ -148,9 +149,8 @@ class FirestoreOrderRepository implements OrderRepository {
 
   @override
   Future<void> cancelOrder(String id) async {
-    await _db
-        .collection(AppConstants.colOrders)
-        .doc(id)
-        .update({'status': AppConstants.statusCancelled});
+    await _db.collection(AppConstants.colOrders).doc(id).update({
+      'status': AppConstants.statusCancelled,
+    });
   }
 }

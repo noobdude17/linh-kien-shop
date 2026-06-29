@@ -79,7 +79,9 @@ class DefaultFirebaseOptions {
         case TargetPlatform.iOS:
           opts = ios;
         default:
-          throw UnsupportedError('Platform is not supported by Firebase config.');
+          throw UnsupportedError(
+            'Platform is not supported by Firebase config.',
+          );
       }
     }
     // Placeholder values mean no real --dart-define was provided → throw so
@@ -95,7 +97,9 @@ class DefaultFirebaseOptions {
 
   static String _required(Map<String, dynamic> config, String key) {
     final value = _optional(config, key);
-    if (value == null || value.startsWith('your-') || value.startsWith('YOUR_')) {
+    if (value == null ||
+        value.startsWith('your-') ||
+        value.startsWith('YOUR_')) {
       throw StateError('Missing Firebase config value: $key');
     }
     return value;

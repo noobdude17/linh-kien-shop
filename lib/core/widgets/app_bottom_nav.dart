@@ -42,8 +42,13 @@ class AppBottomNav extends ConsumerWidget {
               _item(context, 0, Icons.home_rounded, 'Trang chủ'),
               _item(context, 1, Icons.grid_view_rounded, 'Danh mục'),
               _item(context, 2, Icons.build_circle_outlined, 'Lắp đặt'),
-              _item(context, 3, Icons.shopping_cart_rounded, 'Giỏ hàng',
-                  badge: cartCount),
+              _item(
+                context,
+                3,
+                Icons.shopping_cart_rounded,
+                'Giỏ hàng',
+                badge: cartCount,
+              ),
               _item(context, 4, Icons.person_rounded, 'Tài khoản'),
             ],
           ),
@@ -52,8 +57,13 @@ class AppBottomNav extends ConsumerWidget {
     );
   }
 
-  Widget _item(BuildContext context, int i, IconData icon, String label,
-      {int badge = 0}) {
+  Widget _item(
+    BuildContext context,
+    int i,
+    IconData icon,
+    String label, {
+    int badge = 0,
+  }) {
     final active = i == currentIndex;
     final color = active ? AppColors.primary : AppColors.textTertiary;
     return Expanded(
@@ -72,8 +82,10 @@ class AppBottomNav extends ConsumerWidget {
                     right: -8,
                     child: Container(
                       padding: const EdgeInsets.all(3),
-                      constraints:
-                          const BoxConstraints(minWidth: 16, minHeight: 16),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
                       decoration: const BoxDecoration(
                         color: AppColors.accent,
                         shape: BoxShape.circle,

@@ -4,6 +4,7 @@ import '../../core/constants/app_constants.dart';
 import '../mock_data.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
+import '../product_listing_adapter.dart';
 
 /// Hợp đồng truy xuất sản phẩm. UI/provider phụ thuộc vào abstract này,
 /// không phụ thuộc Firestore trực tiếp → dễ test & thay nguồn dữ liệu.
@@ -56,7 +57,7 @@ class MockProductRepository implements ProductRepository {
             if (price != 0) return price;
             return b.rating.compareTo(a.rating);
           });
-    return _delayed(products.take(12).toList());
+    return _delayed(expandProductsForListing(products).take(12).toList());
   }
 
   @override
@@ -65,7 +66,7 @@ class MockProductRepository implements ProductRepository {
     final filtered = categoryId == null
         ? all
         : all.where((p) => p.categoryId == categoryId).toList();
-    return _delayed(filtered);
+    return _delayed(expandProductsForListing(filtered));
   }
 
   @override
@@ -87,8 +88,11 @@ class MockProductRepository implements ProductRepository {
   @override
   Future<ProductModel?> getById(String id) {
     final all = [...MockData.featured, ...MockData.gpuList];
-    final found = all.where((p) => p.id == id).toList();
-    return _delayed(found.isEmpty ? null : found.first);
+    final realId = realProductId(id);
+    final found = all.where((p) => p.id == realId).toList();
+    return _delayed(
+      found.isEmpty ? null : formatProductForRouteId(found.first, id),
+    );
   }
 
   @override
@@ -99,7 +103,7 @@ class MockProductRepository implements ProductRepository {
     final q = query.toLowerCase();
     final all = [...MockData.featured, ...MockData.gpuList];
     return _delayed(
-      all
+      expandProductsForListing(all)
           .where(
             (p) =>
                 p.name.toLowerCase().contains(q) ||
@@ -159,7 +163,7 @@ class FirestoreProductRepository implements ProductRepository {
 
     final products = groups.expand((items) => items).toList()
       ..sort(_compareFeatured);
-    return products.take(12).toList();
+    return expandProductsForListing(products).take(12).toList();
   }
 
   int _compareFeaturedByPrice(ProductModel a, ProductModel b) {
@@ -183,7 +187,7 @@ class FirestoreProductRepository implements ProductRepository {
     Query<Map<String, dynamic>> q = _col.where('isActive', isEqualTo: true);
     if (categoryId != null) q = q.where('categoryId', isEqualTo: categoryId);
     final snap = await q.get(const GetOptions(source: Source.server));
-    return snap.docs.map(ProductModel.fromFirestore).toList();
+    return expandProductsForListing(snap.docs.map(ProductModel.fromFirestore));
   }
 
   @override
@@ -201,7 +205,9 @@ class FirestoreProductRepository implements ProductRepository {
 
     final snap = await q.get(const GetOptions(source: Source.server));
     return ProductPage(
-      items: snap.docs.map(ProductModel.fromFirestore).toList(),
+      items: expandProductsForListing(
+        snap.docs.map(ProductModel.fromFirestore),
+      ),
       cursor: snap.docs.isEmpty ? cursor : snap.docs.last,
       hasMore: snap.docs.length == limit,
     );
@@ -209,8 +215,11 @@ class FirestoreProductRepository implements ProductRepository {
 
   @override
   Future<ProductModel?> getById(String id) async {
-    final doc = await _col.doc(id).get(const GetOptions(source: Source.server));
-    return doc.exists ? ProductModel.fromFirestore(doc) : null;
+    final doc = await _col
+        .doc(realProductId(id))
+        .get(const GetOptions(source: Source.server));
+    if (!doc.exists) return null;
+    return formatProductForRouteId(ProductModel.fromFirestore(doc), id);
   }
 
   @override
@@ -230,8 +239,7 @@ class FirestoreProductRepository implements ProductRepository {
     final snap = await _col
         .where('isActive', isEqualTo: true)
         .get(const GetOptions(source: Source.server));
-    return snap.docs
-        .map(ProductModel.fromFirestore)
+    return expandProductsForListing(snap.docs.map(ProductModel.fromFirestore))
         .where(
           (p) =>
               p.name.toLowerCase().contains(q) ||
@@ -272,12 +280,16 @@ class FirestoreProductRepository implements ProductRepository {
       nextCursor = snap.docs.last;
 
       for (final doc in snap.docs) {
-        final product = ProductModel.fromFirestore(doc);
-        if (product.name.toLowerCase().contains(qText) ||
-            product.brand.toLowerCase().contains(qText) ||
-            product.categoryName.toLowerCase().contains(qText)) {
-          matches.add(product);
-          if (matches.length == limit) break;
+        final products = expandProductForListing(
+          ProductModel.fromFirestore(doc),
+        );
+        for (final product in products) {
+          if (product.name.toLowerCase().contains(qText) ||
+              product.brand.toLowerCase().contains(qText) ||
+              product.categoryName.toLowerCase().contains(qText)) {
+            matches.add(product);
+            if (matches.length == limit) break;
+          }
         }
       }
     }
