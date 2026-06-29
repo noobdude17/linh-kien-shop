@@ -95,8 +95,9 @@ class _AdminProductEditScreenState
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _error('Không tải được sản phẩm'),
         data: (product) {
-          if (_editing && product == null)
+          if (_editing && product == null) {
             return _error('Không tìm thấy sản phẩm');
+          }
           if (!_loaded) {
             _loaded = true;
             if (product != null) _hydrate(product);
@@ -144,7 +145,7 @@ class _AdminProductEditScreenState
           _field('Tên sản phẩm', _name, isRequired: true),
           _field('Thương hiệu', _brand),
           DropdownButtonFormField<String>(
-            value: categories.any((c) => c.id == _categoryId)
+            initialValue: categories.any((c) => c.id == _categoryId)
                 ? _categoryId
                 : null,
             decoration: const InputDecoration(labelText: 'Danh mục'),

@@ -406,7 +406,7 @@ class MockAdminRepository implements AdminRepository {
     if (product == null) return;
     final rating = visible.isEmpty
         ? 0.0
-        : visible.fold<double>(0, (sum, r) => sum + r.rating) / visible.length;
+        : visible.fold<double>(0, (acc, r) => acc + r.rating) / visible.length;
     _products[productId] = _copyProduct(
       product,
       rating: (rating * 10).round() / 10,
@@ -636,7 +636,7 @@ class FirestoreAdminRepository implements AdminRepository {
         .toList();
     final rating = visible.isEmpty
         ? 0.0
-        : visible.fold<double>(0, (sum, r) => sum + r.rating) / visible.length;
+        : visible.fold<double>(0, (acc, r) => acc + r.rating) / visible.length;
     await productRef.set({
       'rating': (rating * 10).round() / 10,
       'reviewCount': visible.length,

@@ -245,7 +245,6 @@ class FirestoreProductRepository implements ProductRepository {
     // Firestore không hỗ trợ full-text search nên fetch toàn bộ active
     // rồi filter client-side (case-insensitive). Ổn với catalog nhỏ.
     // Production nên dùng Algolia / Typesense.
-    final q = query.toLowerCase();
     final snap = await _col
         .where('isActive', isEqualTo: true)
         .get(const GetOptions(source: Source.server));

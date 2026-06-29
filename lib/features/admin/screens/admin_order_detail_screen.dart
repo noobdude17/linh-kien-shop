@@ -157,7 +157,7 @@ class _AdminOrderDetailScreenState
           )
         else ...[
           DropdownButtonFormField<String>(
-            value: _nextStatus,
+            initialValue: _nextStatus,
             decoration: const InputDecoration(
               labelText: 'Trạng thái tiếp theo',
             ),
