@@ -63,9 +63,19 @@ class AppColors {
   static const vnpGatewayStart = Color(0xFF0A4D8C);
   static const vnpGatewayEnd = Color(0xFF2E7D32);
 
-  // Admin stat accents
-  static const adminAccent = Color(0xFF7C3AED);
+  // ── Admin console theme (cố tình khác hẳn storefront cam/xanh) ──
+  static const adminAccent = Color(0xFF7C3AED); // violet-600
+  static const adminPrimary = Color(0xFF6D28D9); // violet-700
+  static const adminPrimaryDark = Color(0xFF4C1D95); // violet-900
+  static const adminBg = Color(0xFFF5F3FB); // nền tím rất nhạt
+  static const adminSurfaceTint = Color(0xFFEDE9FE); // chip/nền phụ
   static const statPurple = adminAccent;
+
+  static const adminHeaderGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [adminPrimary, adminPrimaryDark],
+  );
 
   /// 12 nền pastel cho icon danh mục (một màu / danh mục).
   static const categoryBgs = <Color>[

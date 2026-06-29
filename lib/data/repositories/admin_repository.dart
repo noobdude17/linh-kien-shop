@@ -162,6 +162,8 @@ abstract class AdminRepository {
   Future<void> updateOrderStatus(String id, String status);
   Future<AdminPage<UserModel>> getUsers(AdminUserQuery query);
   Future<void> setUserLocked(String id, bool locked);
+  Future<void> saveUser(UserModel user);
+  Future<void> deleteUser(String id);
   Future<AdminPage<AdminReviewRecord>> getReviews(AdminReviewQuery query);
   Future<void> setReviewHidden({
     required String productId,
@@ -355,6 +357,17 @@ class MockAdminRepository implements AdminRepository {
   }
 
   @override
+  Future<void> saveUser(UserModel user) async {
+    _users[user.id] = user;
+  }
+
+  @override
+  Future<void> deleteUser(String id) async {
+    if (_users[id]?.isAdmin ?? false) return;
+    _users.remove(id);
+  }
+
+  @override
   Future<AdminPage<AdminReviewRecord>> getReviews(AdminReviewQuery query) {
     var list = _reviews.toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -500,20 +513,26 @@ class FirestoreAdminRepository implements AdminRepository {
       'createdAt',
       descending: true,
     );
-    if (query.status != null) {
-      q = q.where('status', isEqualTo: query.status);
-    }
     final text = query.search.trim().toLowerCase();
-    if (text.isNotEmpty) {
+    // status + search filtered in memory: `where(status) + orderBy(createdAt)`
+    // would need a composite index (that's why status tabs errored before).
+    // ponytail: fetches the whole ordered set; add a composite index + server
+    // filter if order volume outgrows a single read.
+    if (query.status != null || text.isNotEmpty) {
       final snap = await q.get();
-      final items = snap.docs
-          .map(OrderModel.fromFirestore)
-          .where(
-            (o) =>
-                o.code.toLowerCase().contains(text) ||
-                o.customerName.toLowerCase().contains(text),
-          )
-          .toList();
+      var items = snap.docs.map(OrderModel.fromFirestore).toList();
+      if (query.status != null) {
+        items = items.where((o) => o.status == query.status).toList();
+      }
+      if (text.isNotEmpty) {
+        items = items
+            .where(
+              (o) =>
+                  o.code.toLowerCase().contains(text) ||
+                  o.customerName.toLowerCase().contains(text),
+            )
+            .toList();
+      }
       return _slice(items, query.limit, query.cursor);
     }
     q = q.limit(query.limit);
@@ -543,30 +562,33 @@ class FirestoreAdminRepository implements AdminRepository {
 
   @override
   Future<AdminPage<UserModel>> getUsers(AdminUserQuery query) async {
-    Query<Map<String, dynamic>> q = _users.orderBy(FieldPath.documentId);
-    if (query.locked != null) {
-      q = q.where('isLocked', isEqualTo: query.locked);
-    }
+    final Query<Map<String, dynamic>> q = _users.orderBy(FieldPath.documentId);
     final text = query.search.trim().toLowerCase();
-    if (text.isNotEmpty) {
+    // locked + search filtered in memory (same composite-index reason as orders).
+    if (query.locked != null || text.isNotEmpty) {
       final snap = await q.get();
-      final items = snap.docs
-          .map(UserModel.fromFirestore)
-          .where(
-            (u) =>
-                u.name.toLowerCase().contains(text) ||
-                u.email.toLowerCase().contains(text),
-          )
-          .toList();
+      var items = snap.docs.map(UserModel.fromFirestore).toList();
+      if (query.locked != null) {
+        items = items.where((u) => u.isLocked == query.locked).toList();
+      }
+      if (text.isNotEmpty) {
+        items = items
+            .where(
+              (u) =>
+                  u.name.toLowerCase().contains(text) ||
+                  u.email.toLowerCase().contains(text),
+            )
+            .toList();
+      }
       return _slice(items, query.limit, query.cursor);
     }
-    q = q.limit(query.limit);
+    var paged = q.limit(query.limit);
     if (query.cursor is DocumentSnapshot<Map<String, dynamic>>) {
-      q = q.startAfterDocument(
+      paged = paged.startAfterDocument(
         query.cursor as DocumentSnapshot<Map<String, dynamic>>,
       );
     }
-    final snap = await q.get();
+    final snap = await paged.get();
     return AdminPage(
       items: snap.docs.map(UserModel.fromFirestore).toList(),
       cursor: snap.docs.isEmpty ? query.cursor : snap.docs.last,
@@ -581,6 +603,18 @@ class FirestoreAdminRepository implements AdminRepository {
     final user = UserModel.fromFirestore(doc);
     if (user.isAdmin) return;
     await doc.reference.set({'isLocked': locked}, SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> saveUser(UserModel user) => _users
+      .doc(user.id)
+      .set(user.toFirestore(), SetOptions(merge: true));
+
+  @override
+  Future<void> deleteUser(String id) async {
+    final doc = await _users.doc(id).get();
+    if (doc.exists && UserModel.fromFirestore(doc).isAdmin) return;
+    await _users.doc(id).delete();
   }
 
   @override

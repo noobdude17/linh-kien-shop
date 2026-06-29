@@ -8,6 +8,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/vnpay.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../data/models/order_model.dart';
 import '../../../routes/app_routes.dart';
 import '../providers/order_providers.dart';
 
@@ -31,6 +32,7 @@ class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
   bool _loading = true;
   bool _handled = false; // tránh xử lý return 2 lần
   String? _error; // hiện lỗi thay vì spinner treo mãi
+  String? _cancelMsg; // != null → hiện màn huỷ + nút thử lại
   String? _paymentUrl; // giữ lại để debug / thử lại
   Timer? _watchdog;
   final List<String> _log = []; // log hiện trên màn hình
@@ -53,16 +55,6 @@ class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
       _d('initState: order == null (không có đơn để thanh toán)');
       return;
     }
-
-    final isQr = order.paymentMethod == AppConstants.payVnpayQr;
-    final url = buildVnpayUrl(
-      txnRef: DateTime.now().millisecondsSinceEpoch.toString(),
-      amount: order.totalAmount,
-      orderInfo: 'ThanhToanDon${order.code}',
-      bankCode: isQr ? 'VNPAYQR' : null,
-    );
-    _paymentUrl = url;
-    _d('order=${order.code} amount=${order.totalAmount} isQr=$isQr');
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -104,9 +96,8 @@ class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
           }
           return NavigationDecision.navigate;
         },
-      ))
-      ..loadRequest(Uri.parse(url));
-    _d('loadRequest sent');
+      ));
+    _loadPayment(order);
 
     // Nếu sau 25s vẫn quay tròn → bỏ spinner để lộ trang (giúp chẩn đoán).
     _watchdog = Timer(const Duration(seconds: 25), () {
@@ -115,6 +106,33 @@ class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
         setState(() => _loading = false);
       }
     });
+  }
+
+  /// Dựng URL ký HMAC (txnRef mới mỗi lần để VNPay không báo trùng) rồi nạp vào
+  /// webview. Dùng cho cả lần đầu và khi bấm "Thử thanh toán lại".
+  void _loadPayment(OrderModel order) {
+    final isQr = order.paymentMethod == AppConstants.payVnpayQr;
+    final url = buildVnpayUrl(
+      txnRef: DateTime.now().millisecondsSinceEpoch.toString(),
+      amount: order.totalAmount,
+      orderInfo: 'ThanhToanDon${order.code}',
+      bankCode: isQr ? 'VNPAYQR' : null,
+    );
+    _paymentUrl = url;
+    _handled = false;
+    _d('order=${order.code} amount=${order.totalAmount} isQr=$isQr');
+    _controller?.loadRequest(Uri.parse(url));
+  }
+
+  void _retry() {
+    final order = ref.read(orderCreationProvider).valueOrNull;
+    if (order == null) return;
+    setState(() {
+      _cancelMsg = null;
+      _error = null;
+      _loading = true;
+    });
+    _loadPayment(order);
   }
 
   String _short(String u) => u.length > 60 ? '${u.substring(0, 60)}…' : u;
@@ -134,13 +152,14 @@ class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
       ref.read(orderCreationProvider.notifier).markCurrentPaid();
       if (mounted) context.go(AppRoutes.success);
     } else {
+      // Huỷ/thất bại: KHÔNG đẩy về checkout (giỏ đã xoá → không trả lại được).
+      // Hiện màn huỷ ngay tại đây để khách bấm thử thanh toán lại đơn đã tạo.
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Thanh toán VNPay thất bại / đã huỷ (mã $code)'),
-          ),
-        );
-        context.go(AppRoutes.checkout);
+        setState(() {
+          _loading = false;
+          _cancelMsg = 'Thanh toán chưa hoàn tất (mã $code). '
+              'Đơn đã được tạo và đang chờ thanh toán.';
+        });
       }
     }
   }
@@ -153,20 +172,25 @@ class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
         child: Column(
           children: [
             _header(),
-            if (_controller != null && _error == null) _testCardStrip(),
+            if (_controller != null && _error == null && _cancelMsg == null)
+              _testCardStrip(),
             Expanded(
               child: _controller == null
                   ? _noOrder()
                   : _error != null
                       ? _errorView()
-                      : Stack(
-                          children: [
-                            Positioned.fill(
-                                child: WebViewWidget(controller: _controller!)),
-                            if (_loading)
-                              const Center(child: CircularProgressIndicator()),
-                          ],
-                        ),
+                      : _cancelMsg != null
+                          ? _cancelledView()
+                          : Stack(
+                              children: [
+                                Positioned.fill(
+                                    child: WebViewWidget(
+                                        controller: _controller!)),
+                                if (_loading)
+                                  const Center(
+                                      child: CircularProgressIndicator()),
+                              ],
+                            ),
             ),
             if (_controller != null) _debugStrip(),
           ],
@@ -215,7 +239,14 @@ class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
                       fontSize: 20)),
             ])),
             GestureDetector(
-              onTap: () => context.go(AppRoutes.checkout),
+              onTap: () {
+                _handled = true; // chặn return đang chờ
+                setState(() {
+                  _loading = false;
+                  _cancelMsg = 'Bạn đã huỷ giao dịch. '
+                      'Đơn vẫn được giữ và đang chờ thanh toán.';
+                });
+              },
               child: const Text('Huỷ giao dịch',
                   style: TextStyle(color: Colors.white70, fontSize: 13)),
             ),
@@ -269,6 +300,37 @@ class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
                   child: const Text('Về giỏ hàng'),
                 ),
               ],
+            ),
+          ],
+        ),
+      );
+
+  /// Màn huỷ/thất bại — cho phép thử thanh toán lại đúng đơn đã tạo.
+  Widget _cancelledView() => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.cancel_outlined,
+                size: 56, color: AppColors.vnpOrange),
+            const SizedBox(height: 16),
+            Text(
+              _cancelMsg ?? 'Giao dịch chưa hoàn tất.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _retry,
+                child: const Text('Thử thanh toán lại'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => context.go(AppRoutes.orders),
+              child: const Text('Xem đơn hàng của tôi'),
             ),
           ],
         ),

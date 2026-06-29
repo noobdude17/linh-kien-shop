@@ -18,7 +18,8 @@ abstract class OrderRepository {
   Future<OrderModel?> getById(String id);
   Future<void> cancelOrder(String id);
 
-  /// Đánh dấu đơn đã thanh toán thành công (paid=true, status=confirmed).
+  /// Đánh dấu đơn đã thanh toán thành công (paid=true). KHÔNG đổi trạng thái —
+  /// đơn vẫn 'chờ xác nhận' tới khi admin duyệt.
   Future<void> markPaid(String id);
 }
 
@@ -96,8 +97,7 @@ class MockOrderRepository implements OrderRepository {
     await Future.delayed(const Duration(milliseconds: 200));
     final idx = _store.indexWhere((o) => o.id == id);
     if (idx != -1) {
-      _store[idx] = _store[idx]
-          .copyWith(paid: true, status: AppConstants.statusConfirmed);
+      _store[idx] = _store[idx].copyWith(paid: true);
     }
   }
 }
@@ -171,7 +171,6 @@ class FirestoreOrderRepository implements OrderRepository {
   Future<void> markPaid(String id) async {
     await _db.collection(AppConstants.colOrders).doc(id).update({
       'paid': true,
-      'status': AppConstants.statusConfirmed,
     });
   }
 }

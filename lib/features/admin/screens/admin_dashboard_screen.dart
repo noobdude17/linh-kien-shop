@@ -7,6 +7,7 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../routes/app_routes.dart';
 import '../providers/admin_providers.dart';
+import '../widgets/admin_scaffold.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -14,22 +15,18 @@ class AdminDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(adminDashboardProvider);
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.adminAccent,
-        foregroundColor: Colors.white,
-        leading: BackButton(onPressed: () => context.go(AppRoutes.profile)),
-        title: const Text('Quản trị'),
-        actions: [
-          IconButton(
-            onPressed: () => ref.invalidate(adminDashboardProvider),
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
+    return AdminScaffold(
+      title: 'Quản trị',
+      backRoute: AppRoutes.profile,
+      actions: [
+        IconButton(
+          onPressed: () => ref.invalidate(adminDashboardProvider),
+          icon: const Icon(Icons.refresh),
+        ),
+      ],
       body: stats.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _ErrorState(
+        error: (e, _) => AdminError(
           message: 'Không tải được dashboard',
           onRetry: () => ref.invalidate(adminDashboardProvider),
         ),
@@ -44,10 +41,14 @@ class AdminDashboardScreen extends ConsumerWidget {
               crossAxisSpacing: AppDimens.gap,
               childAspectRatio: 1.55,
               children: [
-                _statCard('Sản phẩm đang bán', '${s.activeProducts}'),
-                _statCard('Tổng đơn hàng', '${s.totalOrders}'),
-                _statCard('Đơn chờ xử lý', '${s.pendingOrders}'),
-                _statCard('Doanh thu', Formatter.price(s.deliveredRevenue)),
+                _statCard(Icons.inventory_2_outlined, 'Sản phẩm đang bán',
+                    '${s.activeProducts}'),
+                _statCard(Icons.receipt_long_outlined, 'Tổng đơn hàng',
+                    '${s.totalOrders}'),
+                _statCard(Icons.pending_actions_outlined, 'Đơn chờ xử lý',
+                    '${s.pendingOrders}'),
+                _statCard(Icons.payments_outlined, 'Doanh thu',
+                    Formatter.price(s.deliveredRevenue)),
               ],
             ),
             const SizedBox(height: 16),
@@ -89,7 +90,7 @@ class AdminDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _statCard(String label, String value) => Container(
+  Widget _statCard(IconData icon, String label, String value) => Container(
     padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
     decoration: BoxDecoration(
       color: AppColors.surface,
@@ -103,13 +104,31 @@ class AdminDashboardScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          label,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.adminSurfaceTint,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 16, color: AppColors.adminAccent),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(
           value,
           maxLines: 1,
@@ -205,7 +224,7 @@ class _RevenueChart extends StatelessWidget {
                       width: 22,
                       height: height,
                       decoration: const BoxDecoration(
-                        color: AppColors.accentBlue,
+                        color: AppColors.adminAccent,
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(4),
                         ),
@@ -236,23 +255,3 @@ class _RevenueChart extends StatelessWidget {
   }
 }
 
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(message, style: const TextStyle(color: AppColors.textSecondary)),
-          const SizedBox(height: 8),
-          TextButton(onPressed: onRetry, child: const Text('Thử lại')),
-        ],
-      ),
-    );
-  }
-}
