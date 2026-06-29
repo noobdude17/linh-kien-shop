@@ -32,10 +32,13 @@ class WishlistNotifier extends Notifier<Set<String>> {
   bool contains(String productId) => state.contains(productId);
 }
 
-final wishlistProvider =
-    NotifierProvider<WishlistNotifier, Set<String>>(WishlistNotifier.new);
+final wishlistProvider = NotifierProvider<WishlistNotifier, Set<String>>(
+  WishlistNotifier.new,
+);
 
-final wishlistProductsProvider = FutureProvider<List<ProductModel>>((ref) async {
+final wishlistProductsProvider = FutureProvider<List<ProductModel>>((
+  ref,
+) async {
   final ids = ref.watch(wishlistProvider);
   if (ids.isEmpty) return [];
   final repo = ref.watch(productRepositoryProvider);

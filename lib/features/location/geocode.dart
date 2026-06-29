@@ -32,8 +32,11 @@ Future<LatLng?> currentLatLng() async {
   try {
     if (!await Geolocator.isLocationServiceEnabled()) return null;
     var perm = await Geolocator.checkPermission();
-    if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
-    if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+    if (perm == LocationPermission.denied) {
+      perm = await Geolocator.requestPermission();
+    }
+    if (perm == LocationPermission.denied ||
+        perm == LocationPermission.deniedForever) {
       return null;
     }
     final pos = await Geolocator.getCurrentPosition();

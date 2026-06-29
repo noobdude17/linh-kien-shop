@@ -32,42 +32,68 @@ class AdminOrderManagementScreen extends StatelessWidget {
         ),
         body: ListView(
           padding: const EdgeInsets.all(AppDimens.screenPadding),
-          children: MockData.adminOrders().map((o) => _row(context, o)).toList(),
+          children: MockData.adminOrders()
+              .map((o) => _row(context, o))
+              .toList(),
         ),
       ),
     );
   }
 
   Widget _row(BuildContext context, OrderModel o) => InkWell(
-        onTap: () => context.go(AppRoutes.adminOrderDetail),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: AppDimens.brCard, boxShadow: AppDimens.cardShadow),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    onTap: () => context.go(AppRoutes.adminOrderDetail),
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(AppDimens.cardPaddingLg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppDimens.brCard,
+        boxShadow: AppDimens.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(o.code, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                  StatusBadge(status: o.status),
-                ],
+              Text(
+                o.code,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
               ),
-              const SizedBox(height: 6),
-              Text('👤 ${o.customerName} · ${Formatter.date(o.createdAt)} · ${o.itemCount} SP',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-              const Divider(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Tổng tiền', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  Text(Formatter.price(o.totalAmount),
-                      style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900, fontSize: 14)),
-                ],
+              StatusBadge(status: o.status),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '👤 ${o.customerName} · ${Formatter.date(o.createdAt)} · ${o.itemCount} SP',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const Divider(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Tổng tiền',
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              ),
+              Text(
+                Formatter.price(o.totalAmount),
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }

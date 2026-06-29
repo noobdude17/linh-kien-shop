@@ -40,7 +40,8 @@ class RecentSearchesNotifier extends Notifier<List<String>> {
 
 final recentSearchesProvider =
     NotifierProvider<RecentSearchesNotifier, List<String>>(
-        RecentSearchesNotifier.new);
+      RecentSearchesNotifier.new,
+    );
 
 /// Trending = brands + category names từ featured products.
 final trendingSearchesProvider = FutureProvider<List<String>>((ref) async {

@@ -23,26 +23,30 @@ final categoriesProvider = FutureProvider<List<CategoryModel>>((ref) {
 
 final productsByCategoryProvider =
     FutureProvider.family<List<ProductModel>, String?>((ref, categoryId) {
-  return ref.watch(productRepositoryProvider).getByCategory(categoryId);
-});
+      return ref.watch(productRepositoryProvider).getByCategory(categoryId);
+    });
 
-final productDetailProvider =
-    FutureProvider.family<ProductModel?, String>((ref, id) {
+final productDetailProvider = FutureProvider.family<ProductModel?, String>((
+  ref,
+  id,
+) {
   return ref.watch(productRepositoryProvider).getById(id);
 });
 
 /// Tìm kiếm sản phẩm theo từ khóa.
-final searchProvider =
-    FutureProvider.autoDispose.family<List<ProductModel>, String>((ref, query) {
-  return ref.watch(productRepositoryProvider).search(query.toLowerCase().trim());
-});
+final searchProvider = FutureProvider.autoDispose
+    .family<List<ProductModel>, String>((ref, query) {
+      return ref
+          .watch(productRepositoryProvider)
+          .search(query.toLowerCase().trim());
+    });
 
-final relatedProductsProvider =
-    FutureProvider.autoDispose.family<List<ProductModel>, String>(
-        (ref, productId) async {
-  final product = await ref.watch(productDetailProvider(productId).future);
-  if (product == null) return [];
-  final all =
-      await ref.watch(productsByCategoryProvider(product.categoryId).future);
-  return all.where((p) => p.id != productId).take(6).toList();
-});
+final relatedProductsProvider = FutureProvider.autoDispose
+    .family<List<ProductModel>, String>((ref, productId) async {
+      final product = await ref.watch(productDetailProvider(productId).future);
+      if (product == null) return [];
+      final all = await ref.watch(
+        productsByCategoryProvider(product.categoryId).future,
+      );
+      return all.where((p) => p.id != productId).take(6).toList();
+    });

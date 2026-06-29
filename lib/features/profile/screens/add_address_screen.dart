@@ -55,7 +55,9 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
       MaterialPageRoute(
         builder: (_) => LocationPickerScreen(
           initial: (_lat != null && _lng != null) ? LatLng(_lat!, _lng!) : null,
-          initialText: _address.text.trim().isEmpty ? null : _address.text.trim(),
+          initialText: _address.text.trim().isEmpty
+              ? null
+              : _address.text.trim(),
         ),
       ),
     );
@@ -112,24 +114,39 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
         child: ListView(
           padding: const EdgeInsets.all(18),
           children: [
-            _field(_name, 'Họ tên người nhận', Icons.person_outline,
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Nhập họ tên' : null),
-            _field(_phone, 'Số điện thoại', Icons.phone_outlined,
-                keyboard: TextInputType.phone,
-                validator: (v) => (v == null || v.trim().length < 9)
-                    ? 'Số điện thoại không hợp lệ'
-                    : null),
-            _field(_address, 'Địa chỉ (chọn trên bản đồ)',
-                Icons.location_on_outlined,
-                readOnly: true, onTap: _pickLocation, maxLines: 2,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Chọn địa chỉ trên bản đồ'
-                    : null),
+            _field(
+              _name,
+              'Họ tên người nhận',
+              Icons.person_outline,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Nhập họ tên' : null,
+            ),
+            _field(
+              _phone,
+              'Số điện thoại',
+              Icons.phone_outlined,
+              keyboard: TextInputType.phone,
+              validator: (v) => (v == null || v.trim().length < 9)
+                  ? 'Số điện thoại không hợp lệ'
+                  : null,
+            ),
+            _field(
+              _address,
+              'Địa chỉ (chọn trên bản đồ)',
+              Icons.location_on_outlined,
+              readOnly: true,
+              onTap: _pickLocation,
+              maxLines: 2,
+              validator: (v) => (v == null || v.trim().isEmpty)
+                  ? 'Chọn địa chỉ trên bản đồ'
+                  : null,
+            ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Đặt làm địa chỉ mặc định',
-                  style: TextStyle(fontSize: 14)),
+              title: const Text(
+                'Đặt làm địa chỉ mặc định',
+                style: TextStyle(fontSize: 14),
+              ),
               value: _isDefault,
               activeThumbColor: AppColors.primary,
               onChanged: (v) => setState(() => _isDefault = v),
@@ -138,8 +155,10 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
             _saving
                 ? const Center(
                     child: Padding(
-                        padding: EdgeInsets.all(12),
-                        child: CircularProgressIndicator()))
+                      padding: EdgeInsets.all(12),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
                 : PrimaryButton(label: 'Lưu địa chỉ', onPressed: _save),
           ],
         ),
@@ -147,12 +166,16 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
     );
   }
 
-  Widget _field(TextEditingController c, String hint, IconData icon,
-      {TextInputType? keyboard,
-      bool readOnly = false,
-      VoidCallback? onTap,
-      int maxLines = 1,
-      String? Function(String?)? validator}) {
+  Widget _field(
+    TextEditingController c,
+    String hint,
+    IconData icon, {
+    TextInputType? keyboard,
+    bool readOnly = false,
+    VoidCallback? onTap,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(

@@ -50,7 +50,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       _mapError = 'Bản đồ chưa hỗ trợ trên nền web.';
     } else if (widget.initial == null) {
       // Vị trí mới → tự dời về GPS (post-frame: chờ MapController sẵn sàng).
-      WidgetsBinding.instance.addPostFrameCallback((_) => _goToCurrentLocation(initial: true));
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _goToCurrentLocation(initial: true),
+      );
     }
   }
 
@@ -98,7 +100,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     _picked = camera.center;
     if (!hasGesture) return;
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 600), () => _resolveCenter(camera.center));
+    _debounce = Timer(
+      const Duration(milliseconds: 600),
+      () => _resolveCenter(camera.center),
+    );
   }
 
   /// Reverse geocode tâm bản đồ → điền ô địa chỉ (giữ nguyên nếu lỗi).
@@ -106,7 +111,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     try {
       final text = await reverseGeocode(p);
       if (text.isNotEmpty && mounted) _address.text = text;
-    } catch (_) {/* giữ text hiện tại */}
+    } catch (_) {
+      /* giữ text hiện tại */
+    }
   }
 
   void _confirm() {
@@ -119,7 +126,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       context,
       _mapError != null
           ? LocationResult(address: text)
-          : LocationResult(lat: _picked.latitude, lng: _picked.longitude, address: text),
+          : LocationResult(
+              lat: _picked.latitude,
+              lng: _picked.longitude,
+              address: text,
+            ),
     );
   }
 
@@ -144,71 +155,82 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   }
 
   Widget _searchBar() => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-        child: TextField(
-          controller: _search,
-          textInputAction: TextInputAction.search,
-          onSubmitted: (_) => _searchAddress(),
-          decoration: InputDecoration(
-            hintText: 'Nhập địa chỉ để tìm…',
-            prefixIcon: const Icon(Icons.search),
-            suffixIcon: _resolving
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-                  )
-                : IconButton(icon: const Icon(Icons.arrow_forward), onPressed: _searchAddress),
-          ),
-        ),
-      );
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+    child: TextField(
+      controller: _search,
+      textInputAction: TextInputAction.search,
+      onSubmitted: (_) => _searchAddress(),
+      decoration: InputDecoration(
+        hintText: 'Nhập địa chỉ để tìm…',
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: _resolving
+            ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : IconButton(
+                icon: const Icon(Icons.arrow_forward),
+                onPressed: _searchAddress,
+              ),
+      ),
+    ),
+  );
 
   Widget _mapArea() => Stack(
-        alignment: Alignment.center,
+    alignment: Alignment.center,
+    children: [
+      FlutterMap(
+        mapController: _map,
+        options: MapOptions(
+          initialCenter: _picked,
+          initialZoom: 16,
+          onPositionChanged: _onPositionChanged,
+        ),
         children: [
-          FlutterMap(
-            mapController: _map,
-            options: MapOptions(
-              initialCenter: _picked,
-              initialZoom: 16,
-              onPositionChanged: _onPositionChanged,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.nhom.lks.linh_kien_shop',
-                // ponytail: 1 tile lỗi → chuyển nhập tay (thô nhưng an toàn, ô
-                // text vẫn dùng được). Nâng cấp: chỉ chuyển khi N lỗi & 0 thành công.
-                errorTileCallback: (tile, error, stack) {
-                  if (_mapError == null && mounted) {
-                    setState(() => _mapError = 'Không tải được bản đồ ($error).');
-                  }
-                },
-              ),
-            ],
-          ),
-          // Pin cố định ở tâm — tâm bản đồ chính là điểm được chọn.
-          const IgnorePointer(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 36),
-              child: Icon(Icons.location_on, size: 44, color: AppColors.primary),
-            ),
-          ),
-          // Nút zoom — chạy được trên emulator/web/máy thật dù không pinch được.
-          Positioned(
-            right: 12,
-            bottom: 12,
-            child: Column(
-              children: [
-                _zoomButton(Icons.my_location, 'recenter', () => _goToCurrentLocation()),
-                const SizedBox(height: 8),
-                _zoomButton(Icons.add, 'zoomIn', () => _zoom(1)),
-                const SizedBox(height: 8),
-                _zoomButton(Icons.remove, 'zoomOut', () => _zoom(-1)),
-              ],
-            ),
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.nhom.lks.linh_kien_shop',
+            // ponytail: 1 tile lỗi → chuyển nhập tay (thô nhưng an toàn, ô
+            // text vẫn dùng được). Nâng cấp: chỉ chuyển khi N lỗi & 0 thành công.
+            errorTileCallback: (tile, error, stack) {
+              if (_mapError == null && mounted) {
+                setState(() => _mapError = 'Không tải được bản đồ ($error).');
+              }
+            },
           ),
         ],
-      );
+      ),
+      // Pin cố định ở tâm — tâm bản đồ chính là điểm được chọn.
+      const IgnorePointer(
+        child: Padding(
+          padding: EdgeInsets.only(bottom: 36),
+          child: Icon(Icons.location_on, size: 44, color: AppColors.primary),
+        ),
+      ),
+      // Nút zoom — chạy được trên emulator/web/máy thật dù không pinch được.
+      Positioned(
+        right: 12,
+        bottom: 12,
+        child: Column(
+          children: [
+            _zoomButton(
+              Icons.my_location,
+              'recenter',
+              () => _goToCurrentLocation(),
+            ),
+            const SizedBox(height: 8),
+            _zoomButton(Icons.add, 'zoomIn', () => _zoom(1)),
+            const SizedBox(height: 8),
+            _zoomButton(Icons.remove, 'zoomOut', () => _zoom(-1)),
+          ],
+        ),
+      ),
+    ],
+  );
 
   Widget _zoomButton(IconData icon, String tag, VoidCallback onTap) =>
       FloatingActionButton.small(
@@ -225,58 +247,65 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   }
 
   Widget _degradedArea() => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.map_outlined, size: 56, color: AppColors.textSecondary),
-            const SizedBox(height: 12),
-            const Text(
-              'Bản đồ hiện không khả dụng, vui lòng nhập địa chỉ thủ công.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              _mapError ?? '',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-            ),
-          ],
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.map_outlined,
+          size: 56,
+          color: AppColors.textSecondary,
         ),
-      );
+        const SizedBox(height: 12),
+        const Text(
+          'Bản đồ hiện không khả dụng, vui lòng nhập địa chỉ thủ công.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _mapError ?? '',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
+      ],
+    ),
+  );
 
   Widget _bottomBar() => SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _mapError == null ? 'Địa chỉ (tự điền từ bản đồ)' : 'Địa chỉ',
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _address,
-                maxLines: 2,
-                minLines: 1,
-                // Chế độ bản đồ: chỉ đọc — địa chỉ phải đến từ pin/ô tìm kiếm (đã
-                // geocode), không cho gõ tay để tránh nhập bừa. Chế độ nhập tay
-                // (web/bản đồ lỗi) mới cho gõ trực tiếp.
-                readOnly: _mapError == null,
-                decoration: InputDecoration(
-                  hintText: _mapError == null
-                      ? 'Tìm địa chỉ hoặc di chuyển bản đồ'
-                      : 'Địa chỉ giao hàng',
-                ),
-              ),
-              const SizedBox(height: 12),
-              PrimaryButton(label: 'Xác nhận vị trí', onPressed: _confirm),
-            ],
+    top: false,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _mapError == null ? 'Địa chỉ (tự điền từ bản đồ)' : 'Địa chỉ',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
-        ),
-      );
+          const SizedBox(height: 6),
+          TextField(
+            controller: _address,
+            maxLines: 2,
+            minLines: 1,
+            // Chế độ bản đồ: chỉ đọc — địa chỉ phải đến từ pin/ô tìm kiếm (đã
+            // geocode), không cho gõ tay để tránh nhập bừa. Chế độ nhập tay
+            // (web/bản đồ lỗi) mới cho gõ trực tiếp.
+            readOnly: _mapError == null,
+            decoration: InputDecoration(
+              hintText: _mapError == null
+                  ? 'Tìm địa chỉ hoặc di chuyển bản đồ'
+                  : 'Địa chỉ giao hàng',
+            ),
+          ),
+          const SizedBox(height: 12),
+          PrimaryButton(label: 'Xác nhận vị trí', onPressed: _confirm),
+        ],
+      ),
+    ),
+  );
 }

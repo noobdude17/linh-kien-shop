@@ -44,6 +44,7 @@ dependencies:
   latlong2: ^0.9.1
   geocoding: ^4.0.0
   geolocator: ^13.0.0
+  flutter_svg: ^2.3.0
 
   # Payment (VNPay sandbox): official webview + tự ký HMAC-SHA512.
   # Không dùng package vnpay_flutter vì nó kéo theo webview plugin cũ vỡ build AGP 8.

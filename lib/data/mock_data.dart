@@ -16,9 +16,27 @@ class MockData {
 
   // ---- Categories (12) ----
   static const categories = <CategoryModel>[
-    CategoryModel(id: 'cpu', name: 'CPU / Vi xử lý', icon: '🧠', colorIndex: 0, imageAsset: 'assets/images/categories/cpu.png'),
-    CategoryModel(id: 'ram', name: 'RAM', icon: '🧩', colorIndex: 1, imageAsset: 'assets/images/categories/ram.png'),
-    CategoryModel(id: 'gpu', name: 'Card đồ họa', icon: '🖼️', colorIndex: 2, imageAsset: 'assets/images/categories/gpu.png'),
+    CategoryModel(
+      id: 'cpu',
+      name: 'CPU / Vi xử lý',
+      icon: '🧠',
+      colorIndex: 0,
+      imageAsset: 'assets/images/categories/cpu.png',
+    ),
+    CategoryModel(
+      id: 'ram',
+      name: 'RAM',
+      icon: '🧩',
+      colorIndex: 1,
+      imageAsset: 'assets/images/categories/ram.png',
+    ),
+    CategoryModel(
+      id: 'gpu',
+      name: 'Card đồ họa',
+      icon: '🖼️',
+      colorIndex: 2,
+      imageAsset: 'assets/images/categories/gpu.png',
+    ),
     CategoryModel(
       id: 'storage',
       name: 'SSD / Lưu trữ',
@@ -33,12 +51,48 @@ class MockData {
       colorIndex: 4,
       imageAsset: 'assets/images/categories/mainboard.png',
     ),
-    CategoryModel(id: 'psu', name: 'Nguồn (PSU)', icon: '⚡', colorIndex: 5, imageAsset: 'assets/images/categories/psu.png'),
-    CategoryModel(id: 'cooler', name: 'Tản nhiệt', icon: '❄️', colorIndex: 6, imageAsset: 'assets/images/categories/cooler.png'),
-    CategoryModel(id: 'laptop', name: 'Laptop', icon: '💻', colorIndex: 7, imageAsset: 'assets/images/categories/laptop.png'),
-    CategoryModel(id: 'monitor', name: 'Màn hình', icon: '🖥️', colorIndex: 8, imageAsset: 'assets/images/categories/monitor.png'),
-    CategoryModel(id: 'keyboard', name: 'Bàn phím', icon: '⌨️', colorIndex: 9, imageAsset: 'assets/images/categories/keyboard.png'),
-    CategoryModel(id: 'mouse', name: 'Chuột', icon: '🖱️', colorIndex: 10, imageAsset: 'assets/images/categories/mouse.png'),
+    CategoryModel(
+      id: 'psu',
+      name: 'Nguồn (PSU)',
+      icon: '⚡',
+      colorIndex: 5,
+      imageAsset: 'assets/images/categories/psu.png',
+    ),
+    CategoryModel(
+      id: 'cooler',
+      name: 'Tản nhiệt',
+      icon: '❄️',
+      colorIndex: 6,
+      imageAsset: 'assets/images/categories/cooler.png',
+    ),
+    CategoryModel(
+      id: 'laptop',
+      name: 'Laptop',
+      icon: '💻',
+      colorIndex: 7,
+      imageAsset: 'assets/images/categories/laptop.png',
+    ),
+    CategoryModel(
+      id: 'monitor',
+      name: 'Màn hình',
+      icon: '🖥️',
+      colorIndex: 8,
+      imageAsset: 'assets/images/categories/monitor.png',
+    ),
+    CategoryModel(
+      id: 'keyboard',
+      name: 'Bàn phím',
+      icon: '⌨️',
+      colorIndex: 9,
+      imageAsset: 'assets/images/categories/keyboard.png',
+    ),
+    CategoryModel(
+      id: 'mouse',
+      name: 'Chuột',
+      icon: '🖱️',
+      colorIndex: 10,
+      imageAsset: 'assets/images/categories/mouse.png',
+    ),
     CategoryModel(
       id: 'case',
       name: 'Case / Vỏ máy tính',
@@ -62,10 +116,10 @@ class MockData {
     ('Intel', 'assets/images/brands/intel.png'),
     ('MSI', 'assets/images/brands/msi.png'),
     ('Samsung', 'assets/images/brands/samsung.png'),
-    ('Logitech', 'assets/images/brands/logitech.png'),
+    ('Logitech', 'assets/images/brands/logitech.svg'),
     ('Microsoft', 'assets/images/brands/microsoft.png'),
     ('Razer', 'assets/images/brands/razer.png'),
-    ('Crucial', 'assets/images/brands/crucial.png'),
+    ('Crucial', 'assets/images/brands/crucial.svg'),
   ];
 
   // ---- Featured products (Home) ----

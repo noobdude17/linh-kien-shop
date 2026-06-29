@@ -21,7 +21,9 @@ class _AdminProductEditScreenState extends State<AdminProductEditScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.adminAccent,
         foregroundColor: Colors.white,
-        leading: BackButton(onPressed: () => context.go(AppRoutes.adminProducts)),
+        leading: BackButton(
+          onPressed: () => context.go(AppRoutes.adminProducts),
+        ),
         title: const Text('Thêm sản phẩm'),
       ),
       body: ListView(
@@ -30,14 +32,28 @@ class _AdminProductEditScreenState extends State<AdminProductEditScreen> {
           Row(
             children: [
               Container(
-                width: 88, height: 88,
+                width: 88,
+                height: 88,
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.adminAccent, width: 1.5, style: BorderStyle.solid),
+                  border: Border.all(
+                    color: AppColors.adminAccent,
+                    width: 1.5,
+                    style: BorderStyle.solid,
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Text('📷', style: TextStyle(fontSize: 24)), Text('Thêm ảnh', style: TextStyle(fontSize: 11, color: AppColors.adminAccent))],
+                  children: [
+                    Text('📷', style: TextStyle(fontSize: 24)),
+                    Text(
+                      'Thêm ảnh',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.adminAccent,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: 12),
@@ -66,21 +82,30 @@ class _AdminProductEditScreenState extends State<AdminProductEditScreen> {
             onChanged: (v) => setState(() => _active = v),
           ),
           const SizedBox(height: 8),
-          PrimaryButton(label: 'Lưu sản phẩm', onPressed: () => context.go(AppRoutes.adminProducts)),
+          PrimaryButton(
+            label: 'Lưu sản phẩm',
+            onPressed: () => context.go(AppRoutes.adminProducts),
+          ),
         ],
       ),
     );
   }
 
   Widget _field(String label, {String? value, int maxLines = 1}) => Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-            const SizedBox(height: 6),
-            TextField(maxLines: maxLines, controller: value != null ? TextEditingController(text: value) : null),
-          ],
+    padding: const EdgeInsets.only(bottom: 14),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
-      );
+        const SizedBox(height: 6),
+        TextField(
+          maxLines: maxLines,
+          controller: value != null ? TextEditingController(text: value) : null,
+        ),
+      ],
+    ),
+  );
 }

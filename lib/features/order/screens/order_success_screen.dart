@@ -31,19 +31,25 @@ class OrderSuccessScreen extends ConsumerWidget {
                 width: 104,
                 height: 104,
                 decoration: const BoxDecoration(
-                    color: AppColors.surface, shape: BoxShape.circle),
+                  color: AppColors.surface,
+                  shape: BoxShape.circle,
+                ),
                 alignment: Alignment.center,
                 child: Container(
                   width: 68,
                   height: 68,
                   decoration: const BoxDecoration(
-                      color: AppColors.success, shape: BoxShape.circle),
+                    color: AppColors.success,
+                    shape: BoxShape.circle,
+                  ),
                   child: const Icon(Icons.check, color: Colors.white, size: 36),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('Đặt hàng thành công!',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+              const Text(
+                'Đặt hàng thành công!',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+              ),
               const SizedBox(height: 8),
               const Text(
                 'Cảm ơn bạn đã mua hàng. Đơn hàng đang được xử lý.',
@@ -52,40 +58,47 @@ class OrderSuccessScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(8)),
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Text(
                   'Mã đơn: $code',
                   style: const TextStyle(
-                      color: AppColors.accentBlue,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13),
+                    color: AppColors.accentBlue,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: const [
-                      BoxShadow(
-                          color: Color(0x0F000000),
-                          blurRadius: 4,
-                          offset: Offset(0, 1)),
-                    ]),
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0F000000),
+                      blurRadius: 4,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
                 child: Column(
                   children: [
                     SummaryRow(label: 'Phương thức', value: payLabel),
                     SummaryRow(label: 'Giao đến', value: address),
                     const SummaryRow(label: 'Dự kiến', value: '2-3 ngày'),
                     SummaryRow(
-                        label: 'Tổng cộng',
-                        value: Formatter.price(total),
-                        isTotal: true),
+                      label: 'Tổng cộng',
+                      value: Formatter.price(total),
+                      isTotal: true,
+                    ),
                   ],
                 ),
               ),
