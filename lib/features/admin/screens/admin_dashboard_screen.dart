@@ -27,7 +27,7 @@ class AdminDashboardScreen extends ConsumerWidget {
       body: stats.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => AdminError(
-          message: 'Không tải được dashboard',
+          message: 'Không tải được dashboard\n$e',
           onRetry: () => ref.invalidate(adminDashboardProvider),
         ),
         data: (s) => ListView(

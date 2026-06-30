@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'cart_item_model.dart';
+import 'firestore_date.dart';
 
 class OrderTimelineStep {
   final String label;
@@ -83,7 +84,7 @@ class OrderModel {
       address: data['address'] ?? '',
       paymentMethod: data['paymentMethod'] ?? 'vnpay',
       paid: data['paid'] ?? false,
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: parseFirestoreDate(data['createdAt']),
     );
   }
 

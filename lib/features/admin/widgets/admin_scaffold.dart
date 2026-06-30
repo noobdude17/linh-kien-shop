@@ -76,7 +76,14 @@ class AdminError extends StatelessWidget {
       children: [
         const Icon(Icons.error_outline, size: 44, color: AppColors.error),
         const SizedBox(height: 10),
-        Text(message, style: const TextStyle(color: AppColors.textSecondary)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
         const SizedBox(height: 8),
         TextButton(onPressed: onRetry, child: const Text('Thử lại')),
       ],

@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'firestore_date.dart';
+
 class ReviewModel {
   final String id;
   final String productId;
@@ -30,7 +32,7 @@ class ReviewModel {
       userName: data['userName'] ?? '',
       rating: (data['rating'] ?? 0).toDouble(),
       comment: data['comment'] ?? '',
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: parseFirestoreDate(data['createdAt']),
       isHidden: data['isHidden'] ?? false,
     );
   }
