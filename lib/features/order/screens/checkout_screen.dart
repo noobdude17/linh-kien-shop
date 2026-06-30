@@ -46,10 +46,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           );
       ref.read(cartProvider.notifier).clear();
       if (!mounted) return;
-      if (_payment == AppConstants.payVnpay) {
-        context.go(AppRoutes.vnpay);
-      } else {
+      if (_payment == AppConstants.payCod) {
         context.go(AppRoutes.success);
+      } else {
+        context.go(AppRoutes.vnpay); // VNPay (thẻ/ví) và VNPay QR đều qua đây
       }
     } catch (_) {
       if (mounted) {
@@ -128,7 +128,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             child: Column(
               children: [
                 _paymentOption(AppConstants.payVnpay, 'VNPay',
-                    'ATM / Ví điện tử / QR Code', _vnpayLogo()),
+                    'Thẻ ATM / Thẻ quốc tế / Ví điện tử', _vnpayLogo()),
                 const SizedBox(height: 8),
                 _paymentOption(
                     AppConstants.payCod,
@@ -262,16 +262,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 height: 50,
                 child: Center(child: CircularProgressIndicator()),
               )
-            else if (_payment == AppConstants.payVnpay)
+            else if (_payment == AppConstants.payCod)
               AccentButton(
-                label: 'Thanh toán qua VNPay 🔒',
+                label: 'Đặt hàng (COD)',
                 onPressed: addr != null && hasItems
                     ? () => _submit(total: subtotal, addr: addr)
                     : null,
               )
             else
               AccentButton(
-                label: 'Đặt hàng (COD)',
+                label: 'Thanh toán qua VNPay 🔒',
                 onPressed: addr != null && hasItems
                     ? () => _submit(total: subtotal, addr: addr)
                     : null,

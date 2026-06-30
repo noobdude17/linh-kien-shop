@@ -24,7 +24,9 @@ class ReviewCard extends StatelessWidget {
                       ? review.userName[0].toUpperCase()
                       : '?',
                   style: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 14),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -35,14 +37,20 @@ class ReviewCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(review.userName,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 13)),
+                          child: Text(
+                            review.userName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                         Text(
                           _formatDate(review.createdAt),
                           style: const TextStyle(
-                              fontSize: 11, color: AppColors.textSecondary),
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -60,9 +68,13 @@ class ReviewCard extends StatelessWidget {
                     if (review.comment.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(review.comment,
-                            style: const TextStyle(
-                                fontSize: 13, color: AppColors.bodyText)),
+                        child: Text(
+                          review.comment,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.bodyText,
+                          ),
+                        ),
                       ),
                   ],
                 ),

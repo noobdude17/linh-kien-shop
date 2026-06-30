@@ -10,6 +10,7 @@ import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/quantity_stepper.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/models/product_variant.dart';
+import '../../../data/product_listing_adapter.dart';
 import '../../../data/models/review_model.dart';
 import '../../../features/auth/providers/auth_providers.dart';
 import '../../../features/cart/providers/cart_provider.dart';
@@ -257,9 +258,33 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             }
           });
         }
+        _selectRouteVariantIfNeeded(p);
         return _buildDetail(p);
       },
     );
+  }
+
+  void _selectRouteVariantIfNeeded(ProductModel product) {
+    if (_selectedVariant != null ||
+        !widget.productId.contains(productListingVariantSeparator)) {
+      return;
+    }
+    final variantId = widget.productId
+        .split(productListingVariantSeparator)
+        .last;
+    ProductVariant? routeVariant;
+    for (final variant in product.variants) {
+      if (variant.id == variantId) {
+        routeVariant = variant;
+        break;
+      }
+    }
+    if (routeVariant == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _selectedVariant == null) {
+        setState(() => _selectedVariant = routeVariant);
+      }
+    });
   }
 
   Widget _buildDetail(ProductModel p) {
@@ -339,14 +364,15 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.end,
+                          spacing: 8,
+                          runSpacing: 4,
                           children: [
                             Text(
                               Formatter.price(effectivePrice),
                               style: AppTextStyles.priceDetail,
                             ),
-                            const SizedBox(width: 8),
                             if (effectiveOldPrice != null)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
@@ -355,23 +381,25 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   style: AppTextStyles.oldPriceDetail,
                                 ),
                               ),
-                            const SizedBox(width: 8),
                             if (effectiveDiscount != null)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  '-$effectiveDiscount%',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 2),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accent,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '-$effectiveDiscount%',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -536,23 +564,31 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
               selectorLabel,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
-            if (_selectedVariant != null) ...[
-              const SizedBox(width: 8),
-              Text(
-                _selectedVariant!.name,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.accentBlue,
-                  fontWeight: FontWeight.w600,
+            if (_selectedVariant != null)
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.sizeOf(context).width - 40,
+                ),
+                child: Text(
+                  _selectedVariant!.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.accentBlue,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ],
           ],
         ),
         const SizedBox(height: 10),

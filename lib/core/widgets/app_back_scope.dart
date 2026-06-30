@@ -70,7 +70,8 @@ class _AppBackScopeState extends State<AppBackScope> {
 
   void _exitOnSecondBack() {
     final now = DateTime.now();
-    final shouldExit = _lastExitPromptAt != null &&
+    final shouldExit =
+        _lastExitPromptAt != null &&
         now.difference(_lastExitPromptAt!) < const Duration(seconds: 2);
 
     if (shouldExit) {

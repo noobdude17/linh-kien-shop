@@ -3,6 +3,7 @@ import 'package:linh_kien_shop/core/constants/app_constants.dart';
 import 'package:linh_kien_shop/data/models/order_model.dart';
 import 'package:linh_kien_shop/data/models/product_model.dart';
 import 'package:linh_kien_shop/data/repositories/admin_repository.dart';
+import 'package:linh_kien_shop/data/repositories/order_repository.dart';
 import 'package:linh_kien_shop/routes/app_routes.dart';
 import 'package:linh_kien_shop/routes/auth_guard.dart';
 
@@ -155,5 +156,24 @@ void main() {
 
     expect(reviews.items.any((r) => r.review.id == record.review.id), isTrue);
     expect(product?.reviewCount, greaterThanOrEqualTo(0));
+  });
+
+  test('markPaid sets paid but leaves status pending for admin approval', () async {
+    final repo = MockOrderRepository();
+    final order = await repo.create(
+      userId: 'u1',
+      customerName: 'Khách',
+      items: const [],
+      subtotal: 100,
+      totalAmount: 100,
+      address: 'Hà Nội',
+      paymentMethod: AppConstants.payVnpay,
+    );
+
+    await repo.markPaid(order.id);
+    final updated = await repo.getById(order.id);
+
+    expect(updated?.paid, isTrue);
+    expect(updated?.status, AppConstants.statusPending);
   });
 }

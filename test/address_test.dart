@@ -46,7 +46,9 @@ void main() {
 
   test('setDefault chuyển cờ mặc định sang địa chỉ được chọn', () async {
     final repo = MockAddressRepository();
-    final before = await repo.watch('u2').first; // seed từ MockData (a1 mặc định)
+    final before = await repo
+        .watch('u2')
+        .first; // seed từ MockData (a1 mặc định)
     final other = before.firstWhere((a) => !a.isDefault);
 
     await repo.setDefault('u2', other.id);

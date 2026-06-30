@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
@@ -8,6 +7,7 @@ import '../../../core/utils/formatter.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../routes/app_routes.dart';
 import '../providers/admin_providers.dart';
+import '../widgets/admin_scaffold.dart';
 
 class AdminReviewListScreen extends ConsumerStatefulWidget {
   const AdminReviewListScreen({super.key});
@@ -33,22 +33,24 @@ class _AdminReviewListScreenState extends ConsumerState<AdminReviewListScreen> {
   @override
   Widget build(BuildContext context) {
     final reviews = ref.watch(adminReviewsProvider(_query));
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.adminAccent,
-        foregroundColor: Colors.white,
-        leading: BackButton(onPressed: () => context.go(AppRoutes.admin)),
-        title: const Text('Quản lý đánh giá'),
-      ),
+    return AdminScaffold(
+      title: 'Quản lý đánh giá',
+      backRoute: AppRoutes.admin,
       body: Column(
         children: [
           _filters(),
           Expanded(
             child: reviews.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => _error('Không tải được đánh giá'),
+              error: (e, _) => AdminError(
+                message: 'Không tải được đánh giá',
+                onRetry: () => ref.invalidate(adminReviewsProvider),
+              ),
               data: (page) => page.items.isEmpty
-                  ? const Center(child: Text('Không có đánh giá'))
+                  ? const AdminEmpty(
+                      message: 'Không có đánh giá',
+                      icon: Icons.rate_review_outlined,
+                    )
                   : ListView.builder(
                       padding: const EdgeInsets.all(AppDimens.screenPadding),
                       itemCount: page.items.length,
@@ -190,11 +192,4 @@ class _AdminReviewListScreenState extends ConsumerState<AdminReviewListScreen> {
         );
     invalidateAdminData(ref);
   }
-
-  Widget _error(String message) => Center(
-    child: Text(
-      message,
-      style: const TextStyle(color: AppColors.textSecondary),
-    ),
-  );
 }

@@ -19,9 +19,10 @@ class RecentlyViewedNotifier extends Notifier<List<String>> {
   }
 
   Future<void> add(String productId) async {
-    final next = [productId, ...state.where((id) => id != productId)]
-        .take(_kRecentMax)
-        .toList();
+    final next = [
+      productId,
+      ...state.where((id) => id != productId),
+    ].take(_kRecentMax).toList();
     state = next;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_kRecentKey, state);
@@ -36,10 +37,12 @@ class RecentlyViewedNotifier extends Notifier<List<String>> {
 
 final recentlyViewedProvider =
     NotifierProvider<RecentlyViewedNotifier, List<String>>(
-        RecentlyViewedNotifier.new);
+      RecentlyViewedNotifier.new,
+    );
 
-final recentlyViewedProductsProvider =
-    FutureProvider<List<ProductModel>>((ref) async {
+final recentlyViewedProductsProvider = FutureProvider<List<ProductModel>>((
+  ref,
+) async {
   final ids = ref.watch(recentlyViewedProvider);
   if (ids.isEmpty) return [];
   final repo = ref.watch(productRepositoryProvider);

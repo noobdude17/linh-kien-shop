@@ -29,7 +29,9 @@ class OrderCreationNotifier extends AsyncNotifier<OrderModel?> {
     state = const AsyncLoading();
     try {
       final user = ref.read(currentUserProvider);
-      final order = await ref.read(orderRepositoryProvider).create(
+      final order = await ref
+          .read(orderRepositoryProvider)
+          .create(
             userId: user?.id ?? 'guest',
             customerName: user?.name ?? 'Khách',
             items: items,
@@ -45,12 +47,20 @@ class OrderCreationNotifier extends AsyncNotifier<OrderModel?> {
       rethrow;
     }
   }
+
+  /// Đánh dấu đơn hiện tại đã thanh toán (gọi sau khi VNPay trả về thành công).
+  Future<void> markCurrentPaid() async {
+    final order = state.valueOrNull;
+    if (order == null) return;
+    await ref.read(orderRepositoryProvider).markPaid(order.id);
+    state = AsyncData(order.copyWith(paid: true));
+  }
 }
 
 final orderCreationProvider =
     AsyncNotifierProvider<OrderCreationNotifier, OrderModel?>(
-  OrderCreationNotifier.new,
-);
+      OrderCreationNotifier.new,
+    );
 
 /// Danh sách đơn hàng của user hiện tại. Tự refetch khi user thay đổi.
 final userOrdersProvider = FutureProvider<List<OrderModel>>((ref) async {
@@ -60,7 +70,9 @@ final userOrdersProvider = FutureProvider<List<OrderModel>>((ref) async {
 });
 
 /// Chi tiết 1 đơn hàng theo id.
-final orderDetailProvider =
-    FutureProvider.family<OrderModel?, String>((ref, orderId) async {
+final orderDetailProvider = FutureProvider.family<OrderModel?, String>((
+  ref,
+  orderId,
+) async {
   return ref.read(orderRepositoryProvider).getById(orderId);
 });

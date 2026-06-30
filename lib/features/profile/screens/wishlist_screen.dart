@@ -23,39 +23,44 @@ class WishlistScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Lỗi: $e')),
         data: (products) => products.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.favorite_border,
-                      size: 64, color: AppColors.border),
-                  const SizedBox(height: 16),
-                  const Text('Chưa có sản phẩm yêu thích',
-                      style: TextStyle(color: AppColors.textSecondary)),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () => context.go(AppRoutes.home),
-                    child: const Text('Khám phá sản phẩm'),
-                  ),
-                ],
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.favorite_border,
+                      size: 64,
+                      color: AppColors.border,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Chưa có sản phẩm yêu thích',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => context.go(AppRoutes.home),
+                      child: const Text('Khám phá sản phẩm'),
+                    ),
+                  ],
+                ),
+              )
+            : GridView.builder(
+                padding: const EdgeInsets.all(AppDimens.screenPadding),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: AppDimens.gap,
+                  crossAxisSpacing: AppDimens.gap,
+                  childAspectRatio: 0.62,
+                ),
+                itemCount: products.length,
+                itemBuilder: (_, i) => ProductCard(
+                  product: products[i],
+                  showWishlistHeart: true,
+                  onTap: () =>
+                      context.go('${AppRoutes.detail}/${products[i].id}'),
+                ),
               ),
-            )
-          : GridView.builder(
-              padding: const EdgeInsets.all(AppDimens.screenPadding),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: AppDimens.gap,
-                crossAxisSpacing: AppDimens.gap,
-                childAspectRatio: 0.62,
-              ),
-              itemCount: products.length,
-              itemBuilder: (_, i) => ProductCard(
-                product: products[i],
-                showWishlistHeart: true,
-                onTap: () =>
-                    context.go('${AppRoutes.detail}/${products[i].id}'),
-              ),
-            ),
       ),
     );
   }

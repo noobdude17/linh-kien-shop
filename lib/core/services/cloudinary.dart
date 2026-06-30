@@ -11,13 +11,20 @@ import '../config/app_config.dart';
 /// Unsigned: an toàn gọi từ client, không cần API secret. Cấu hình cloud name +
 /// preset trong `firebase_config.json` (xem AppConfig).
 class Cloudinary {
-  static Future<String> uploadImage(File file, {String folder = 'uploads'}) async {
+  static Future<String> uploadImage(
+    File file, {
+    String folder = 'uploads',
+  }) async {
     final cloud = AppConfig.cloudinaryCloudName;
     final preset = AppConfig.cloudinaryUploadPreset;
     if (cloud.isEmpty || preset.isEmpty) {
-      throw Exception('Cloudinary chưa cấu hình (CLOUDINARY_CLOUD_NAME/PRESET).');
+      throw Exception(
+        'Cloudinary chưa cấu hình (CLOUDINARY_CLOUD_NAME/PRESET).',
+      );
     }
-    final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloud/image/upload');
+    final url = Uri.parse(
+      'https://api.cloudinary.com/v1_1/$cloud/image/upload',
+    );
     final req = http.MultipartRequest('POST', url)
       ..fields['upload_preset'] = preset
       ..fields['folder'] = folder

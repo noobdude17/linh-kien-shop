@@ -37,7 +37,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => context.go(AppRoutes.home),
-                  child: const Text('Bỏ qua', style: TextStyle(color: AppColors.textSecondary)),
+                  child: const Text(
+                    'Bỏ qua',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
               ),
               const Spacer(),
@@ -49,15 +52,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   borderRadius: BorderRadius.circular(40),
                 ),
                 alignment: Alignment.center,
-                child: Text(slide['illust']!, style: const TextStyle(fontSize: 96)),
+                child: Text(
+                  slide['illust']!,
+                  style: const TextStyle(fontSize: 96),
+                ),
               ),
               const SizedBox(height: 40),
-              Text(slide['title']!,
-                  style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w900)),
+              Text(
+                slide['title']!,
+                style: const TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
               const SizedBox(height: 12),
-              Text(slide['desc']!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+              Text(
+                slide['desc']!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -69,7 +85,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     width: active ? 22 : 7,
                     height: 7,
                     decoration: BoxDecoration(
-                      color: active ? AppColors.primary : const Color(0xFFD1D5DB),
+                      color: active
+                          ? AppColors.primary
+                          : const Color(0xFFD1D5DB),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );

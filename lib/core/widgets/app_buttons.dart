@@ -8,7 +8,12 @@ class PrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final IconData? icon;
 
-  const PrimaryButton({super.key, required this.label, this.onPressed, this.icon});
+  const PrimaryButton({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +75,12 @@ class AccentButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final IconData? icon;
 
-  const AccentButton({super.key, required this.label, this.onPressed, this.icon});
+  const AccentButton({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +101,10 @@ class AccentButton extends StatelessWidget {
             disabledForegroundColor: AppColors.textTertiary,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: AppDimens.brButton),
-            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            textStyle: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           child: _content(label, icon),
         ),

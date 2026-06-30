@@ -10,6 +10,7 @@ import '../../../data/models/product_model.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../routes/app_routes.dart';
 import '../providers/admin_providers.dart';
+import '../widgets/admin_scaffold.dart';
 
 class AdminProductListScreen extends ConsumerStatefulWidget {
   const AdminProductListScreen({super.key});
@@ -39,12 +40,13 @@ class _AdminProductListScreenState
   @override
   Widget build(BuildContext context) {
     final products = ref.watch(adminProductsProvider(_query));
-    return Scaffold(
-      appBar: AppBar(
+    return AdminScaffold(
+      title: 'Quản lý sản phẩm',
+      backRoute: AppRoutes.admin,
+      floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.adminAccent,
-        foregroundColor: Colors.white,
-        leading: BackButton(onPressed: () => context.go(AppRoutes.admin)),
-        title: const Text('Quản lý sản phẩm'),
+        onPressed: () => context.go(AppRoutes.adminProductEdit),
+        child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
@@ -52,13 +54,14 @@ class _AdminProductListScreenState
           Expanded(
             child: products.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => _error('Không tải được sản phẩm'),
+              error: (e, _) => AdminError(
+                message: 'Không tải được sản phẩm',
+                onRetry: () => ref.invalidate(adminProductsProvider),
+              ),
               data: (page) => page.items.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Không có sản phẩm',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
+                  ? const AdminEmpty(
+                      message: 'Không có sản phẩm',
+                      icon: Icons.inventory_2_outlined,
                     )
                   : RefreshIndicator(
                       onRefresh: () async =>
@@ -72,11 +75,6 @@ class _AdminProductListScreenState
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.adminAccent,
-        onPressed: () => context.go(AppRoutes.adminProductEdit),
-        child: const Icon(Icons.add),
       ),
     );
   }
@@ -247,19 +245,4 @@ class _AdminProductListScreenState
     invalidateAdminData(ref);
   }
 
-  Widget _error(String message) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(message, style: const TextStyle(color: AppColors.textSecondary)),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => ref.invalidate(adminProductsProvider),
-            child: const Text('Thử lại'),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
@@ -12,6 +11,7 @@ import '../../../data/models/order_model.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../routes/app_routes.dart';
 import '../providers/admin_providers.dart';
+import '../widgets/admin_scaffold.dart';
 
 class AdminOrderDetailScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -30,13 +30,9 @@ class _AdminOrderDetailScreenState
   @override
   Widget build(BuildContext context) {
     final order = ref.watch(adminOrderProvider(widget.orderId));
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.adminAccent,
-        foregroundColor: Colors.white,
-        leading: BackButton(onPressed: () => context.go(AppRoutes.adminOrders)),
-        title: Text(order.valueOrNull?.code ?? 'Chi tiết đơn'),
-      ),
+    return AdminScaffold(
+      title: order.valueOrNull?.code ?? 'Chi tiết đơn',
+      backRoute: AppRoutes.adminOrders,
       body: order.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _error('Không tải được đơn hàng'),

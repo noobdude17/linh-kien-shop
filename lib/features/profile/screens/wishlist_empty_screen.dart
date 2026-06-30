@@ -21,18 +21,31 @@ class WishlistEmptyScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 120, height: 120,
-                decoration: const BoxDecoration(color: Color(0xFFFCE4EC), shape: BoxShape.circle),
+                width: 120,
+                height: 120,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFCE4EC),
+                  shape: BoxShape.circle,
+                ),
                 alignment: Alignment.center,
                 child: const Text('🤍', style: TextStyle(fontSize: 52)),
               ),
               const SizedBox(height: 24),
-              const Text('Chưa có sản phẩm yêu thích', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const Text(
+                'Chưa có sản phẩm yêu thích',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 8),
-              const Text('Nhấn ♡ trên sản phẩm để lưu vào đây',
-                  textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
+              const Text(
+                'Nhấn ♡ trên sản phẩm để lưu vào đây',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
               const SizedBox(height: 24),
-              PrimaryButton(label: 'Khám phá sản phẩm', onPressed: () => context.go(AppRoutes.home)),
+              PrimaryButton(
+                label: 'Khám phá sản phẩm',
+                onPressed: () => context.go(AppRoutes.home),
+              ),
             ],
           ),
         ),

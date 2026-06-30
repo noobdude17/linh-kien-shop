@@ -23,7 +23,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  static const _pageSize = 30;
+  static const _pageSize = 32;
   static const _categoryBatchSize = 8;
   static const _loadMoreMinDuration = Duration(milliseconds: 1200);
   static const _homeCategoryIds = ['gpu', 'cpu', 'ram', 'storage'];
@@ -126,15 +126,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final batch = <ProductModel>[];
     final existingIds = _products.map((p) => p.id).toSet();
 
-    while (added < _pageSize && _hasMore) {
+    while ((added < _pageSize || _wouldEndOnOddGridItem(batch)) && _hasMore) {
       final categoryId = _nextCategoryId();
       if (categoryId == null) break;
+      final remaining = _pageSize - added;
+      final limit = remaining > 0 ? remaining.clamp(1, _categoryBatchSize) : 1;
 
       final page = await ref
           .read(productRepositoryProvider)
           .getByCategoryPage(
             categoryId,
-            limit: _categoryBatchSize,
+            limit: limit,
             cursor: _cursors[categoryId],
           );
       if (!mounted || requestId != _requestId) return batch;
@@ -185,6 +187,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     }
     return null;
+  }
+
+  bool _wouldEndOnOddGridItem(List<ProductModel> batch) {
+    return (_products.length + batch.length).isOdd;
   }
 
   @override
@@ -290,6 +296,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       sliver: SliverGrid(
                         delegate: SliverChildBuilderDelegate(
                           (_, i) => ProductCard(
+                            key: ValueKey(_products[i].id),
                             product: _products[i],
                             onTap: () => context.push(
                               '${AppRoutes.detail}/${_products[i].id}',

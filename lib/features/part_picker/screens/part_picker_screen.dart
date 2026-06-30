@@ -299,9 +299,25 @@ class _PartPickerScreenState extends ConsumerState<PartPickerScreen> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      issue.message,
-                      style: const TextStyle(fontSize: 13),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          issue.message,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        if (issue.suggestion?.trim().isNotEmpty == true) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            issue.suggestion!.trim(),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],

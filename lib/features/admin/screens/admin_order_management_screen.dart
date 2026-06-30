@@ -11,6 +11,7 @@ import '../../../data/models/order_model.dart';
 import '../../../data/repositories/admin_repository.dart';
 import '../../../routes/app_routes.dart';
 import '../providers/admin_providers.dart';
+import '../widgets/admin_scaffold.dart';
 
 class AdminOrderManagementScreen extends ConsumerStatefulWidget {
   const AdminOrderManagementScreen({super.key});
@@ -46,22 +47,24 @@ class _AdminOrderManagementScreenState
   @override
   Widget build(BuildContext context) {
     final orders = ref.watch(adminOrdersProvider(_query));
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.adminAccent,
-        foregroundColor: Colors.white,
-        leading: BackButton(onPressed: () => context.go(AppRoutes.admin)),
-        title: const Text('Quản lý đơn hàng'),
-      ),
+    return AdminScaffold(
+      title: 'Quản lý đơn hàng',
+      backRoute: AppRoutes.admin,
       body: Column(
         children: [
           _filters(),
           Expanded(
             child: orders.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => _error('Không tải được đơn hàng'),
+              error: (e, _) => AdminError(
+                message: 'Không tải được đơn hàng',
+                onRetry: () => ref.invalidate(adminOrdersProvider),
+              ),
               data: (page) => page.items.isEmpty
-                  ? const Center(child: Text('Không có đơn hàng'))
+                  ? const AdminEmpty(
+                      message: 'Không có đơn hàng',
+                      icon: Icons.receipt_long_outlined,
+                    )
                   : RefreshIndicator(
                       onRefresh: () async =>
                           ref.invalidate(adminOrdersProvider),
@@ -171,20 +174,6 @@ class _AdminOrderManagementScreenState
           ),
         ],
       ),
-    ),
-  );
-
-  Widget _error(String message) => Center(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(message, style: const TextStyle(color: AppColors.textSecondary)),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () => ref.invalidate(adminOrdersProvider),
-          child: const Text('Thử lại'),
-        ),
-      ],
     ),
   );
 }

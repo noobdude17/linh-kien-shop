@@ -9,8 +9,9 @@ void main() {
   });
 
   test('có kết quả → trả toạ độ đầu tiên', () {
-    final p = firstLocationOrThrow(
-        [Location(latitude: 16.0, longitude: 108.0, timestamp: DateTime(2024))]);
+    final p = firstLocationOrThrow([
+      Location(latitude: 16.0, longitude: 108.0, timestamp: DateTime(2024)),
+    ]);
     expect(p.latitude, 16.0);
     expect(p.longitude, 108.0);
   });

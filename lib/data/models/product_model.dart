@@ -151,6 +151,48 @@ class ProductModel {
     'compatibility': compatibility,
   };
 
+  ProductModel copyWith({
+    String? id,
+    String? name,
+    String? brand,
+    String? description,
+    double? price,
+    double? oldPrice,
+    double? rating,
+    int? reviewCount,
+    String? imageLabel,
+    String? imageUrl,
+    List<String>? images,
+    String? categoryId,
+    String? categoryName,
+    int? stock,
+    bool? isActive,
+    Map<String, String>? specs,
+    List<ProductVariant>? variants,
+    Map<String, dynamic>? compatibility,
+  }) {
+    return ProductModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      brand: brand ?? this.brand,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      oldPrice: oldPrice ?? this.oldPrice,
+      rating: rating ?? this.rating,
+      reviewCount: reviewCount ?? this.reviewCount,
+      imageLabel: imageLabel ?? this.imageLabel,
+      imageUrl: imageUrl ?? this.imageUrl,
+      images: images ?? this.images,
+      categoryId: categoryId ?? this.categoryId,
+      categoryName: categoryName ?? this.categoryName,
+      stock: stock ?? this.stock,
+      isActive: isActive ?? this.isActive,
+      specs: specs ?? this.specs,
+      variants: variants ?? this.variants,
+      compatibility: compatibility ?? this.compatibility,
+    );
+  }
+
   static Map<String, String> _stringMap(Object? value) {
     if (value is! Map) return const {};
     return value.map((key, value) {
