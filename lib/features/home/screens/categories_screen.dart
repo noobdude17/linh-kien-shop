@@ -8,6 +8,7 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../data/mock_data.dart';
 import '../../../data/models/category_model.dart';
 import '../../../features/product/providers/product_providers.dart';
@@ -162,7 +163,7 @@ class _AsyncSlider extends StatelessWidget {
       title: title,
       height: height,
       child: value.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const CategoryRowSkeleton(),
         error: (e, _) => Center(child: Text('Lỗi: $e')),
         data: builder,
       ),

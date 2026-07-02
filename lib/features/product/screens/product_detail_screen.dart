@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -8,6 +9,7 @@ import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/app_buttons.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/quantity_stepper.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/models/product_variant.dart';
 import '../../../data/product_listing_adapter.dart';
@@ -56,6 +58,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       );
       return;
     }
+    HapticFeedback.lightImpact();
     setState(() => _isAdding = true);
     ref
         .read(cartProvider.notifier)
@@ -224,8 +227,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final productAsync = ref.watch(productDetailProvider(widget.productId));
 
     return productAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        appBar: AppBar(),
+        body: const SingleChildScrollView(child: ProductDetailSkeleton()),
+      ),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: Center(
@@ -333,6 +338,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   ],
                   fallbackLabel: p.imageLabel,
                   height: AppDimens.heroImageHeight,
+                  heroTag: 'product-img-${p.id}',
                 ),
                 Transform.translate(
                   offset: const Offset(0, -20),
@@ -499,9 +505,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         const SizedBox(width: 8),
                         _circleBtn(
                           isWishlisted ? Icons.favorite : Icons.favorite_border,
-                          () =>
-                              ref.read(wishlistProvider.notifier).toggle(p.id),
-                          iconColor: isWishlisted ? Colors.red : Colors.white,
+                          () {
+                            HapticFeedback.lightImpact();
+                            ref.read(wishlistProvider.notifier).toggle(p.id);
+                          },
+                          iconColor: isWishlisted
+                              ? AppColors.favorite
+                              : Colors.white,
                         ),
                         const SizedBox(width: 8),
                         _cartBtn(context),

@@ -8,6 +8,7 @@ import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../data/models/product_model.dart';
 import '../../../features/cart/providers/cart_provider.dart';
 import '../../../features/product/providers/product_providers.dart';
@@ -241,8 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: SizedBox(
                       height: 92,
                       child: categories.when(
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
+                        loading: () => const CategoryRowSkeleton(),
                         error: (e, _) => Center(child: Text('Lỗi: $e')),
                         data: (list) => ListView.separated(
                           scrollDirection: Axis.horizontal,
@@ -277,10 +277,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   if (_isInitialLoading)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(40),
-                        child: Center(child: CircularProgressIndicator()),
+                    SliverPadding(
+                      padding: const EdgeInsets.all(AppDimens.screenPadding),
+                      sliver: SliverGrid(
+                        delegate: SliverChildBuilderDelegate(
+                          (_, _) => const ProductCardSkeleton(),
+                          childCount: 4,
+                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: AppDimens.gap,
+                              crossAxisSpacing: AppDimens.gap,
+                              childAspectRatio: 0.62,
+                            ),
                       ),
                     )
                   else if (_error != null)
@@ -298,6 +308,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           (_, i) => ProductCard(
                             key: ValueKey(_products[i].id),
                             product: _products[i],
+                            heroEnabled: true,
                             onTap: () => context.push(
                               '${AppRoutes.detail}/${_products[i].id}',
                             ),

@@ -9,6 +9,7 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_chip.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../data/mock_data.dart';
 import '../../../data/models/product_model.dart';
 import '../../../features/product/providers/compare_provider.dart';
@@ -356,7 +357,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Widget _buildBody() {
     if (_isInitialLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const ProductGridSkeleton();
     }
 
     if (_error != null) {
@@ -520,6 +521,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                           return ProductCard(
                             key: ValueKey(product.id),
                             product: product,
+                            heroEnabled: true,
                             onTap: () => context.push(
                               '${AppRoutes.detail}/${product.id}',
                             ),

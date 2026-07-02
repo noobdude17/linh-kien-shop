@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/app_buttons.dart';
 import '../../../core/widgets/summary_row.dart';
@@ -63,7 +64,7 @@ class OrderSuccessScreen extends ConsumerWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: AppColors.accentBlueBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -80,14 +81,8 @@ class OrderSuccessScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0F000000),
-                      blurRadius: 4,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
+                  borderRadius: AppDimens.brInfoCard,
+                  boxShadow: AppDimens.bannerShadow,
                 ),
                 child: Column(
                   children: [

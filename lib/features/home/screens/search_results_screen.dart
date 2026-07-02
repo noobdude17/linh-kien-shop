@@ -8,6 +8,7 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_buttons.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../data/models/product_model.dart';
 import '../../../features/product/providers/product_providers.dart';
 import '../../../routes/app_routes.dart';
@@ -260,7 +261,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
   Widget _buildBody() {
     if (_isInitialLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const ProductGridSkeleton();
     }
 
     if (_error != null) {
@@ -370,6 +371,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                           return ProductCard(
                             key: ValueKey(product.id),
                             product: product,
+                            heroEnabled: true,
                             onTap: () => context.push(
                               '${AppRoutes.detail}/${product.id}',
                             ),

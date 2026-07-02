@@ -366,7 +366,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               color: selected ? AppColors.accentBlue : AppColors.border,
               width: 1.5),
           borderRadius: BorderRadius.circular(8),
-          color: selected ? const Color(0xFFEFF6FF) : null,
+          color: selected ? AppColors.accentBlueBg : null,
         ),
         child: Row(
           children: [

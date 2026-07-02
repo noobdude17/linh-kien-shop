@@ -50,6 +50,16 @@ import 'auth_guard.dart';
 
 Widget _withBackScope(Widget child) => AppBackScope(child: child);
 
+/// Fade nhanh cho 5 tab bottom-nav — chuyển tab không nên trượt cả trang.
+CustomTransitionPage<void> _fadeTabPage(GoRouterState state, Widget child) =>
+    CustomTransitionPage(
+      key: state.pageKey,
+      child: _withBackScope(child),
+      transitionDuration: const Duration(milliseconds: 180),
+      transitionsBuilder: (_, anim, _, child) =>
+          FadeTransition(opacity: anim, child: child),
+    );
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authRepo = ref.watch(authRepositoryProvider);
   return GoRouter(
@@ -100,11 +110,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // B · Home & Browse
       GoRoute(
         path: AppRoutes.home,
-        builder: (_, _) => _withBackScope(const HomeScreen()),
+        pageBuilder: (_, state) => _fadeTabPage(state, const HomeScreen()),
       ),
       GoRoute(
         path: AppRoutes.categories,
-        builder: (_, _) => _withBackScope(const CategoriesScreen()),
+        pageBuilder: (_, state) =>
+            _fadeTabPage(state, const CategoriesScreen()),
       ),
       GoRoute(
         path: AppRoutes.search,
@@ -130,7 +141,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.partPicker,
-        builder: (_, _) => _withBackScope(const PartPickerScreen()),
+        pageBuilder: (_, state) =>
+            _fadeTabPage(state, const PartPickerScreen()),
       ),
       GoRoute(
         path: '${AppRoutes.partPickerSelect}/:categoryId',
@@ -154,7 +166,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // D · Cart & Checkout
       GoRoute(
         path: AppRoutes.cart,
-        builder: (_, _) => _withBackScope(const CartScreen()),
+        pageBuilder: (_, state) => _fadeTabPage(state, const CartScreen()),
       ),
       GoRoute(
         path: AppRoutes.checkout,
@@ -176,7 +188,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // E · Account & Orders
       GoRoute(
         path: AppRoutes.profile,
-        builder: (_, _) => _withBackScope(const ProfileScreen()),
+        pageBuilder: (_, state) => _fadeTabPage(state, const ProfileScreen()),
       ),
       GoRoute(
         path: AppRoutes.editProfile,

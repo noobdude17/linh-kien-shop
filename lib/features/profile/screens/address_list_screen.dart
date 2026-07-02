@@ -81,7 +81,7 @@ class AddressListScreen extends ConsumerWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        color: AppColors.accentBlueBg,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
@@ -197,9 +197,9 @@ class _DebugPanel extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF7ED),
+        color: AppColors.accentSoftBg,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFFB923C)),
+        border: Border.all(color: AppColors.accentSoftBorder),
       ),
       child: ExpansionTile(
         title: const Text(

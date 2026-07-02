@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/product_model.dart';
 import '../../core/utils/formatter.dart';
@@ -13,11 +14,16 @@ class ProductCard extends ConsumerWidget {
   final VoidCallback? onTap;
   final bool showWishlistHeart;
 
+  /// Bật Hero bay ảnh sang trang chi tiết. Chỉ bật ở màn hình mà mỗi sản phẩm
+  /// xuất hiện đúng một lần (grid chính) — tag Hero không được trùng.
+  final bool heroEnabled;
+
   const ProductCard({
     super.key,
     required this.product,
     this.onTap,
     this.showWishlistHeart = false,
+    this.heroEnabled = false,
   });
 
   @override
@@ -27,9 +33,8 @@ class ProductCard extends ConsumerWidget {
         ? ref.watch(wishlistProvider).contains(product.id)
         : false;
 
-    return InkWell(
+    return _PressableScale(
       onTap: onTap,
-      borderRadius: AppDimens.brCard,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -47,19 +52,31 @@ class ProductCard extends ConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  ImagePlaceholder(
-                    label: product.imageLabel,
-                    imageUrl: product.primaryImageUrl,
-                    width: double.infinity,
-                    height: AppDimens.productImageHeight,
-                    radius: 0,
-                  ),
+                  if (heroEnabled)
+                    Hero(
+                      tag: 'product-img-${product.id}',
+                      child: ImagePlaceholder(
+                        label: product.imageLabel,
+                        imageUrl: product.primaryImageUrl,
+                        width: double.infinity,
+                        height: AppDimens.productImageHeight,
+                        radius: 0,
+                      ),
+                    )
+                  else
+                    ImagePlaceholder(
+                      label: product.imageLabel,
+                      imageUrl: product.primaryImageUrl,
+                      width: double.infinity,
+                      height: AppDimens.productImageHeight,
+                      radius: 0,
+                    ),
                   if (discount != null)
                     Positioned(top: 8, left: 8, child: _badge('-$discount%')),
                   if (!product.inStock)
                     Positioned.fill(
                       child: Container(
-                        color: Colors.black26,
+                        color: AppColors.overlayScrim,
                         alignment: Alignment.center,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -86,20 +103,29 @@ class ProductCard extends ConsumerWidget {
                       top: 8,
                       right: 8,
                       child: GestureDetector(
-                        onTap: () => ref
-                            .read(wishlistProvider.notifier)
-                            .toggle(product.id),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          ref
+                              .read(wishlistProvider.notifier)
+                              .toggle(product.id);
+                        },
                         child: CircleAvatar(
                           radius: 16,
-                          backgroundColor: const Color(0xCCFFFFFF),
-                          child: Icon(
-                            isWishlisted
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            size: 18,
-                            color: isWishlisted
-                                ? Colors.red
-                                : AppColors.bodyText,
+                          backgroundColor: AppColors.wishlistChipBg,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            transitionBuilder: (child, anim) =>
+                                ScaleTransition(scale: anim, child: child),
+                            child: Icon(
+                              isWishlisted
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              key: ValueKey(isWishlisted),
+                              size: 18,
+                              color: isWishlisted
+                                  ? AppColors.favorite
+                                  : AppColors.bodyText,
+                            ),
                           ),
                         ),
                       ),
@@ -159,7 +185,7 @@ class ProductCard extends ConsumerWidget {
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
     decoration: BoxDecoration(
       color: AppColors.accent,
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: AppDimens.brPill,
     ),
     child: Text(text, style: AppTextStyles.badge.copyWith(fontSize: 11)),
   );
@@ -188,6 +214,37 @@ class _PriceBlock extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Thu nhỏ nhẹ khi nhấn — cảm giác "bấm được" cho cả card.
+class _PressableScale extends StatefulWidget {
+  const _PressableScale({required this.child, this.onTap});
+
+  final Widget child;
+  final VoidCallback? onTap;
+
+  @override
+  State<_PressableScale> createState() => _PressableScaleState();
+}
+
+class _PressableScaleState extends State<_PressableScale> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
     );
   }
 }

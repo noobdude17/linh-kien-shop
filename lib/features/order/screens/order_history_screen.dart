@@ -7,6 +7,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/image_placeholder.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/order_model.dart';
 import '../../../routes/app_routes.dart';
@@ -43,7 +45,7 @@ class OrderHistoryScreen extends ConsumerWidget {
           ),
         ),
         body: ordersAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const ListTileSkeleton(),
           error: (e, _) => Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -72,11 +74,9 @@ class OrderHistoryScreen extends ConsumerWidget {
                   ? orders
                   : orders.where((o) => o.status == tab.$2).toList();
               return filtered.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Không có đơn hàng',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
+                  ? const EmptyState(
+                      icon: Icons.receipt_long_outlined,
+                      title: 'Không có đơn hàng',
                     )
                   : RefreshIndicator(
                       onRefresh: () => ref.refresh(userOrdersProvider.future),

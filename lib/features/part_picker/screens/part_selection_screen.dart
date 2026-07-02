@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/image_placeholder.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/models/product_variant.dart';
 import '../../../data/product_listing_adapter.dart';
@@ -110,7 +111,7 @@ class _PartSelectionScreenState extends ConsumerState<PartSelectionScreen> {
         title: Text('Chọn ${category.label}'),
       ),
       body: products.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListTileSkeleton(),
         error: (error, _) =>
             Center(child: Text('Không thể tải sản phẩm: $error')),
         data: (values) => Column(

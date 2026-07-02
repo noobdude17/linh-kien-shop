@@ -87,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     decoration: BoxDecoration(
                       color: active
                           ? AppColors.primary
-                          : const Color(0xFFD1D5DB),
+                          : AppColors.dotInactive,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );

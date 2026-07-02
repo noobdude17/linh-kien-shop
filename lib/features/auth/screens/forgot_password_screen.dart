@@ -64,7 +64,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               width: 80,
               height: 80,
               decoration: const BoxDecoration(
-                color: Color(0xFFEFF6FF),
+                color: AppColors.accentBlueBg,
                 shape: BoxShape.circle,
               ),
               alignment: Alignment.center,

@@ -35,6 +35,15 @@ class AppColors {
   static const shippingBg = Color(0xFFDBEAFE);
   static const doneBg = Color(0xFFF3F4F6);
   static const star = Color(0xFFF59E0B);
+  static const favorite = Color(0xFFEF4444); // tim yêu thích
+  static const wishlistChipBg = Color(0xCCFFFFFF); // nền chip tim trên ảnh
+  static const overlayScrim = Colors.black26; // phủ mờ ảnh hết hàng
+
+  // Soft backgrounds (nền nhạt cho chip/icon tròn/hộp thông tin)
+  static const accentBlueBg = Color(0xFFEFF6FF); // blue-50
+  static const accentSoftBg = Color(0xFFFFF7ED); // orange-50
+  static const accentSoftBorder = Color(0xFFFB923C); // orange-400
+  static const dotInactive = Color(0xFFD1D5DB); // gray-300
 
   // Dividers / borders
   static const divider = Color(0xFFF3F4F6);

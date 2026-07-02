@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_dimens.dart';
 import '../../../data/mock_data.dart';
 import '../../../data/models/notification_model.dart';
 import '../../../routes/app_routes.dart';
@@ -47,14 +48,8 @@ class NotificationsScreen extends StatelessWidget {
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
       color: AppColors.surface,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x0F000000),
-          blurRadius: 4,
-          offset: Offset(0, 1),
-        ),
-      ],
+      borderRadius: AppDimens.brInfoCard,
+      boxShadow: AppDimens.bannerShadow,
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,

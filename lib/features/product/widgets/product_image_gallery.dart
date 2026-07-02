@@ -8,11 +8,15 @@ class ProductImageGallery extends StatefulWidget {
   final String fallbackLabel;
   final double height;
 
+  /// Tag Hero khớp với ProductCard để ảnh bay từ grid sang trang chi tiết.
+  final String? heroTag;
+
   const ProductImageGallery({
     super.key,
     required this.images,
     required this.fallbackLabel,
     this.height = 300,
+    this.heroTag,
   });
 
   @override
@@ -93,7 +97,7 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
     final urls = _urls;
     final count = urls.isEmpty ? 1 : urls.length;
 
-    return SizedBox(
+    Widget gallery = SizedBox(
       height: widget.height,
       child: Stack(
         children: [
@@ -149,5 +153,10 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
         ],
       ),
     );
+
+    if (widget.heroTag != null) {
+      gallery = Hero(tag: widget.heroTag!, child: gallery);
+    }
+    return gallery;
   }
 }

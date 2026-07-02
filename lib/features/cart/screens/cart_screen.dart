@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/app_buttons.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/quantity_stepper.dart';
 import '../../../core/widgets/summary_row.dart';
@@ -28,7 +29,13 @@ class CartScreen extends ConsumerWidget {
         title: Text('Giỏ hàng (${items.length})'),
       ),
       body: items.isEmpty
-          ? const Center(child: Text('Giỏ hàng trống'))
+          ? EmptyState(
+              icon: Icons.shopping_cart_outlined,
+              title: 'Giỏ hàng trống',
+              message: 'Thêm sản phẩm để bắt đầu mua sắm',
+              actionLabel: 'Khám phá sản phẩm',
+              onAction: () => context.go(AppRoutes.home),
+            )
           : ListView(
               padding: const EdgeInsets.all(AppDimens.screenPadding),
               children: [
