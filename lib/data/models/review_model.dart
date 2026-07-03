@@ -25,9 +25,13 @@ class ReviewModel {
 
   factory ReviewModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    // productId lấy từ path (products/{id}/reviews/{rid}) khi field thiếu —
+    // để nút ẩn/hiện của admin luôn trỏ đúng sản phẩm.
+    final pathProductId = doc.reference.parent.parent?.id ?? '';
+    final dataProductId = (data['productId'] ?? '') as String;
     return ReviewModel(
       id: doc.id,
-      productId: data['productId'] ?? '',
+      productId: dataProductId.isNotEmpty ? dataProductId : pathProductId,
       userId: data['userId'] ?? '',
       userName: data['userName'] ?? '',
       rating: (data['rating'] ?? 0).toDouble(),

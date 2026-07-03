@@ -157,6 +157,7 @@ abstract class AdminRepository {
   Future<ProductModel?> getProduct(String id);
   Future<void> saveProduct(ProductModel product);
   Future<void> softDeleteProduct(String id);
+  Future<void> setProductActive(String id, bool active);
   Future<AdminPage<OrderModel>> getOrders(AdminOrderQuery query);
   Future<OrderModel?> getOrder(String id);
   Future<void> updateOrderStatus(String id, String status);
@@ -295,6 +296,13 @@ class MockAdminRepository implements AdminRepository {
     final product = _products[id];
     if (product == null) return;
     _products[id] = _copyProduct(product, isActive: false);
+  }
+
+  @override
+  Future<void> setProductActive(String id, bool active) async {
+    final product = _products[id];
+    if (product == null) return;
+    _products[id] = _copyProduct(product, isActive: active);
   }
 
   @override
@@ -502,6 +510,10 @@ class FirestoreAdminRepository implements AdminRepository {
       _products.doc(id).set({'isActive': false}, SetOptions(merge: true));
 
   @override
+  Future<void> setProductActive(String id, bool active) =>
+      _products.doc(id).set({'isActive': active}, SetOptions(merge: true));
+
+  @override
   Future<OrderModel?> getOrder(String id) async {
     final doc = await _orders.doc(id).get();
     return doc.exists ? OrderModel.fromFirestore(doc) : null;
@@ -621,24 +633,29 @@ class FirestoreAdminRepository implements AdminRepository {
   Future<AdminPage<AdminReviewRecord>> getReviews(
     AdminReviewQuery query,
   ) async {
-    final productSnap = await _products.get();
-    final products = {
-      for (final doc in productSnap.docs)
-        doc.id: ProductModel.fromFirestore(doc),
-    };
-    final records = <AdminReviewRecord>[];
-    for (final product in products.values) {
-      final reviewSnap = await _products
-          .doc(product.id)
-          .collection(AppConstants.colReviews)
-          .get();
-      for (final doc in reviewSnap.docs) {
-        final review = ReviewModel.fromFirestore(doc);
-        records.add(
-          AdminReviewRecord(review: review, productName: product.name),
-        );
-      }
+    // 1 query collectionGroup thay vì 1 query/sản phẩm (590 sản phẩm = màn
+    // hình treo vô hạn → tab "Tất cả" không hiện, toggle ẩn không refresh nổi).
+    final reviewSnap = await _db
+        .collectionGroup(AppConstants.colReviews)
+        .get();
+    final productIds = reviewSnap.docs
+        .map((doc) => doc.reference.parent.parent?.id)
+        .whereType<String>()
+        .toSet();
+    final names = <String, String>{};
+    for (final id in productIds) {
+      final doc = await _products.doc(id).get();
+      names[id] = (doc.data()?['name'] ?? id) as String;
     }
+    final records = <AdminReviewRecord>[
+      for (final doc in reviewSnap.docs)
+        AdminReviewRecord(
+          review: ReviewModel.fromFirestore(doc),
+          productName:
+              names[doc.reference.parent.parent?.id] ??
+              (doc.data()['productId'] ?? '') as String,
+        ),
+    ];
     var filtered = records
       ..sort((a, b) => b.review.createdAt.compareTo(a.review.createdAt));
     final text = query.search.trim().toLowerCase();
