@@ -8,6 +8,7 @@ class AppConstants {
   static const colOrders = 'orders';
   static const colCart = 'cart';
   static const colReviews = 'reviews'; // subcollection products/{id}/reviews
+  static const colBrands = 'brands';
   static const colAddresses =
       'addresses'; // subcollection users/{uid}/addresses
 
