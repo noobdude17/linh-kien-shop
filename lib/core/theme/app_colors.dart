@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Primary
-  static const primary = Color(0xFF0F172A);
-  static const accentBlue = Color(0xFF2563EB);
+  // Primary — app brand accent is orange (matches admin's old orange palette)
+  static const primary = Color(0xFFEA580C); // orange-600 (CTA/brand)
+  static const accentBlue = Color(0xFFF97316); // secondary accent, orange-500
   static const primaryGradMid = Color(0xFF111827);
-  static const primaryGradLight = Color(0xFF2563EB);
+  static const primaryGradLight = Color(0xFFF97316);
 
   // Accent (CTA, admin)
   static const accent = Color(0xFFF97316);
@@ -40,7 +40,7 @@ class AppColors {
   static const overlayScrim = Colors.black26; // phủ mờ ảnh hết hàng
 
   // Soft backgrounds (nền nhạt cho chip/icon tròn/hộp thông tin)
-  static const accentBlueBg = Color(0xFFEFF6FF); // blue-50
+  static const accentBlueBg = Color(0xFFFFF7ED); // orange-50 (paired soft bg)
   static const accentSoftBg = Color(0xFFFFF7ED); // orange-50
   static const accentSoftBorder = Color(0xFFFB923C); // orange-400
   static const dotInactive = Color(0xFFD1D5DB); // gray-300
@@ -72,13 +72,13 @@ class AppColors {
   static const vnpGatewayStart = Color(0xFF0A4D8C);
   static const vnpGatewayEnd = Color(0xFF2E7D32);
 
-  // ── Admin console theme (cố tình khác hẳn storefront cam/xanh) ──
-  static const adminAccent = Color(0xFF7C3AED); // violet-600
-  static const adminPrimary = Color(0xFF6D28D9); // violet-700
-  static const adminPrimaryDark = Color(0xFF4C1D95); // violet-900
-  static const adminBg = Color(0xFFF5F3FB); // nền tím rất nhạt
-  static const adminSurfaceTint = Color(0xFFEDE9FE); // chip/nền phụ
-  static const statPurple = adminAccent;
+  // ── Admin console theme (xanh dương) ──
+  static const adminAccent = Color(0xFF3B82F6); // blue-500
+  static const adminPrimary = Color(0xFF2563EB); // blue-600
+  static const adminPrimaryDark = Color(0xFF1E40AF); // blue-800
+  static const adminBg = Color(0xFFEFF6FF); // nền xanh rất nhạt
+  static const adminSurfaceTint = Color(0xFFDBEAFE); // chip/nền phụ
+  static const statPurple = Color(0xFF7C3AED); // giữ tím cho 1 ô thống kê
 
   static const adminHeaderGradient = LinearGradient(
     begin: Alignment.topLeft,
@@ -102,11 +102,14 @@ class AppColors {
     Color(0xFFF8FAFC), // slate
   ];
 
+  // Banner (đen)
+  static const bannerDark = Color(0xFF0F172A);
+
   // Gradients
   static const bannerGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [primary, Color(0x0011172A)],
+    colors: [bannerDark, Color(0x0011172A)],
   );
 
   static const vnpayGatewayGradient = LinearGradient(

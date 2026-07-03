@@ -11,6 +11,7 @@ import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/skeletons.dart';
 import '../../../data/models/product_model.dart';
 import '../../../features/cart/providers/cart_provider.dart';
+import '../../../features/product/providers/compare_provider.dart';
 import '../../../features/product/providers/product_providers.dart';
 import '../../../routes/app_routes.dart';
 import '../widgets/category_chip.dart';
@@ -387,11 +388,9 @@ class _HomeHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch(cartCountProvider);
+    final compareCount = ref.watch(compareProvider).length;
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.divider)),
-      ),
+      decoration: const BoxDecoration(color: AppColors.primary),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -404,14 +403,14 @@ class _HomeHeader extends ConsumerWidget {
                     children: [
                       const Icon(
                         Icons.bolt_rounded,
-                        color: AppColors.primary,
+                        color: Colors.white,
                         size: 22,
                       ),
                       const SizedBox(width: 4),
                       const Text(
                         'Linh Kiện Shop',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
@@ -419,6 +418,42 @@ class _HomeHeader extends ConsumerWidget {
                     ],
                   ),
                   const Spacer(),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      IconButton(
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.inputFill,
+                          minimumSize: const Size.square(44),
+                        ),
+                        icon: const Icon(
+                          Icons.compare_arrows,
+                          color: AppColors.bodyText,
+                        ),
+                        onPressed: () => context.go(AppRoutes.compare),
+                      ),
+                      if (compareCount > 0)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(
+                              color: AppColors.accent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '$compareCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                   IconButton(
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.inputFill,

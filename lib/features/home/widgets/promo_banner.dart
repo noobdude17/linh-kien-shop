@@ -13,7 +13,7 @@ class PromoBanner extends StatelessWidget {
     return Container(
       height: 150,
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.bannerDark,
         borderRadius: AppDimens.brCard,
         boxShadow: AppDimens.bannerShadow,
       ),

@@ -45,6 +45,7 @@ class _AdminProductListScreenState
       backRoute: AppRoutes.admin,
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.adminAccent,
+        foregroundColor: Colors.white,
         onPressed: () => context.go(AppRoutes.adminProductEdit),
         child: const Icon(Icons.add),
       ),
@@ -170,7 +171,7 @@ class _AdminProductListScreenState
                     Text(
                       Formatter.price(p.price),
                       style: const TextStyle(
-                        color: AppColors.primary,
+                        color: AppColors.adminPrimary,
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
@@ -191,17 +192,20 @@ class _AdminProductListScreenState
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.edit, color: AppColors.primary, size: 20),
+            icon: const Icon(Icons.edit, color: AppColors.adminPrimary, size: 20),
             onPressed: () =>
                 context.go('${AppRoutes.adminProductEdit}/${p.id}'),
           ),
           IconButton(
-            icon: const Icon(
-              Icons.visibility_off_outlined,
-              color: AppColors.error,
+            icon: Icon(
+              p.isActive
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: p.isActive ? AppColors.error : AppColors.success,
               size: 20,
             ),
-            onPressed: p.isActive ? () => _confirmHide(p) : null,
+            onPressed: () =>
+                p.isActive ? _confirmHide(p) : _setActive(p, true),
           ),
         ],
       ),
@@ -241,8 +245,11 @@ class _AdminProductListScreenState
       ),
     );
     if (ok != true) return;
-    await ref.read(adminRepositoryProvider).softDeleteProduct(p.id);
-    invalidateAdminData(ref);
+    await _setActive(p, false);
   }
 
+  Future<void> _setActive(ProductModel p, bool active) async {
+    await ref.read(adminRepositoryProvider).setProductActive(p.id, active);
+    invalidateAdminData(ref);
+  }
 }

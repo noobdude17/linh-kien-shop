@@ -165,7 +165,7 @@ class _AdminOrderManagementScreenState
               Text(
                 Formatter.price(o.totalAmount),
                 style: const TextStyle(
-                  color: AppColors.primary,
+                  color: AppColors.adminPrimary,
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
                 ),
