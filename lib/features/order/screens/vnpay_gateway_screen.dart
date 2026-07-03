@@ -59,6 +59,10 @@ class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.white)
+      // ponytail: một số trang cổng (VNPay) render trắng cho WebView vì UA mặc
+      // định có token "; wv)". Ép UA Chrome thường để trang phục vụ như Chrome PC.
+      ..setUserAgent('Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
+          '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36')
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (p) => _d('progress=$p%'),
         onPageStarted: (u) {
