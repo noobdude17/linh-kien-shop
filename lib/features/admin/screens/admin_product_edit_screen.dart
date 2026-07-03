@@ -10,10 +10,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_buttons.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../data/models/category_model.dart';
+import '../../../data/repositories/brand_repository.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/models/product_variant.dart';
 import '../../../routes/app_routes.dart';
 import '../../product/providers/product_providers.dart';
+import '../../product/utils/spec_display.dart';
 import '../providers/admin_providers.dart';
 
 class AdminProductEditScreen extends ConsumerStatefulWidget {
@@ -36,8 +38,11 @@ class _AdminProductEditScreenState
   final _stock = TextEditingController();
   final _imageLabel = TextEditingController();
   final _imageUrl = TextEditingController();
-  final _specs = <_Pair>[];
-  final _compatibility = <_Pair>[];
+  final _specs = <_Pair>[]; // dùng khi danh mục không có schema cố định
+  final _specValues = <String, String>{}; // giá trị ban đầu để đổ vào field cứng
+  final _specControllers = <String, TextEditingController>{};
+  // compatibility gốc: giữ key engine tự sinh không nằm trong schema (không xoá).
+  final _originalCompatibility = <String, dynamic>{};
   final _gallery = <TextEditingController>[];
   final _variants = <_VariantDraft>[];
 
@@ -66,8 +71,11 @@ class _AdminProductEditScreenState
     ]) {
       c.dispose();
     }
-    for (final p in [..._specs, ..._compatibility]) {
+    for (final p in _specs) {
       p.dispose();
+    }
+    for (final c in _specControllers.values) {
+      c.dispose();
     }
     for (final v in _variants) {
       v.dispose();
@@ -127,14 +135,27 @@ class _AdminProductEditScreenState
     _rating = p.rating;
     _reviewCount = p.reviewCount;
     _specs.addAll(p.specs.entries.map((e) => _Pair(e.key, e.value)));
-    _compatibility.addAll(
-      p.compatibility.entries.map((e) => _Pair(e.key, '${e.value}')),
-    );
+    // Field cứng lấy giá trị từ compatibility (sản phẩm thật) rồi specs ghi đè.
+    p.compatibility.forEach((k, v) {
+      final s = '$v'.trim();
+      if (s.isNotEmpty) _specValues[k] = s;
+    });
+    _specValues.addAll(p.specs);
+    _originalCompatibility.addAll(p.compatibility);
     _gallery.addAll(p.images.map((url) => TextEditingController(text: url)));
     _variants.addAll(p.variants.map(_VariantDraft.fromVariant));
   }
 
   Widget _form(List<CategoryModel> categories) {
+    // Sản phẩm mới: mặc định danh mục CPU để field thông số tự hiện.
+    if (!_editing && _categoryId == null && categories.isNotEmpty) {
+      final def = categories.firstWhere(
+        (c) => c.id == 'cpu',
+        orElse: () => categories.first,
+      );
+      _categoryId = def.id;
+      _categoryName = def.name;
+    }
     return Form(
       key: _formKey,
       child: ListView(
@@ -143,12 +164,12 @@ class _AdminProductEditScreenState
           _imageSection(),
           const SizedBox(height: 20),
           _field('Tên sản phẩm', _name, isRequired: true),
-          _field('Thương hiệu', _brand),
+          _brandField(),
           DropdownButtonFormField<String>(
             initialValue: categories.any((c) => c.id == _categoryId)
                 ? _categoryId
                 : null,
-            decoration: const InputDecoration(labelText: 'Danh mục'),
+            decoration: InputDecoration(label: _requiredLabel('Danh mục')),
             items: categories
                 .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
                 .toList(),
@@ -182,8 +203,7 @@ class _AdminProductEditScreenState
           ),
           _field('Mô tả', _description, maxLines: 3),
           _field('Nhãn ảnh fallback', _imageLabel),
-          _pairSection('Thông số kỹ thuật', _specs),
-          _pairSection('Compatibility', _compatibility),
+          _specSection(),
           _variantSection(),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
@@ -237,11 +257,14 @@ class _AdminProductEditScreenState
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: ImagePlaceholder(
-                label: _imageLabel.text.isEmpty ? 'IMG' : _imageLabel.text,
-                imageUrl: _imageUrl.text,
-                height: 88,
-                radius: 8,
+              child: GestureDetector(
+                onTap: () => _showImagePreview(_imageUrl.text),
+                child: ImagePlaceholder(
+                  label: _imageLabel.text.isEmpty ? 'IMG' : _imageLabel.text,
+                  imageUrl: _imageUrl.text,
+                  height: 88,
+                  radius: 8,
+                ),
               ),
             ),
           ],
@@ -270,6 +293,17 @@ class _AdminProductEditScreenState
         for (var i = 0; i < _gallery.length; i++)
           Row(
             children: [
+              GestureDetector(
+                onTap: () => _showImagePreview(_gallery[i].text),
+                child: ImagePlaceholder(
+                  label: 'IMG',
+                  imageUrl: _gallery[i].text,
+                  width: 48,
+                  height: 48,
+                  radius: 6,
+                ),
+              ),
+              const SizedBox(width: 8),
               Expanded(child: _field('URL ảnh phụ ${i + 1}', _gallery[i])),
               IconButton(
                 onPressed: () => setState(() => _gallery.removeAt(i).dispose()),
@@ -279,6 +313,171 @@ class _AdminProductEditScreenState
           ),
       ],
     );
+  }
+
+  /// Hãng: dropdown từ collection brands + nút mở CRUD hãng bên cạnh.
+  Widget _brandField() {
+    final brands =
+        ref.watch(brandsProvider).asData?.value ?? const <BrandModel>[];
+    final current = _brand.text.trim();
+    final names = [for (final b in brands) b.name];
+    // Hãng của sản phẩm cũ chưa có trong collection vẫn chọn được.
+    final items = [
+      ...names,
+      if (current.isNotEmpty && !names.contains(current)) current,
+    ];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        children: [
+          Expanded(
+            child: DropdownButtonFormField<String>(
+              // Danh sách hãng đổi (thêm/sửa/xóa) → dựng lại dropdown.
+              key: ValueKey(items.join('|')),
+              initialValue: items.contains(current) ? current : null,
+              isExpanded: true,
+              decoration: const InputDecoration(labelText: 'Thương hiệu'),
+              items: [
+                for (final name in items)
+                  DropdownMenuItem(value: name, child: Text(name)),
+              ],
+              onChanged: (v) => _brand.text = v ?? '',
+            ),
+          ),
+          IconButton(
+            tooltip: 'Thêm / quản lý hãng',
+            onPressed: _showBrandManager,
+            icon: const Icon(
+              Icons.add_business_outlined,
+              color: AppColors.adminAccent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showBrandManager() async {
+    final input = TextEditingController();
+    final repo = ref.read(brandRepositoryProvider);
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Quản lý hãng'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Consumer(
+            builder: (ctx, ref, _) {
+              final brands =
+                  ref.watch(brandsProvider).asData?.value ??
+                  const <BrandModel>[];
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: input,
+                          decoration: const InputDecoration(
+                            hintText: 'Tên hãng mới',
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.add_circle,
+                          color: AppColors.adminAccent,
+                        ),
+                        onPressed: () async {
+                          final name = input.text.trim();
+                          if (name.isEmpty) return;
+                          await repo.add(name);
+                          input.clear();
+                          // Hãng vừa tạo được chọn luôn cho sản phẩm đang sửa.
+                          _brand.text = name;
+                          ref.invalidate(brandsProvider);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (final b in brands)
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            title: Text(b.name),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined, size: 18),
+                                  onPressed: () => _renameBrand(b),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    size: 18,
+                                    color: AppColors.error,
+                                  ),
+                                  onPressed: () async {
+                                    await repo.delete(b.id);
+                                    ref.invalidate(brandsProvider);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+    input.dispose();
+    if (mounted) setState(() {}); // dropdown đọc lại danh sách + hãng đã chọn
+  }
+
+  Future<void> _renameBrand(BrandModel brand) async {
+    final input = TextEditingController(text: brand.name);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Đổi tên hãng'),
+        content: TextField(controller: input, autofocus: true),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, input.text.trim()),
+            child: const Text('Lưu'),
+          ),
+        ],
+      ),
+    );
+    input.dispose();
+    if (newName == null || newName.isEmpty || newName == brand.name) return;
+    // Đổi tên lan sang mọi sản phẩm đang mang tên cũ (danh mục/search khớp theo).
+    await ref.read(brandRepositoryProvider).rename(brand.id, newName);
+    if (_brand.text.trim() == brand.name) _brand.text = newName;
+    ref.invalidate(brandsProvider);
+    invalidateAdminData(ref);
   }
 
   Widget _field(
@@ -294,7 +493,10 @@ class _AdminProductEditScreenState
         controller: controller,
         maxLines: maxLines,
         keyboardType: number ? TextInputType.number : TextInputType.text,
-        decoration: InputDecoration(labelText: label),
+        decoration: InputDecoration(
+          label: isRequired ? _requiredLabel(label) : null,
+          labelText: isRequired ? null : label,
+        ),
         validator: (value) {
           final text = value?.trim() ?? '';
           if (isRequired && text.isEmpty) return 'Bắt buộc';
@@ -306,6 +508,16 @@ class _AdminProductEditScreenState
       ),
     );
   }
+
+  // Nhãn có dấu * đỏ cho trường bắt buộc.
+  Widget _requiredLabel(String label) => Text.rich(
+    TextSpan(
+      text: label,
+      children: const [
+        TextSpan(text: ' *', style: TextStyle(color: AppColors.error)),
+      ],
+    ),
+  );
 
   Widget _pairSection(String title, List<_Pair> pairs) {
     return Column(
@@ -338,6 +550,82 @@ class _AdminProductEditScreenState
     );
   }
 
+  Widget _specSection() {
+    final schema = _categoryId == null ? null : specSchema[_categoryId];
+    if (schema == null) {
+      // Danh mục chưa có field cứng → nhập tự do.
+      return _pairSection('Thông số kỹ thuật', _specs);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 4, bottom: 10),
+          child: Text(
+            'Thông số kỹ thuật',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+        for (final key in schema) _specField(key),
+      ],
+    );
+  }
+
+  Widget _specField(String key) {
+    final label = formatSpecLabel(key);
+    final options = specEnumOptions[key];
+    if (options != null) {
+      final ctrl = _specCtrl(key);
+      final current = ctrl.text.trim();
+      // Giá trị cũ ngoài danh sách chuẩn (dữ liệu import) vẫn chọn được.
+      final items = [
+        ...options,
+        if (current.isNotEmpty && !options.contains(current)) current,
+      ];
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: DropdownButtonFormField<String>(
+          initialValue: current.isEmpty ? null : current,
+          isExpanded: true,
+          decoration: InputDecoration(labelText: label),
+          items: [
+            for (final o in items)
+              DropdownMenuItem(
+                value: o,
+                child: Text(o, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          onChanged: (v) => ctrl.text = v ?? '',
+        ),
+      );
+    }
+    switch (specFieldType(key)) {
+      case SpecFieldType.boolean:
+        final ctrl = _specCtrl(key);
+        // Chuẩn hoá về 'true'/'false' để lưu đúng kiểu bool.
+        final on = isTruthySpec(ctrl.text);
+        if (ctrl.text != 'true' && ctrl.text != 'false') {
+          ctrl.text = on ? 'true' : 'false';
+        }
+        return SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(label, style: const TextStyle(fontSize: 14)),
+          value: on,
+          activeThumbColor: AppColors.adminAccent,
+          onChanged: (v) => setState(() => ctrl.text = v ? 'true' : 'false'),
+        );
+      case SpecFieldType.number:
+        return _field(label, _specCtrl(key), number: true);
+      case SpecFieldType.text:
+        return _field(label, _specCtrl(key));
+    }
+  }
+
+  TextEditingController _specCtrl(String key) => _specControllers.putIfAbsent(
+    key,
+    () => TextEditingController(text: _specValues[key] ?? ''),
+  );
+
   Widget _variantSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,7 +638,8 @@ class _AdminProductEditScreenState
             ),
             const Spacer(),
             TextButton.icon(
-              onPressed: () => setState(() => _variants.add(_VariantDraft())),
+              onPressed: () =>
+                  setState(() => _variants.add(_newVariantDraft())),
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Thêm'),
             ),
@@ -359,11 +648,25 @@ class _AdminProductEditScreenState
         for (var i = 0; i < _variants.length; i++)
           _VariantCard(
             draft: _variants[i],
+            categoryId: _categoryId,
             onRemove: () => setState(() => _variants.removeAt(i).dispose()),
             field: _field,
             pairSection: _pairSection,
           ),
       ],
+    );
+  }
+
+  // Variant mới lấy sẵn thuộc tính từ thông số sản phẩm đang tạo; user chỉnh lại.
+  _VariantDraft _newVariantDraft() {
+    final schema = _categoryId == null ? null : variantSchema[_categoryId];
+    if (schema == null) return _VariantDraft();
+    final vals = _currentSpecValues();
+    return _VariantDraft(
+      seedAttrs: {
+        for (final k in schema)
+          if ((vals[k] ?? '').isNotEmpty) k: vals[k]!,
+      },
     );
   }
 
@@ -394,12 +697,35 @@ class _AdminProductEditScreenState
     }
   }
 
+  void _showImagePreview(String url) {
+    if (url.trim().isEmpty) return;
+    showDialog<void>(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: InteractiveViewer(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(url, fit: BoxFit.contain),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     final id =
         widget.productId ??
         'p_${DateTime.now().millisecondsSinceEpoch.toString()}';
+    // Field cứng ghi cả specs (hiển thị) lẫn compatibility (part-picker).
+    final maps = buildSpecMaps(
+      _categoryId,
+      _currentSpecValues(),
+      _originalCompatibility,
+    );
     final product = ProductModel(
       id: id,
       name: _name.text.trim(),
@@ -421,9 +747,9 @@ class _AdminProductEditScreenState
       categoryName: _categoryName,
       stock: int.parse(_stock.text.trim()),
       isActive: _active,
-      specs: _pairsToStringMap(_specs),
-      variants: _variants.map((v) => v.toVariant()).toList(),
-      compatibility: _pairsToDynamicMap(_compatibility),
+      specs: maps.specs,
+      variants: _variants.map((v) => v.toVariant(_categoryId)).toList(),
+      compatibility: maps.compatibility,
     );
     try {
       await ref.read(adminRepositoryProvider).saveProduct(product);
@@ -440,24 +766,20 @@ class _AdminProductEditScreenState
     }
   }
 
+  /// Giá trị các field thông số hiện tại: schema → theo key cố định; danh mục
+  /// không có schema → từ các cặp key/value tự do.
+  Map<String, String> _currentSpecValues() {
+    final schema = _categoryId == null ? null : specSchema[_categoryId];
+    if (schema == null) return _pairsToStringMap(_specs);
+    return {
+      for (final key in schema) key: _specControllers[key]?.text.trim() ?? '',
+    };
+  }
+
   Map<String, String> _pairsToStringMap(List<_Pair> pairs) => {
     for (final p in pairs)
       if (p.key.text.trim().isNotEmpty) p.key.text.trim(): p.value.text.trim(),
   };
-
-  Map<String, dynamic> _pairsToDynamicMap(List<_Pair> pairs) => {
-    for (final p in pairs)
-      if (p.key.text.trim().isNotEmpty)
-        p.key.text.trim(): _parseDynamic(p.value.text.trim()),
-  };
-
-  dynamic _parseDynamic(String value) {
-    final n = num.tryParse(value);
-    if (n != null) return n;
-    if (value.toLowerCase() == 'true') return true;
-    if (value.toLowerCase() == 'false') return false;
-    return value;
-  }
 
   Widget _error(String message) => Center(
     child: Text(
@@ -470,12 +792,14 @@ class _AdminProductEditScreenState
 class _VariantCard extends StatelessWidget {
   const _VariantCard({
     required this.draft,
+    required this.categoryId,
     required this.onRemove,
     required this.field,
     required this.pairSection,
   });
 
   final _VariantDraft draft;
+  final String? categoryId;
   final VoidCallback onRemove;
   final Widget Function(
     String,
@@ -489,6 +813,7 @@ class _VariantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final attrSchema = categoryId == null ? null : variantSchema[categoryId];
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
@@ -498,21 +823,26 @@ class _VariantCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text(
-                'Variant',
-                style: TextStyle(fontWeight: FontWeight.w700),
+              // ID tự sinh, ổn định để giữ link card listing — không cho sửa tay.
+              Expanded(
+                child: Text(
+                  'Variant · ${draft.id}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
-              const Spacer(),
               IconButton(
                 onPressed: onRemove,
                 icon: const Icon(Icons.delete_outline, color: AppColors.error),
               ),
             ],
           ),
-          field('ID', draft.id, isRequired: true),
           field('Tên', draft.name, isRequired: true),
           Row(
             children: [
@@ -537,7 +867,15 @@ class _VariantCard extends StatelessWidget {
               ),
             ],
           ),
-          pairSection('Thuộc tính variant', draft.attributes),
+          if (attrSchema != null)
+            for (final key in attrSchema)
+              field(
+                formatSpecLabel(key),
+                draft.attrCtrl(key),
+                number: specFieldType(key) == SpecFieldType.number,
+              )
+          else
+            pairSection('Thuộc tính variant', draft.attributes),
         ],
       ),
     );
@@ -559,62 +897,85 @@ class _Pair {
 }
 
 class _VariantDraft {
-  final TextEditingController id;
+  final String id; // tự sinh, ổn định
   final TextEditingController name;
   final TextEditingController price;
   final TextEditingController oldPrice;
   final TextEditingController stock;
-  final List<_Pair> attributes;
+  final Map<String, String> _initialAttrs; // giá trị attribute ban đầu
+  final Map<String, TextEditingController> _attrCtrls = {};
+  final List<_Pair> attributes; // freeform, dùng khi danh mục không có schema
 
-  _VariantDraft()
-    : id = TextEditingController(),
+  static int _seq = 0;
+
+  _VariantDraft({Map<String, String>? seedAttrs})
+    : id = 'v${DateTime.now().millisecondsSinceEpoch}_${_seq++}',
       name = TextEditingController(),
       price = TextEditingController(),
       oldPrice = TextEditingController(),
       stock = TextEditingController(),
+      _initialAttrs = {...?seedAttrs},
       attributes = [];
 
   _VariantDraft.fromVariant(ProductVariant variant)
-    : id = TextEditingController(text: variant.id),
+    : id = variant.id,
       name = TextEditingController(text: variant.name),
       price = TextEditingController(text: variant.price.toStringAsFixed(0)),
       oldPrice = TextEditingController(
         text: variant.oldPrice?.toStringAsFixed(0) ?? '',
       ),
       stock = TextEditingController(text: '${variant.stock}'),
+      _initialAttrs = {
+        for (final e in variant.attributes.entries) e.key: '${e.value}',
+      },
       attributes = variant.attributes.entries
           .map((e) => _Pair(e.key, '${e.value}'))
           .toList();
 
-  ProductVariant toVariant() => ProductVariant(
-    id: id.text.trim(),
-    name: name.text.trim(),
-    price: double.parse(price.text.trim()),
-    oldPrice: oldPrice.text.trim().isEmpty
-        ? null
-        : double.parse(oldPrice.text.trim()),
-    stock: int.parse(stock.text.trim()),
-    attributes: {
-      for (final p in attributes)
-        if (p.key.text.trim().isNotEmpty)
-          p.key.text.trim(): _parseDynamic(p.value.text.trim()),
-    },
+  TextEditingController attrCtrl(String key) => _attrCtrls.putIfAbsent(
+    key,
+    () => TextEditingController(text: _initialAttrs[key] ?? ''),
   );
 
-  dynamic _parseDynamic(String value) {
-    final n = num.tryParse(value);
-    if (n != null) return n;
-    if (value.toLowerCase() == 'true') return true;
-    if (value.toLowerCase() == 'false') return false;
-    return value;
+  ProductVariant toVariant(String? categoryId) {
+    final schema = categoryId == null ? null : variantSchema[categoryId];
+    final attrs = <String, dynamic>{};
+    if (schema != null) {
+      // Giữ key cũ ngoài schema (vd label cho selector RAM grouped) khỏi mất.
+      _initialAttrs.forEach((k, v) {
+        if (!schema.contains(k) && v.trim().isNotEmpty) attrs[k] = v;
+      });
+      for (final key in schema) {
+        final t = _attrCtrls[key]?.text.trim() ?? _initialAttrs[key] ?? '';
+        if (t.isNotEmpty) attrs[key] = parseSpecValue(t);
+      }
+    } else {
+      for (final p in attributes) {
+        if (p.key.text.trim().isNotEmpty) {
+          attrs[p.key.text.trim()] = parseSpecValue(p.value.text.trim());
+        }
+      }
+    }
+    return ProductVariant(
+      id: id,
+      name: name.text.trim(),
+      price: double.parse(price.text.trim()),
+      oldPrice: oldPrice.text.trim().isEmpty
+          ? null
+          : double.parse(oldPrice.text.trim()),
+      stock: int.parse(stock.text.trim()),
+      attributes: attrs,
+    );
   }
 
   void dispose() {
-    id.dispose();
     name.dispose();
     price.dispose();
     oldPrice.dispose();
     stock.dispose();
+    for (final c in _attrCtrls.values) {
+      c.dispose();
+    }
     for (final p in attributes) {
       p.dispose();
     }

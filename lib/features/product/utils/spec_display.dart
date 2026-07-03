@@ -162,6 +162,231 @@ const _fallbackWordMap = {
   'tdp': 'TDP',
 };
 
+/// Ép giá trị chuỗi admin nhập về kiểu gốc (num/bool/string) mà engine
+/// part-picker + wattage calculator mong đợi.
+dynamic parseSpecValue(String value) {
+  final n = num.tryParse(value);
+  if (n != null) return n;
+  if (value.toLowerCase() == 'true') return true;
+  if (value.toLowerCase() == 'false') return false;
+  return value;
+}
+
+/// Từ các field cứng theo danh mục, tạo cùng lúc:
+/// - `specs` (String, để hiển thị bảng thông số)
+/// - `compatibility` (kiểu gốc, để engine part-picker chạy)
+/// [original] là compatibility cũ của sản phẩm: giữ lại các key engine tự sinh
+/// (estimatedPowerWatts, ramSlotsUsed…) không nằm trong schema, không bị xoá.
+({Map<String, String> specs, Map<String, dynamic> compatibility}) buildSpecMaps(
+  String? categoryId,
+  Map<String, String> values,
+  Map<String, dynamic> original,
+) {
+  final schema = categoryId == null ? null : specSchema[categoryId];
+  if (schema == null) {
+    // Danh mục không có field cứng → giữ compatibility gốc, specs từ values.
+    return (
+      specs: {
+        for (final e in values.entries)
+          if (e.value.trim().isNotEmpty) e.key: e.value.trim(),
+      },
+      compatibility: {...original},
+    );
+  }
+  final specs = <String, String>{};
+  final compatibility = {...original};
+  for (final key in schema) {
+    final v = values[key]?.trim() ?? '';
+    if (v.isEmpty) {
+      compatibility.remove(key);
+      continue;
+    }
+    final parsed = parseSpecValue(v);
+    compatibility[key] = parsed;
+    // Bool hiển thị thân thiện (Có/Không) trong bảng thông số.
+    specs[key] = parsed is bool ? (parsed ? 'Có' : 'Không') : v;
+  }
+  return (specs: specs, compatibility: compatibility);
+}
+
+/// Kiểu dữ liệu của field thông số, để form admin render đúng widget
+/// (switch cho bool, bàn phím số cho number).
+enum SpecFieldType { text, number, boolean }
+
+const _boolSpecKeys = {'cpuIntegratedGraphics', 'mbWifi', 'mbBluetooth'};
+
+const _numberSpecKeys = {
+  'cpuCores', 'cpuThreads', 'cpuBaseClockGhz', 'cpuBoostClockGhz',
+  'cpuTdpWatts', 'cpuMaxMemoryGb', 'mbRamSlots', 'mbMaxRamGb', 'mbM2Slots',
+  'mbSataPorts', 'ramCapacityGb', 'ramModuleCount', 'ramSpeedMhz', 'gpuVramGb',
+  'gpuCoreClockMhz', 'gpuBoostClockMhz', 'gpuLengthMm', 'gpuSlotWidth',
+  'gpuRecommendedPsuWatts', 'gpuPowerWatts', 'gpuDisplayPorts', 'gpuHdmiPorts',
+  'storageCapacityGb', 'storageReadSpeedMbps', 'storageWriteSpeedMbps',
+  'psuWattage', 'caseMaxGpuLengthMm', 'caseMaxCoolerHeightMm',
+  'caseMaxRadiatorSizeMm', 'coolerHeightMm', 'coolerRadiatorSizeMm',
+  'coolerFanSlots', 'coolerFanSizeMm', 'coolerTdpRatingWatts',
+  'monitorSizeInch', 'monitorRefreshRateHz', 'mouseDpi', 'mouseWeightGrams',
+};
+
+/// Field thông số dạng enum → form admin render dropdown thay vì nhập tay.
+/// Giá trị cũ ngoài danh sách vẫn được giữ (form tự thêm vào items khi sửa).
+const specEnumOptions = <String, List<String>>{
+  'cpuSocket': ['AM4', 'AM5', 'LGA 1200', 'LGA 1700', 'LGA 1851'],
+  'cpuMemoryType': ['DDR4', 'DDR5', 'DDR4/DDR5'],
+  'mbSocket': ['AM4', 'AM5', 'LGA 1200', 'LGA 1700', 'LGA 1851'],
+  'mbMemoryType': ['DDR4', 'DDR5', 'DDR4/DDR5'],
+  'mbFormFactor': ['ATX', 'E-ATX', 'Micro-ATX', 'Mini-ITX'],
+  'ramMemoryType': ['DDR4', 'DDR5'],
+  'ramFormFactor': ['UDIMM', 'SODIMM'],
+  'gpuMemoryType': ['GDDR6', 'GDDR6X', 'GDDR7'],
+  'storageType': ['SSD', 'HDD'],
+  'storageInterface': [
+    'SATA',
+    'PCIe 3.0 x4 NVMe',
+    'PCIe 4.0 x4 NVMe',
+    'PCIe 5.0 x4 NVMe',
+  ],
+  'storageFormFactor': ['M.2 2280', '2.5-inch', '3.5-inch'],
+  'psuEfficiency': [
+    '80 Plus Bronze',
+    '80 Plus Gold',
+    '80 Plus Platinum',
+    '80 Plus Titanium',
+  ],
+  'psuModular': ['Fully modular', 'Semi-modular', 'Non-modular'],
+  'psuFormFactor': ['ATX', 'SFX', 'SFX-L'],
+  'coolerType': ['Air', 'AIO liquid'],
+  'monitorPanelType': ['IPS', 'VA', 'TN', 'OLED', 'QD-OLED'],
+  'keyboardConnection': ['Wired', 'Wireless'],
+  'mouseConnection': ['Wired', 'Wireless'],
+};
+
+SpecFieldType specFieldType(String key) {
+  if (_boolSpecKeys.contains(key)) return SpecFieldType.boolean;
+  if (_numberSpecKeys.contains(key)) return SpecFieldType.number;
+  return SpecFieldType.text;
+}
+
+/// 'true'/'Có'/'1'/'yes' → true (chấp nhận cả dữ liệu cũ).
+bool isTruthySpec(String value) {
+  final v = value.trim().toLowerCase();
+  return v == 'true' || v == 'có' || v == 'co' || v == '1' || v == 'yes';
+}
+
+/// Thuộc tính variant cố định theo danh mục (ram/storage). Khớp key mà
+/// product_listing_adapter đọc để tạo card variant.
+const variantSchema = <String, List<String>>{
+  'ram': ['ramMemoryType', 'ramCapacityGb', 'ramModuleCount', 'ramSpeedMhz'],
+  'storage': [
+    'storageCapacityGb',
+    'storageReadSpeedMbps',
+    'storageWriteSpeedMbps',
+  ],
+};
+
+/// Trường thông số cố định theo danh mục (admin chỉ điền giá trị vào từng mục).
+/// Nhãn lấy từ [formatSpecLabel]. Danh mục không có trong đây (laptop, accessory…)
+/// dùng nhập tự do key/value.
+const specSchema = <String, List<String>>{
+  'cpu': [
+    'cpuSocket',
+    'cpuCores',
+    'cpuThreads',
+    'cpuBaseClockGhz',
+    'cpuBoostClockGhz',
+    'cpuTdpWatts',
+    'cpuIntegratedGraphics',
+    'cpuMemoryType',
+    'cpuMaxMemoryGb',
+    'cpuL2Cache',
+    'cpuL3Cache',
+    'cpuManufacturingTech',
+  ],
+  'mainboard': [
+    'mbSocket',
+    'mbChipset',
+    'mbMemoryType',
+    'mbFormFactor',
+    'mbRamSlots',
+    'mbMaxRamGb',
+    'mbM2Slots',
+    'mbSataPorts',
+    'mbPcieVersion',
+    'mbWifi',
+    'mbBluetooth',
+  ],
+  'ram': [
+    'ramMemoryType',
+    'ramCapacityGb',
+    'ramModuleCount',
+    'ramSpeedMhz',
+    'ramFormFactor',
+  ],
+  'gpu': [
+    'gpuChipset',
+    'gpuVramGb',
+    'gpuMemoryType',
+    'gpuCoreClockMhz',
+    'gpuBoostClockMhz',
+    'gpuLengthMm',
+    'gpuSlotWidth',
+    'gpuRecommendedPsuWatts',
+    'gpuPowerConnectors',
+    'gpuPowerWatts',
+    'gpuPcieVersion',
+    'gpuDisplayPorts',
+    'gpuHdmiPorts',
+  ],
+  'storage': [
+    'storageType',
+    'storageInterface',
+    'storageFormFactor',
+    'storageCapacityGb',
+    'storageReadSpeedMbps',
+    'storageWriteSpeedMbps',
+  ],
+  'psu': [
+    'psuWattage',
+    'psuFormFactor',
+    'psuEfficiency',
+    'psuModular',
+    'psuPowerConnectors',
+  ],
+  'case': [
+    'caseSupportedMotherboardFormFactors',
+    'caseMaxGpuLengthMm',
+    'caseMaxCoolerHeightMm',
+    'caseMaxRadiatorSizeMm',
+    'casePsuFormFactor',
+    'caseDriveBays',
+    'caseFanSupport',
+  ],
+  'cooler': [
+    'coolerType',
+    'coolerSupportedSockets',
+    'coolerHeightMm',
+    'coolerRadiatorSizeMm',
+    'coolerFanSlots',
+    'coolerFanSizeMm',
+    'coolerTdpRatingWatts',
+    'coolerNoise',
+  ],
+  'monitor': [
+    'monitorSizeInch',
+    'monitorResolution',
+    'monitorRefreshRateHz',
+    'monitorPanelType',
+    'monitorAdaptiveSync',
+    'monitorAspectRatio',
+    'monitorBrightness',
+    'monitorContrastRatio',
+    'monitorResponseTime',
+    'monitorPorts',
+  ],
+  'keyboard': ['keyboardConnection', 'keyboardLayout', 'keyboardSwitchType'],
+  'mouse': ['mouseConnection', 'mouseDpi', 'mouseWeightGrams'],
+};
+
 const _labelMap = {
   // CPU
   'cpuSocket': 'Socket',
