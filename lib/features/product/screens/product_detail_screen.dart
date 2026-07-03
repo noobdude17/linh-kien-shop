@@ -41,6 +41,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   bool _isAdding = false;
   bool _tracked = false;
   ProductVariant? _selectedVariant;
+  ScaffoldMessengerState? _messenger;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _messenger = ScaffoldMessenger.of(context);
+  }
+
+  @override
+  void dispose() {
+    // Đóng snackbar so sánh khi rời trang (không dùng context trong dispose).
+    _messenger?.clearSnackBars();
+    super.dispose();
+  }
 
   void _addToCart(ProductModel p, {required bool buyNow}) {
     if (_isAdding) return;
@@ -52,6 +66,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           duration: const Duration(seconds: 2),
           action: SnackBarAction(
             label: 'Đăng nhập',
+            textColor: Colors.white,
             onPressed: () => context.go(AppRoutes.login),
           ),
         ),
@@ -109,10 +124,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       }
     }
     notifier.toggle(p);
-    ScaffoldMessenger.of(context).showSnackBar(
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
       SnackBar(
         content: Text(isIn ? 'Đã xóa khỏi so sánh' : 'Đã thêm vào so sánh'),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 5),
         action: isIn
             ? null
             : SnackBarAction(
