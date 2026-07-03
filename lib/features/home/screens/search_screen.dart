@@ -65,8 +65,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               GestureDetector(
                 onTap: () {
-                  if (_controller.text.trim().isNotEmpty) {
-                    _submit(_controller.text);
+                  if (_controller.text.isNotEmpty) {
+                    setState(() => _controller.clear());
                   } else {
                     context.go(AppRoutes.home);
                   }

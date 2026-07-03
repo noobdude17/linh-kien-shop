@@ -6,16 +6,62 @@ import '../models/category_model.dart';
 import '../models/product_model.dart';
 import '../product_listing_adapter.dart';
 
+/// Query keywords that mean "show me this whole product group". When a query
+/// resolves to a category, we match by categoryId instead of fuzzy spec text —
+/// otherwise "cpu" also drags in coolers/mainboards whose specs mention "CPU".
+const _categoryAliases = <String, String>{
+  'cpu': 'cpu', 'processor': 'cpu', 'vi xử lý': 'cpu', 'chip': 'cpu',
+  'ram': 'ram', 'memory': 'ram', 'bộ nhớ': 'ram', 'ddr': 'ram',
+  'gpu': 'gpu', 'vga': 'gpu', 'card đồ họa': 'gpu', 'graphics': 'gpu',
+  'storage': 'storage', 'ssd': 'storage', 'hdd': 'storage', 'nvme': 'storage',
+  'ổ cứng': 'storage', 'lưu trữ': 'storage',
+  'mainboard': 'mainboard', 'motherboard': 'mainboard', 'bo mạch': 'mainboard',
+  'main': 'mainboard',
+  'psu': 'psu', 'nguồn': 'psu', 'power supply': 'psu',
+  'cooler': 'cooler', 'tản nhiệt': 'cooler', 'tản': 'cooler',
+  'laptop': 'laptop',
+  'monitor': 'monitor', 'màn hình': 'monitor',
+  'keyboard': 'keyboard', 'bàn phím': 'keyboard',
+  'mouse': 'mouse', 'chuột': 'mouse',
+  'case': 'case', 'vỏ máy': 'case', 'thùng máy': 'case',
+  'accessory': 'accessory', 'phụ kiện': 'accessory',
+};
+
+/// Strips Vietnamese diacritics so "màn hình" and "man hinh" both resolve.
+String _stripDiacritics(String s) {
+  const from = 'àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệ'
+      'ìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ';
+  const to = 'aaaaaaaaaaaaaaaaaeeeeeeeeeee'
+      'iiiiiooooooooooooooooouuuuuuuuuuuyyyyyd';
+  final buffer = StringBuffer();
+  for (final ch in s.split('')) {
+    final i = from.indexOf(ch);
+    buffer.write(i == -1 ? ch : to[i]);
+  }
+  return buffer.toString();
+}
+
+/// Alias lookup keyed by diacritic-stripped text, so "nguon", "man hinh",
+/// "o cung" resolve the same as their accented forms.
+final _normalizedCategoryAliases = {
+  for (final e in _categoryAliases.entries) _stripDiacritics(e.key): e.value,
+};
+
 /// Returns true if all whitespace-separated tokens in [query] appear in at
 /// least one of: name, brand, categoryName, or any specs key/value.
 /// Handles queries like "16gb ram", "ddr5", "am4", "1tb", "6000mhz".
 bool _matchesSearchQuery(ProductModel p, String query) {
-  final tokens = query.toLowerCase().split(RegExp(r'\s+')).where((t) => t.isNotEmpty);
+  final q = query.toLowerCase().trim();
+  final categoryId = _normalizedCategoryAliases[_stripDiacritics(q)];
+  if (categoryId != null) return p.categoryId.toLowerCase() == categoryId;
+
+  final tokens = q.split(RegExp(r'\s+')).where((t) => t.isNotEmpty);
   if (tokens.isEmpty) return false;
   final fields = [
     p.name.toLowerCase(),
     p.brand.toLowerCase(),
     p.categoryName.toLowerCase(),
+    p.categoryId.toLowerCase(),
     ...p.specs.keys.map((k) => k.toLowerCase()),
     ...p.specs.values.map((v) => v.toLowerCase()),
   ];
