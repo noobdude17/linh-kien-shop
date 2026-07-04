@@ -27,8 +27,21 @@ class AppDimens {
   static const fabSize = 56.0;
   static const minTapTarget = 44.0;
   static const navIconSize = 21.0;
-  static const productImageHeight = 140.0;
+  static const productImageHeight = 124.0;
   static const heroImageHeight = 300.0;
+
+  static double productGridAspectRatio(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+
+    if (width <= 340 && textScale >= 1.2) return 0.50;
+    if (width <= 360 || textScale >= 1.2) return 0.56;
+    return 0.62;
+  }
+
+  static bool isNarrowPhone(BuildContext context) =>
+      MediaQuery.sizeOf(context).width <= 360 ||
+      MediaQuery.textScalerOf(context).scale(1) >= 1.2;
 
   // Shadows
   static const cardShadow = <BoxShadow>[

@@ -33,11 +33,11 @@ class WishlistScreen extends ConsumerWidget {
               )
             : GridView.builder(
                 padding: const EdgeInsets.all(AppDimens.screenPadding),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   mainAxisSpacing: AppDimens.gap,
                   crossAxisSpacing: AppDimens.gap,
-                  childAspectRatio: 0.62,
+                  childAspectRatio: AppDimens.productGridAspectRatio(context),
                 ),
                 itemCount: products.length,
                 itemBuilder: (_, i) => ProductCard(

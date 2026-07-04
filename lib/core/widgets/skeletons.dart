@@ -93,11 +93,11 @@ class ProductGridSkeleton extends StatelessWidget {
     return GridView.builder(
       padding: const EdgeInsets.all(AppDimens.screenPadding),
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: AppDimens.gap,
         crossAxisSpacing: AppDimens.gap,
-        childAspectRatio: 0.62,
+        childAspectRatio: AppDimens.productGridAspectRatio(context),
       ),
       itemCount: count,
       itemBuilder: (_, _) => const ProductCardSkeleton(),
@@ -205,7 +205,11 @@ class CategoryRowSkeleton extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: AppDimens.gap),
         itemBuilder: (_, _) => Column(
           children: const [
-            SkeletonBox(width: 56, height: 56, radius: BorderRadius.all(Radius.circular(16))),
+            SkeletonBox(
+              width: 56,
+              height: 56,
+              radius: BorderRadius.all(Radius.circular(16)),
+            ),
             SizedBox(height: 8),
             SkeletonBox(width: 48, height: 10),
           ],

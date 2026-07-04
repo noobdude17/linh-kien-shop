@@ -22,12 +22,22 @@ class SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: AppTextStyles.sectionHeading),
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.sectionHeading,
+            ),
+          ),
+          if (actionLabel != null) const SizedBox(width: 12),
           if (actionLabel != null)
             GestureDetector(
               onTap: onAction,
               child: Text(
                 actionLabel!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.accentBlue,
                   fontSize: 14,

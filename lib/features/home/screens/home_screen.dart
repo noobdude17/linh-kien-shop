@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -209,7 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                cacheExtent: 900,
+                scrollCacheExtent: const ScrollCacheExtent.pixels(900),
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
@@ -285,13 +286,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           (_, _) => const ProductCardSkeleton(),
                           childCount: 4,
                         ),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: AppDimens.gap,
-                              crossAxisSpacing: AppDimens.gap,
-                              childAspectRatio: 0.62,
-                            ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppDimens.gap,
+                          crossAxisSpacing: AppDimens.gap,
+                          childAspectRatio: AppDimens.productGridAspectRatio(
+                            context,
+                          ),
+                        ),
                       ),
                     )
                   else if (_error != null)
@@ -316,13 +318,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           childCount: _products.length,
                         ),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: AppDimens.gap,
-                              crossAxisSpacing: AppDimens.gap,
-                              childAspectRatio: 0.62,
-                            ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppDimens.gap,
+                          crossAxisSpacing: AppDimens.gap,
+                          childAspectRatio: AppDimens.productGridAspectRatio(
+                            context,
+                          ),
+                        ),
                       ),
                     ),
                   if (_isLoadingMore)
@@ -399,25 +402,30 @@ class _HomeHeader extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.bolt_rounded,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 4),
-                      const Text(
-                        'Linh Kiện Shop',
-                        style: TextStyle(
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.bolt_rounded,
                           color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+                          size: 22,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        const Flexible(
+                          child: Text(
+                            'Linh Kiện Shop',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const Spacer(),
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -522,11 +530,15 @@ class _HomeHeader extends ConsumerWidget {
                         size: 20,
                       ),
                       SizedBox(width: 8),
-                      Text(
-                        'Tìm kiếm CPU, RAM, Laptop...',
-                        style: TextStyle(
-                          color: AppColors.textTertiary,
-                          fontSize: 14,
+                      Expanded(
+                        child: Text(
+                          'Tìm kiếm CPU, RAM, Laptop...',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],

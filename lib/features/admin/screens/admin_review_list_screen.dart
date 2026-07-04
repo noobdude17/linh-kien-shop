@@ -140,11 +140,15 @@ class _AdminReviewListScreenState extends ConsumerState<AdminReviewListScreen> {
             children: [
               const Icon(Icons.star, size: 14, color: AppColors.star),
               const SizedBox(width: 4),
-              Text(
-                '${review.rating.toStringAsFixed(1)} · ${review.userName} · ${Formatter.date(review.createdAt)}',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
+              Expanded(
+                child: Text(
+                  '${review.rating.toStringAsFixed(1)} · ${review.userName} · ${Formatter.date(review.createdAt)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],

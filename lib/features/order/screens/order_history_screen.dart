@@ -108,15 +108,19 @@ class OrderHistoryScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                o.code,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
+              Expanded(
+                child: Text(
+                  o.code,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               StatusBadge(status: o.status),
             ],
           ),
@@ -159,7 +163,6 @@ class OrderHistoryScreen extends ConsumerWidget {
           ),
           const Divider(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'Tổng tiền',

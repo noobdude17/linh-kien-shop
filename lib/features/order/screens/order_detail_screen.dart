@@ -133,15 +133,19 @@ class _OrderDetailBodyState extends ConsumerState<_OrderDetailBody> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    order.code,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
+                  Expanded(
+                    child: Text(
+                      order.code,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   _statusChip(order.status),
                 ],
               ),
@@ -205,11 +209,16 @@ class _OrderDetailBodyState extends ConsumerState<_OrderDetailBody> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        Formatter.price(item.price * item.quantity),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
+                      Flexible(
+                        child: Text(
+                          Formatter.price(item.price * item.quantity),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],

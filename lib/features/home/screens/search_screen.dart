@@ -86,7 +86,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         children: [
           if (recent.isNotEmpty) ...[
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Tìm kiếm gần đây', style: AppTextStyles.sectionHeading),
                 GestureDetector(

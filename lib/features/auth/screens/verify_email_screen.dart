@@ -73,58 +73,56 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
         title: const Text('Xác nhận email'),
         automaticallyImplyLeading: false,
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: const BoxDecoration(
-                color: AppColors.accentBlueBg,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: const Text('✉️', style: TextStyle(fontSize: 32)),
+        children: [
+          const SizedBox(height: 24),
+          Container(
+            width: 80,
+            height: 80,
+            decoration: const BoxDecoration(
+              color: AppColors.accentBlueBg,
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Đã gửi liên kết xác nhận tới\n$email',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
+            alignment: Alignment.center,
+            child: const Text('✉️', style: TextStyle(fontSize: 32)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Đã gửi liên kết xác nhận tới\n$email',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Mở email, bấm vào liên kết, rồi quay lại đây.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 28),
-            _checking
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: CircularProgressIndicator(),
-                  )
-                : PrimaryButton(label: 'Tôi đã xác nhận', onPressed: _check),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: _resending ? null : _resend,
-              child: Text(_resending ? 'Đang gửi...' : 'Gửi lại liên kết'),
-            ),
-            const Spacer(),
-            TextButton(
-              onPressed: () async {
-                await ref.read(authRepositoryProvider).signOut();
-                if (context.mounted) context.go(AppRoutes.login);
-              },
-              child: const Text('Dùng tài khoản khác'),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Mở email, bấm vào liên kết, rồi quay lại đây.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 28),
+          _checking
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: CircularProgressIndicator(),
+                )
+              : PrimaryButton(label: 'Tôi đã xác nhận', onPressed: _check),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: _resending ? null : _resend,
+            child: Text(_resending ? 'Đang gửi...' : 'Gửi lại liên kết'),
+          ),
+          const SizedBox(height: 24),
+          TextButton(
+            onPressed: () async {
+              await ref.read(authRepositoryProvider).signOut();
+              if (context.mounted) context.go(AppRoutes.login);
+            },
+            child: const Text('Dùng tài khoản khác'),
+          ),
+        ],
       ),
     );
   }

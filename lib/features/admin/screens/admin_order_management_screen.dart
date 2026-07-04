@@ -132,15 +132,19 @@ class _AdminOrderManagementScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                o.code,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
+              Expanded(
+                child: Text(
+                  o.code,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               StatusBadge(status: o.status),
             ],
           ),
@@ -156,18 +160,30 @@ class _AdminOrderManagementScreenState
           ),
           const Divider(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Tổng tiền',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              const Expanded(
+                child: Text(
+                  'Tổng tiền',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
-              Text(
-                Formatter.price(o.totalAmount),
-                style: const TextStyle(
-                  color: AppColors.adminPrimary,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  Formatter.price(o.totalAmount),
+                  textAlign: TextAlign.end,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.adminPrimary,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],

@@ -39,16 +39,28 @@ class AdminDashboardScreen extends ConsumerWidget {
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: AppDimens.gap,
               crossAxisSpacing: AppDimens.gap,
-              childAspectRatio: 1.55,
+              childAspectRatio: 0.95,
               children: [
-                _statCard(Icons.inventory_2_outlined, 'Sản phẩm đang bán',
-                    '${s.activeProducts}'),
-                _statCard(Icons.receipt_long_outlined, 'Tổng đơn hàng',
-                    '${s.totalOrders}'),
-                _statCard(Icons.pending_actions_outlined, 'Đơn chờ xử lý',
-                    '${s.pendingOrders}'),
-                _statCard(Icons.payments_outlined, 'Doanh thu',
-                    Formatter.price(s.deliveredRevenue)),
+                _statCard(
+                  Icons.inventory_2_outlined,
+                  'Sản phẩm đang bán',
+                  '${s.activeProducts}',
+                ),
+                _statCard(
+                  Icons.receipt_long_outlined,
+                  'Tổng đơn hàng',
+                  '${s.totalOrders}',
+                ),
+                _statCard(
+                  Icons.pending_actions_outlined,
+                  'Đơn chờ xử lý',
+                  '${s.pendingOrders}',
+                ),
+                _statCard(
+                  Icons.payments_outlined,
+                  'Doanh thu',
+                  Formatter.price(s.deliveredRevenue),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -216,24 +228,23 @@ class _RevenueChart extends StatelessWidget {
                 final height = maxValue == 0
                     ? 8.0
                     : 8 + values[i] / maxValue * 92;
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      width: 22,
-                      height: height,
-                      decoration: const BoxDecoration(
-                        color: AppColors.adminAccent,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(4),
+                return Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 22,
+                        height: height,
+                        decoration: const BoxDecoration(
+                          color: AppColors.adminAccent,
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(4),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    SizedBox(
-                      width: 38,
-                      child: Text(
+                      const SizedBox(height: 4),
+                      Text(
                         labels[i],
                         textAlign: TextAlign.center,
                         maxLines: 1,
@@ -243,8 +254,8 @@ class _RevenueChart extends StatelessWidget {
                           color: AppColors.textSecondary,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               }),
             ),
@@ -254,4 +265,3 @@ class _RevenueChart extends StatelessWidget {
     );
   }
 }
-

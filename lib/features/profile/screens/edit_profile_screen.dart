@@ -66,7 +66,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           lockAspectRatio: true,
           cropStyle: CropStyle.circle,
         ),
-        IOSUiSettings(title: 'Cắt ảnh đại diện', aspectRatioLockEnabled: true),
       ],
     );
     if (cropped == null) return; // huỷ ở màn cắt

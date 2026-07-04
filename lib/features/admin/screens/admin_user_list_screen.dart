@@ -124,7 +124,9 @@ class _AdminUserListScreenState extends ConsumerState<AdminUserListScreen> {
                     : AppColors.adminSurfaceTint,
                 child: Icon(
                   user.isAdmin ? Icons.admin_panel_settings : Icons.person,
-                  color: user.isLocked ? AppColors.error : AppColors.adminAccent,
+                  color: user.isLocked
+                      ? AppColors.error
+                      : AppColors.adminAccent,
                 ),
               ),
               const SizedBox(width: 12),
@@ -202,7 +204,9 @@ class _AdminUserListScreenState extends ConsumerState<AdminUserListScreen> {
                         ? AppColors.success
                         : AppColors.error,
                     side: BorderSide(
-                      color: user.isLocked ? AppColors.success : AppColors.error,
+                      color: user.isLocked
+                          ? AppColors.success
+                          : AppColors.error,
                     ),
                     visualDensity: VisualDensity.compact,
                   ),
@@ -216,7 +220,10 @@ class _AdminUserListScreenState extends ConsumerState<AdminUserListScreen> {
 
   Widget _badge(String label, Color bg, Color fg) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-    decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
+    decoration: BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(6),
+    ),
     child: Text(
       label,
       style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w700),
@@ -347,7 +354,7 @@ class _UserEditSheetState extends ConsumerState<_UserEditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
