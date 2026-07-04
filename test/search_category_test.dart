@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:linh_kien_shop/data/models/product_model.dart';
 import 'package:linh_kien_shop/data/repositories/product_repository.dart';
 
 void main() {
@@ -31,5 +32,37 @@ void main() {
   test('non-category query still fuzzy-matches specs/name', () async {
     final results = await repo.search('ddr5');
     expect(results, isNotEmpty);
+  });
+
+  test('hardware shorthand matches storage, speed, and memory specs', () async {
+    final twoTbResults = await repo.search('2tb');
+    final mhzResults = await repo.search('6000mhz');
+    final gddrResults = await repo.search('gddr6');
+
+    expect(twoTbResults, isNotEmpty);
+    expect(mhzResults, isNotEmpty);
+    expect(gddrResults, isNotEmpty);
+  });
+
+  test('shared product matcher supports numeric compatibility aliases', () {
+    const products = [
+      ProductModel(
+        id: 'ram-4000',
+        name: 'Test DDR4 RAM',
+        price: 1,
+        categoryId: 'ram',
+        compatibility: {'ramSpeedMhz': 4000},
+      ),
+      ProductModel(
+        id: 'storage-4tb',
+        name: 'Test NVMe Storage',
+        price: 1,
+        categoryId: 'storage',
+        compatibility: {'storageCapacityGb': 4000},
+      ),
+    ];
+
+    expect(matchesProductSearchQuery(products[0], '4000mhz'), isTrue);
+    expect(matchesProductSearchQuery(products[1], '4tb'), isTrue);
   });
 }

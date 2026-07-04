@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -30,6 +31,7 @@ class AdminProductEditScreen extends ConsumerStatefulWidget {
 class _AdminProductEditScreenState
     extends ConsumerState<AdminProductEditScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _scrollController = ScrollController();
   final _name = TextEditingController();
   final _brand = TextEditingController();
   final _description = TextEditingController();
@@ -59,6 +61,7 @@ class _AdminProductEditScreenState
 
   @override
   void dispose() {
+    _scrollController.dispose();
     for (final c in [
       _name,
       _brand,
@@ -95,9 +98,7 @@ class _AdminProductEditScreenState
       appBar: AppBar(
         backgroundColor: AppColors.adminAccent,
         foregroundColor: Colors.white,
-        leading: BackButton(
-          onPressed: () => context.go(AppRoutes.adminProducts),
-        ),
+        leading: BackButton(onPressed: _leaveEditor),
         title: Text(_editing ? 'Sửa sản phẩm' : 'Thêm sản phẩm'),
       ),
       body: productAsync.when(
@@ -125,8 +126,10 @@ class _AdminProductEditScreenState
     _name.text = p.name;
     _brand.text = p.brand;
     _description.text = p.description;
-    _price.text = p.price.toStringAsFixed(0);
-    _oldPrice.text = p.oldPrice?.toStringAsFixed(0) ?? '';
+    _price.text = _formatVndInput(p.price.toStringAsFixed(0));
+    _oldPrice.text = p.oldPrice == null
+        ? ''
+        : _formatVndInput(p.oldPrice!.toStringAsFixed(0));
     _stock.text = '${p.stock}';
     _imageLabel.text = p.imageLabel;
     _imageUrl.text = p.imageUrl;
@@ -159,77 +162,89 @@ class _AdminProductEditScreenState
     }
     return Form(
       key: _formKey,
-      child: ListView(
+      child: SingleChildScrollView(
+        controller: _scrollController,
         padding: const EdgeInsets.all(18),
-        children: [
-          _imageSection(),
-          const SizedBox(height: 20),
-          _field('Tên sản phẩm', _name, isRequired: true),
-          _brandField(),
-          DropdownButtonFormField<String>(
-            initialValue: categories.any((c) => c.id == _categoryId)
-                ? _categoryId
-                : null,
-            decoration: InputDecoration(label: _requiredLabel('Danh mục')),
-            items: categories
-                .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
-                .toList(),
-            validator: (v) => v == null ? 'Vui lòng chọn danh mục' : null,
-            onChanged: (id) {
-              final cat = categories.firstWhere((c) => c.id == id);
-              setState(() {
-                _categoryId = cat.id;
-                _categoryName = cat.name;
-              });
-            },
-          ),
-          const SizedBox(height: 14),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: 560,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _field(
-                      'Giá',
-                      _price,
-                      number: true,
-                      isRequired: true,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(child: _field('Giá KM', _oldPrice, number: true)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _field(
-                      'Tồn kho',
-                      _stock,
-                      number: true,
-                      isRequired: true,
-                    ),
-                  ),
-                ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _imageSection(),
+            const SizedBox(height: 20),
+            _field('Tên sản phẩm', _name, isRequired: true),
+            _brandField(),
+            DropdownButtonFormField<String>(
+              initialValue: categories.any((c) => c.id == _categoryId)
+                  ? _categoryId
+                  : null,
+              decoration: InputDecoration(label: _requiredLabel('Danh mục')),
+              items: categories
+                  .map(
+                    (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
+                  )
+                  .toList(),
+              validator: (v) => v == null ? 'Vui lòng chọn danh mục' : null,
+              onChanged: (id) {
+                final cat = categories.firstWhere((c) => c.id == id);
+                setState(() {
+                  _categoryId = cat.id;
+                  _categoryName = cat.name;
+                });
+              },
+            ),
+            const SizedBox(height: 14),
+            _pricingFields(),
+            _field('Mô tả', _description, maxLines: 3),
+            _field('Nhãn ảnh fallback', _imageLabel),
+            _specSection(),
+            _variantSection(),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Đang bán', style: TextStyle(fontSize: 14)),
+              value: _active,
+              activeThumbColor: AppColors.success,
+              onChanged: (v) => setState(() => _active = v),
+            ),
+            const SizedBox(height: 8),
+            _saving
+                ? const Center(child: CircularProgressIndicator())
+                : PrimaryButton(label: 'Lưu sản phẩm', onPressed: _save),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _pricingFields() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 520;
+        final fieldWidth = wide
+            ? (constraints.maxWidth - 16) / 3
+            : constraints.maxWidth;
+        return Wrap(
+          spacing: 8,
+          children: [
+            SizedBox(
+              width: fieldWidth,
+              child: _field(
+                'Giá',
+                _price,
+                number: true,
+                money: true,
+                isRequired: true,
               ),
             ),
-          ),
-          _field('Mô tả', _description, maxLines: 3),
-          _field('Nhãn ảnh fallback', _imageLabel),
-          _specSection(),
-          _variantSection(),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Đang bán', style: TextStyle(fontSize: 14)),
-            value: _active,
-            activeThumbColor: AppColors.success,
-            onChanged: (v) => setState(() => _active = v),
-          ),
-          const SizedBox(height: 8),
-          _saving
-              ? const Center(child: CircularProgressIndicator())
-              : PrimaryButton(label: 'Lưu sản phẩm', onPressed: _save),
-        ],
-      ),
+            SizedBox(
+              width: fieldWidth,
+              child: _field('Giá KM', _oldPrice, number: true, money: true),
+            ),
+            SizedBox(
+              width: fieldWidth,
+              child: _field('Tồn kho', _stock, number: true, isRequired: true),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -500,6 +515,7 @@ class _AdminProductEditScreenState
     TextEditingController controller, {
     bool isRequired = false,
     bool number = false,
+    bool money = false,
     int maxLines = 1,
   }) {
     return Padding(
@@ -508,6 +524,7 @@ class _AdminProductEditScreenState
         controller: controller,
         maxLines: maxLines,
         keyboardType: number ? TextInputType.number : TextInputType.text,
+        inputFormatters: money ? const [_VndThousandsInputFormatter()] : null,
         decoration: InputDecoration(
           label: isRequired ? _requiredLabel(label) : null,
           labelText: isRequired ? null : label,
@@ -515,7 +532,10 @@ class _AdminProductEditScreenState
         validator: (value) {
           final text = value?.trim() ?? '';
           if (isRequired && text.isEmpty) return 'Bắt buộc';
-          if (number && text.isNotEmpty && num.tryParse(text) == null) {
+          final numericText = money ? _currencyDigits(text) : text;
+          if (number &&
+              text.isNotEmpty &&
+              (numericText.isEmpty || num.tryParse(numericText) == null)) {
             return 'Sai số';
           }
           return null;
@@ -591,10 +611,14 @@ class _AdminProductEditScreenState
 
   Widget _specField(String key) {
     final label = formatSpecLabel(key);
+    final specCtrl = _specCtrl(key);
+    if (specListKeys.contains(key)) {
+      return _multiChoiceSpecField(key, label, specCtrl);
+    }
     final options = specEnumOptions[key];
     if (options != null) {
       final ctrl = _specCtrl(key);
-      final current = ctrl.text.trim();
+      final current = normalizeSpecInput(key, ctrl.text);
       // Giá trị cũ ngoài danh sách chuẩn (dữ liệu import) vẫn chọn được.
       final items = [
         ...options,
@@ -613,7 +637,7 @@ class _AdminProductEditScreenState
                 child: Text(o, maxLines: 1, overflow: TextOverflow.ellipsis),
               ),
           ],
-          onChanged: (v) => ctrl.text = v ?? '',
+          onChanged: (v) => ctrl.text = normalizeSpecInput(key, v ?? ''),
         ),
       );
     }
@@ -633,9 +657,98 @@ class _AdminProductEditScreenState
           onChanged: (v) => setState(() => ctrl.text = v ? 'true' : 'false'),
         );
       case SpecFieldType.number:
-        return _field(label, _specCtrl(key), number: true);
+        specCtrl.text = normalizeSpecInput(key, specCtrl.text);
+        return _field(label, specCtrl, number: true);
       case SpecFieldType.text:
-        return _field(label, _specCtrl(key));
+        return _field(label, specCtrl);
+    }
+  }
+
+  Widget _multiChoiceSpecField(
+    String key,
+    String label,
+    TextEditingController ctrl,
+  ) {
+    final options = specEnumOptions[key] ?? const <String>[];
+    final selected = splitSpecList(ctrl.text, key: key);
+    final custom = selected.where((item) => !options.contains(item)).toList();
+    final choices = [...options, ...custom];
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: InputDecorator(
+        decoration: InputDecoration(labelText: label),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            for (final option in choices)
+              FilterChip(
+                label: Text(option),
+                selected: selected.contains(option),
+                onSelected: (checked) {
+                  final next = [...selected];
+                  if (checked) {
+                    if (!next.contains(option)) next.add(option);
+                  } else {
+                    next.remove(option);
+                  }
+                  setState(() => ctrl.text = next.join(', '));
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _specInputForController(String key, TextEditingController ctrl) {
+    final label = formatSpecLabel(key);
+    if (specListKeys.contains(key)) {
+      return _multiChoiceSpecField(key, label, ctrl);
+    }
+    final options = specEnumOptions[key];
+    if (options != null) {
+      final current = normalizeSpecInput(key, ctrl.text);
+      final items = [
+        ...options,
+        if (current.isNotEmpty && !options.contains(current)) current,
+      ];
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: DropdownButtonFormField<String>(
+          initialValue: current.isEmpty ? null : current,
+          isExpanded: true,
+          decoration: InputDecoration(labelText: label),
+          items: [
+            for (final o in items)
+              DropdownMenuItem(
+                value: o,
+                child: Text(o, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          onChanged: (v) => ctrl.text = normalizeSpecInput(key, v ?? ''),
+        ),
+      );
+    }
+    switch (specFieldType(key)) {
+      case SpecFieldType.boolean:
+        final on = isTruthySpec(ctrl.text);
+        if (ctrl.text != 'true' && ctrl.text != 'false') {
+          ctrl.text = on ? 'true' : 'false';
+        }
+        return SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(label, style: const TextStyle(fontSize: 14)),
+          value: on,
+          activeThumbColor: AppColors.adminAccent,
+          onChanged: (v) => setState(() => ctrl.text = v ? 'true' : 'false'),
+        );
+      case SpecFieldType.number:
+        ctrl.text = normalizeSpecInput(key, ctrl.text);
+        return _field(label, ctrl, number: true);
+      case SpecFieldType.text:
+        return _field(label, ctrl);
     }
   }
 
@@ -669,6 +782,7 @@ class _AdminProductEditScreenState
             categoryId: _categoryId,
             onRemove: () => setState(() => _variants.removeAt(i).dispose()),
             field: _field,
+            specField: _specInputForController,
             pairSection: _pairSection,
           ),
       ],
@@ -733,7 +847,7 @@ class _AdminProductEditScreenState
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_validateAndRevealFirstError()) return;
     setState(() => _saving = true);
     final id =
         widget.productId ??
@@ -749,10 +863,10 @@ class _AdminProductEditScreenState
       name: _name.text.trim(),
       brand: _brand.text.trim(),
       description: _description.text.trim(),
-      price: double.parse(_price.text.trim()),
-      oldPrice: _oldPrice.text.trim().isEmpty
+      price: _parseCurrency(_price.text),
+      oldPrice: _currencyDigits(_oldPrice.text).isEmpty
           ? null
-          : double.parse(_oldPrice.text.trim()),
+          : _parseCurrency(_oldPrice.text),
       rating: _rating,
       reviewCount: _reviewCount,
       imageLabel: _imageLabel.text.trim(),
@@ -771,8 +885,9 @@ class _AdminProductEditScreenState
     );
     try {
       await ref.read(adminRepositoryProvider).saveProduct(product);
+      ref.invalidate(adminProductProvider(id));
       invalidateAdminData(ref);
-      if (mounted) context.go(AppRoutes.adminProducts);
+      if (mounted) _leaveEditor();
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -782,6 +897,57 @@ class _AdminProductEditScreenState
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  bool _validateAndRevealFirstError() {
+    final valid = _formKey.currentState!.validate();
+    if (!valid) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _revealFirstFormError();
+      });
+    }
+    return valid;
+  }
+
+  void _leaveEditor() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go(AppRoutes.adminProducts);
+  }
+
+  void _revealFirstFormError() {
+    final firstError = _firstInvalidFormFieldContext();
+    if (firstError == null) return;
+    Scrollable.ensureVisible(
+      firstError,
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeOutCubic,
+      alignment: 0.12,
+    );
+  }
+
+  BuildContext? _firstInvalidFormFieldContext() {
+    final root = _formKey.currentContext;
+    if (root == null) return null;
+
+    BuildContext? firstError;
+    void visit(Element element) {
+      if (firstError != null) return;
+      if (element is StatefulElement &&
+          element.state is FormFieldState<dynamic>) {
+        final state = element.state as FormFieldState<dynamic>;
+        if (state.hasError) {
+          firstError = element;
+          return;
+        }
+      }
+      element.visitChildElements(visit);
+    }
+
+    (root as Element).visitChildElements(visit);
+    return firstError;
   }
 
   /// Giá trị các field thông số hiện tại: schema → theo key cố định; danh mục
@@ -813,6 +979,7 @@ class _VariantCard extends StatelessWidget {
     required this.categoryId,
     required this.onRemove,
     required this.field,
+    required this.specField,
     required this.pairSection,
   });
 
@@ -823,10 +990,12 @@ class _VariantCard extends StatelessWidget {
     String,
     TextEditingController, {
     bool isRequired,
+    bool money,
     bool number,
     int maxLines,
   })
   field;
+  final Widget Function(String, TextEditingController) specField;
   final Widget Function(String, List<_Pair>) pairSection;
 
   @override
@@ -869,11 +1038,19 @@ class _VariantCard extends StatelessWidget {
                   'Giá',
                   draft.price,
                   number: true,
+                  money: true,
                   isRequired: true,
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(child: field('Giá KM', draft.oldPrice, number: true)),
+              Expanded(
+                child: field(
+                  'Giá KM',
+                  draft.oldPrice,
+                  number: true,
+                  money: true,
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: field(
@@ -886,12 +1063,7 @@ class _VariantCard extends StatelessWidget {
             ],
           ),
           if (attrSchema != null)
-            for (final key in attrSchema)
-              field(
-                formatSpecLabel(key),
-                draft.attrCtrl(key),
-                number: specFieldType(key) == SpecFieldType.number,
-              )
+            for (final key in attrSchema) specField(key, draft.attrCtrl(key))
           else
             pairSection('Thuộc tính variant', draft.attributes),
         ],
@@ -938,9 +1110,13 @@ class _VariantDraft {
   _VariantDraft.fromVariant(ProductVariant variant)
     : id = variant.id,
       name = TextEditingController(text: variant.name),
-      price = TextEditingController(text: variant.price.toStringAsFixed(0)),
+      price = TextEditingController(
+        text: _formatVndInput(variant.price.toStringAsFixed(0)),
+      ),
       oldPrice = TextEditingController(
-        text: variant.oldPrice?.toStringAsFixed(0) ?? '',
+        text: variant.oldPrice == null
+            ? ''
+            : _formatVndInput(variant.oldPrice!.toStringAsFixed(0)),
       ),
       stock = TextEditingController(text: '${variant.stock}'),
       _initialAttrs = {
@@ -965,7 +1141,7 @@ class _VariantDraft {
       });
       for (final key in schema) {
         final t = _attrCtrls[key]?.text.trim() ?? _initialAttrs[key] ?? '';
-        if (t.isNotEmpty) attrs[key] = parseSpecValue(t);
+        if (t.isNotEmpty) attrs[key] = parseSpecValue(t, key);
       }
     } else {
       for (final p in attributes) {
@@ -977,10 +1153,10 @@ class _VariantDraft {
     return ProductVariant(
       id: id,
       name: name.text.trim(),
-      price: double.parse(price.text.trim()),
-      oldPrice: oldPrice.text.trim().isEmpty
+      price: _parseCurrency(price.text),
+      oldPrice: _currencyDigits(oldPrice.text).isEmpty
           ? null
-          : double.parse(oldPrice.text.trim()),
+          : _parseCurrency(oldPrice.text),
       stock: int.parse(stock.text.trim()),
       attributes: attrs,
     );
@@ -997,5 +1173,41 @@ class _VariantDraft {
     for (final p in attributes) {
       p.dispose();
     }
+  }
+}
+
+String _currencyDigits(String value) => value.replaceAll(RegExp(r'\D'), '');
+
+double _parseCurrency(String value) => double.parse(_currencyDigits(value));
+
+String _formatVndInput(String value) {
+  var digits = _currencyDigits(value);
+  if (digits.isEmpty) return '';
+  digits = digits.replaceFirst(RegExp(r'^0+(?=\d)'), '');
+
+  final buffer = StringBuffer();
+  for (var i = 0; i < digits.length; i++) {
+    final remaining = digits.length - i;
+    buffer.write(digits[i]);
+    if (remaining > 1 && remaining % 3 == 1) {
+      buffer.write('.');
+    }
+  }
+  return buffer.toString();
+}
+
+class _VndThousandsInputFormatter extends TextInputFormatter {
+  const _VndThousandsInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final formatted = _formatVndInput(newValue.text);
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
   }
 }

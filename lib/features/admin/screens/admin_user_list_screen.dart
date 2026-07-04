@@ -9,6 +9,7 @@ import '../../../data/repositories/admin_repository.dart';
 import '../../../routes/app_routes.dart';
 import '../providers/admin_providers.dart';
 import '../widgets/admin_scaffold.dart';
+import '../widgets/admin_search_field.dart';
 
 class AdminUserListScreen extends ConsumerStatefulWidget {
   const AdminUserListScreen({super.key});
@@ -19,47 +20,82 @@ class AdminUserListScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminUserListScreenState extends ConsumerState<AdminUserListScreen> {
-  final _search = TextEditingController();
-  bool? _locked;
+  static const _pageSize = 30;
 
-  AdminUserQuery get _query =>
-      AdminUserQuery(search: _search.text.trim(), locked: _locked, limit: 80);
+  final _search = TextEditingController();
+  final _scrollController = ScrollController();
+  bool? _locked;
+  List<UserModel> _items = [];
+  Object? _cursor;
+  bool _hasMore = true;
+  bool _loading = true;
+  Object? _error;
+
+  AdminUserQuery get _query => AdminUserQuery(
+    search: _search.text.trim(),
+    locked: _locked,
+    limit: _pageSize,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_loadMoreNearBottom);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reloadUsers());
+  }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _search.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final users = ref.watch(adminUsersProvider(_query));
     return AdminScaffold(
       title: 'Quản lý người dùng',
       backRoute: AppRoutes.admin,
       body: Column(
         children: [
           _filters(),
-          Expanded(
-            child: users.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => AdminError(
-                message: 'Không tải được người dùng',
-                onRetry: () => ref.invalidate(adminUsersProvider),
-              ),
-              data: (page) => page.items.isEmpty
-                  ? const AdminEmpty(
-                      message: 'Không có người dùng',
-                      icon: Icons.people_outline,
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(AppDimens.screenPadding),
-                      itemCount: page.items.length,
-                      itemBuilder: (_, i) => _row(page.items[i]),
-                    ),
-            ),
-          ),
+          Expanded(child: _userList()),
         ],
+      ),
+    );
+  }
+
+  Widget _userList() {
+    if (_loading && _items.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null && _items.isEmpty) {
+      return AdminError(
+        message: 'Không tải được người dùng',
+        onRetry: _reloadUsers,
+      );
+    }
+    if (_items.isEmpty) {
+      return const AdminEmpty(
+        message: 'Không có người dùng',
+        icon: Icons.people_outline,
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _reloadUsers,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(AppDimens.screenPadding),
+        itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
+        itemBuilder: (_, i) {
+          if (i >= _items.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return _row(_items[i]);
+        },
       ),
     );
   }
@@ -70,13 +106,10 @@ class _AdminUserListScreenState extends ConsumerState<AdminUserListScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
       child: Column(
         children: [
-          TextField(
+          AdminSearchField(
             controller: _search,
-            decoration: const InputDecoration(
-              hintText: 'Tìm tên hoặc email',
-              prefixIcon: Icon(Icons.search),
-            ),
-            onChanged: (_) => setState(() {}),
+            hintText: 'Tìm tên, email, SĐT...',
+            onChanged: (_) => _reloadUsers(),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -85,17 +118,17 @@ class _AdminUserListScreenState extends ConsumerState<AdminUserListScreen> {
               ChoiceChip(
                 label: const Text('Tất cả'),
                 selected: _locked == null,
-                onSelected: (_) => setState(() => _locked = null),
+                onSelected: (_) => _setLockedFilter(null),
               ),
               ChoiceChip(
                 label: const Text('Đang hoạt động'),
                 selected: _locked == false,
-                onSelected: (_) => setState(() => _locked = false),
+                onSelected: (_) => _setLockedFilter(false),
               ),
               ChoiceChip(
                 label: const Text('Đã khóa'),
                 selected: _locked == true,
-                onSelected: (_) => setState(() => _locked = true),
+                onSelected: (_) => _setLockedFilter(true),
               ),
             ],
           ),
@@ -260,6 +293,7 @@ class _AdminUserListScreenState extends ConsumerState<AdminUserListScreen> {
     if (ok != true) return;
     await ref.read(adminRepositoryProvider).setUserLocked(user.id, locked);
     invalidateAdminData(ref);
+    await _reloadUsers();
   }
 
   Future<void> _confirmDelete(UserModel user) async {
@@ -285,6 +319,7 @@ class _AdminUserListScreenState extends ConsumerState<AdminUserListScreen> {
     if (ok != true) return;
     await ref.read(adminRepositoryProvider).deleteUser(user.id);
     invalidateAdminData(ref);
+    await _reloadUsers();
   }
 
   Future<void> _editUser(UserModel user) async {
@@ -293,7 +328,86 @@ class _AdminUserListScreenState extends ConsumerState<AdminUserListScreen> {
       isScrollControlled: true,
       builder: (_) => _UserEditSheet(user: user),
     );
-    if (saved == true) invalidateAdminData(ref);
+    if (saved == true) {
+      invalidateAdminData(ref);
+      await _reloadUsers();
+    }
+  }
+
+  void _setLockedFilter(bool? locked) {
+    if (_locked == locked) return;
+    setState(() => _locked = locked);
+    _reloadUsers();
+  }
+
+  void _loadMoreNearBottom() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 320) {
+      _loadMoreUsers();
+    }
+  }
+
+  Future<void> _reloadUsers() async {
+    final query = _query;
+    setState(() {
+      _loading = true;
+      _error = null;
+      _hasMore = true;
+      _cursor = null;
+    });
+    try {
+      final page = await ref.read(adminRepositoryProvider).getUsers(query);
+      if (!mounted || query != _query) return;
+      setState(() {
+        _items = page.items;
+        _cursor = page.cursor;
+        _hasMore = page.hasMore;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted || query != _query) return;
+      setState(() {
+        _error = e;
+        _items = [];
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreUsers() async {
+    if (_loading || !_hasMore) return;
+    final query = AdminUserQuery(
+      search: _search.text.trim(),
+      locked: _locked,
+      limit: _pageSize,
+      cursor: _cursor,
+    );
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final page = await ref.read(adminRepositoryProvider).getUsers(query);
+      if (!mounted ||
+          query.search != _query.search ||
+          query.locked != _locked) {
+        return;
+      }
+      final seen = _items.map((u) => u.id).toSet();
+      setState(() {
+        _items = [..._items, ...page.items.where((u) => seen.add(u.id))];
+        _cursor = page.cursor;
+        _hasMore = page.hasMore;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _loading = false;
+      });
+    }
   }
 }
 

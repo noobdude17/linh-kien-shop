@@ -50,22 +50,224 @@ final _normalizedCategoryAliases = {
 /// Returns true if all whitespace-separated tokens in [query] appear in at
 /// least one of: name, brand, categoryName, or any specs key/value.
 /// Handles queries like "16gb ram", "ddr5", "am4", "1tb", "6000mhz".
-bool _matchesSearchQuery(ProductModel p, String query) {
+bool matchesProductSearchQuery(ProductModel p, String query) {
   final q = query.toLowerCase().trim();
   final categoryId = _normalizedCategoryAliases[_stripDiacritics(q)];
   if (categoryId != null) return p.categoryId.toLowerCase() == categoryId;
 
-  final tokens = q.split(RegExp(r'\s+')).where((t) => t.isNotEmpty);
+  final normalizedQuery = normalizeProductSearch(query);
+  if (normalizedQuery.isEmpty) return false;
+  final text = productSearchText(p);
+  if (text.contains(normalizedQuery)) return true;
+
+  final compactText = text.replaceAll(' ', '');
+  final compactQuery = normalizedQuery.replaceAll(' ', '');
+  if (compactQuery.isNotEmpty && compactText.contains(compactQuery)) {
+    return true;
+  }
+
+  final tokens = normalizedQuery
+      .split(' ')
+      .where((token) => token.isNotEmpty)
+      .toList();
   if (tokens.isEmpty) return false;
-  final fields = [
-    p.name.toLowerCase(),
-    p.brand.toLowerCase(),
-    p.categoryName.toLowerCase(),
-    p.categoryId.toLowerCase(),
-    ...p.specs.keys.map((k) => k.toLowerCase()),
-    ...p.specs.values.map((v) => v.toLowerCase()),
+  return tokens.every(
+    (token) => text.contains(token) || compactText.contains(token),
+  );
+}
+
+int productSearchScore(ProductModel product, String query) {
+  final normalizedQuery = normalizeProductSearch(query);
+  if (normalizedQuery.isEmpty) return 0;
+  final text = productSearchText(product);
+  final compactText = text.replaceAll(' ', '');
+  final compactQuery = normalizedQuery.replaceAll(' ', '');
+  var score = 0;
+
+  if (text.contains(normalizedQuery)) score += 80;
+  if (compactQuery.isNotEmpty && compactText.contains(compactQuery)) {
+    score += 100;
+  }
+  if (product.name.toLowerCase().contains(query.toLowerCase().trim())) {
+    score += 120;
+  }
+
+  final queryNumbers = _numbersFromText(normalizedQuery);
+  for (final number in queryNumbers) {
+    if (_productHasExactNumber(product, number)) score += 240;
+  }
+
+  final tokens = normalizedQuery
+      .split(' ')
+      .where((token) => token.isNotEmpty)
+      .toList();
+  for (final token in tokens) {
+    if (text.contains(token)) score += 12;
+    if (compactText.contains(token)) score += 16;
+  }
+
+  return score;
+}
+
+String productSearchText(ProductModel product) {
+  final parts = <String>[
+    product.name,
+    product.brand,
+    product.categoryId,
+    product.categoryName,
+    product.imageLabel,
+    ..._categorySearchAliases(product.categoryId),
+    ...product.specs.keys,
+    ...product.specs.values,
+    ...product.compatibility.keys,
+    ...product.compatibility.values.map(_searchValue),
+    ..._compatibilitySearchAliases(product.compatibility),
   ];
-  return tokens.every((token) => fields.any((f) => f.contains(token)));
+  for (final variant in product.variants) {
+    parts
+      ..add(variant.id)
+      ..add(variant.name)
+      ..addAll(variant.attributes.keys)
+      ..addAll(variant.attributes.values.map(_searchValue))
+      ..addAll(_compatibilitySearchAliases(variant.attributes));
+  }
+  return normalizeProductSearch(parts.join(' '));
+}
+
+String normalizeProductSearch(String value) {
+  return _stripDiacritics(value.toLowerCase())
+      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+}
+
+List<String> _categorySearchAliases(String categoryId) => switch (categoryId) {
+  'cpu' => ['processor', 'vi xu ly', 'bo xu ly'],
+  'mainboard' => ['motherboard', 'main', 'bo mach chu', 'socket'],
+  'ram' => ['memory', 'bo nho', 'ddr', 'gb ram'],
+  'storage' => ['ssd', 'hdd', 'o cung', 'nvme', 'm2', 'tb', 'gb'],
+  'gpu' => ['graphics card', 'vga', 'card man hinh', 'vram'],
+  'psu' => ['power supply', 'nguon', 'watt', 'watts', 'w'],
+  'case' => ['vo may', 'thung may', 'atx', 'micro atx', 'mini itx'],
+  'cooler' => ['tan nhiet', 'aio', 'air cooler', 'radiator'],
+  'monitor' => ['man hinh', 'hz', 'inch'],
+  'keyboard' => ['ban phim'],
+  'mouse' => ['chuot', 'dpi'],
+  _ => const [],
+};
+
+List<String> _compatibilitySearchAliases(Map<String, dynamic> data) {
+  final aliases = <String>[];
+
+  void addCapacityAliases(Object? value, {required String unitContext}) {
+    final number = _numberFromValue(value);
+    if (number == null) return;
+    aliases.add('${_formatSearchNumber(number)}gb');
+    aliases.add('${_formatSearchNumber(number)} gb');
+    aliases.add('${_formatSearchNumber(number)}gb $unitContext');
+    if (number >= 1000) {
+      final tb = number / 1000;
+      aliases.add('${_formatSearchNumber(tb)}tb');
+      aliases.add('${_formatSearchNumber(tb)} tb');
+      aliases.add('${_formatSearchNumber(tb)}tb $unitContext');
+    }
+  }
+
+  void addSpeedAliases(Object? value) {
+    final number = _numberFromValue(value);
+    if (number == null) return;
+    aliases.add('${_formatSearchNumber(number)}mhz');
+    aliases.add('${_formatSearchNumber(number)} mhz');
+    aliases.add('${_formatSearchNumber(number)} mt s');
+    aliases.add('${_formatSearchNumber(number)}mts');
+  }
+
+  void addWattAliases(Object? value) {
+    final number = _numberFromValue(value);
+    if (number == null) return;
+    aliases.add('${_formatSearchNumber(number)}w');
+    aliases.add('${_formatSearchNumber(number)} w');
+    aliases.add('${_formatSearchNumber(number)}watt');
+    aliases.add('${_formatSearchNumber(number)} watts');
+  }
+
+  addCapacityAliases(data['ramCapacityGb'], unitContext: 'ram');
+  addCapacityAliases(data['gpuVramGb'], unitContext: 'vram');
+  addCapacityAliases(data['storageCapacityGb'], unitContext: 'storage');
+  addSpeedAliases(data['ramSpeedMhz']);
+  addWattAliases(data['psuWattage']);
+  addWattAliases(data['gpuPowerWatts']);
+  addWattAliases(data['estimatedPowerWatts']);
+
+  final memoryType = _searchValue(data['ramMemoryType']);
+  if (memoryType.isNotEmpty) {
+    aliases.add(memoryType);
+    aliases.add(memoryType.replaceAll(' ', ''));
+  }
+
+  final socket = _searchValue(data['cpuSocket'] ?? data['mbSocket']);
+  if (socket.isNotEmpty) aliases.add(socket.replaceAll(' ', ''));
+
+  final storageInterface = _searchValue(data['storageInterface']);
+  if (storageInterface.isNotEmpty) {
+    aliases.add(storageInterface);
+    aliases.add(storageInterface.replaceAll('.', ''));
+    aliases.add(storageInterface.replaceAll(' ', ''));
+  }
+
+  return aliases;
+}
+
+bool _productHasExactNumber(ProductModel product, num queryNumber) {
+  final dataMaps = <Map<String, dynamic>>[
+    product.compatibility,
+    if (!product.id.contains(productListingVariantSeparator))
+      for (final variant in product.variants) variant.attributes,
+  ];
+  for (final data in dataMaps) {
+    final relevantValues = [
+      data['ramCapacityGb'],
+      data['ramSpeedMhz'],
+      data['storageCapacityGb'],
+      data['gpuVramGb'],
+      data['psuWattage'],
+    ];
+    for (final value in relevantValues) {
+      final number = _numberFromValue(value);
+      if (number == null) continue;
+      if (_sameSearchNumber(number, queryNumber)) return true;
+      if (number >= 1000 && _sameSearchNumber(number / 1000, queryNumber)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool _sameSearchNumber(num a, num b) => (a - b).abs() < 0.001;
+
+List<num> _numbersFromText(String value) {
+  return RegExp(r'\d+(?:\.\d+)?')
+      .allMatches(value)
+      .map((match) => num.tryParse(match.group(0)!))
+      .whereType<num>()
+      .toList();
+}
+
+num? _numberFromValue(Object? value) {
+  if (value is num) return value;
+  final match = RegExp(r'\d+(?:\.\d+)?').firstMatch(_searchValue(value));
+  return match == null ? null : num.tryParse(match.group(0)!);
+}
+
+String _searchValue(Object? value) {
+  if (value == null) return '';
+  if (value is Iterable) return value.map(_searchValue).join(' ');
+  return '$value';
+}
+
+String _formatSearchNumber(num value) {
+  return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
 }
 
 /// Hợp đồng truy xuất sản phẩm. UI/provider phụ thuộc vào abstract này,
@@ -165,7 +367,7 @@ class MockProductRepository implements ProductRepository {
     final all = [...MockData.featured, ...MockData.gpuList];
     return _delayed(
       expandProductsForListing(all)
-          .where((p) => _matchesSearchQuery(p, query))
+          .where((p) => matchesProductSearchQuery(p, query))
           .toList(),
     );
   }
@@ -295,7 +497,7 @@ class FirestoreProductRepository implements ProductRepository {
         .where('isActive', isEqualTo: true)
         .get(const GetOptions(source: Source.server));
     return expandProductsForListing(snap.docs.map(ProductModel.fromFirestore))
-        .where((p) => _matchesSearchQuery(p, query))
+        .where((p) => matchesProductSearchQuery(p, query))
         .toList();
   }
 
@@ -334,7 +536,7 @@ class FirestoreProductRepository implements ProductRepository {
           ProductModel.fromFirestore(doc),
         );
         for (final product in products) {
-          if (_matchesSearchQuery(product, qText)) {
+          if (matchesProductSearchQuery(product, qText)) {
             matches.add(product);
             if (matches.length == limit) break;
           }

@@ -49,6 +49,12 @@ class _AppBackScopeState extends State<AppBackScope> {
       return;
     }
 
+    final accountFallback = _accountFallback(path);
+    if (accountFallback != null) {
+      context.go(accountFallback);
+      return;
+    }
+
     if (path.startsWith('${AppRoutes.partPickerSelect}/')) {
       context.go(AppRoutes.partPicker);
       return;
@@ -60,6 +66,37 @@ class _AppBackScopeState extends State<AppBackScope> {
     }
 
     context.go(AppRoutes.home);
+  }
+
+  String? _accountFallback(String path) {
+    if (path.startsWith('${AppRoutes.orderDetail}/')) return AppRoutes.orders;
+    if (path == AppRoutes.addAddress) return AppRoutes.addresses;
+    if (path == AppRoutes.wishlistEmpty) return AppRoutes.wishlist;
+
+    if (path.startsWith('${AppRoutes.adminProductEdit}/')) {
+      return AppRoutes.adminProducts;
+    }
+    if (path == AppRoutes.adminProductEdit) return AppRoutes.adminProducts;
+    if (path.startsWith('${AppRoutes.adminOrderDetail}/')) {
+      return AppRoutes.adminOrders;
+    }
+    if (path == AppRoutes.adminProducts ||
+        path == AppRoutes.adminOrders ||
+        path == AppRoutes.adminUsers ||
+        path == AppRoutes.adminReviews) {
+      return AppRoutes.admin;
+    }
+    if (path == AppRoutes.admin) return AppRoutes.profile;
+
+    if (path == AppRoutes.editProfile ||
+        path == AppRoutes.orders ||
+        path == AppRoutes.addresses ||
+        path == AppRoutes.wishlist ||
+        path == AppRoutes.notifications) {
+      return AppRoutes.profile;
+    }
+
+    return null;
   }
 
   bool _isExitRoute(String path) {

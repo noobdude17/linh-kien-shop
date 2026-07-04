@@ -199,7 +199,7 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     minimumSize: const Size(64, 40),
                   ),
-                  onPressed: () => context.go(AppRoutes.editProfile),
+                  onPressed: () => context.push(AppRoutes.editProfile),
                   child: const Text(
                     'Chỉnh sửa',
                     maxLines: 1,
@@ -398,6 +398,6 @@ class ProfileScreen extends ConsumerWidget {
     trailing: (route != null || onTap != null)
         ? const Icon(Icons.chevron_right, color: AppColors.textTertiary)
         : null,
-    onTap: onTap ?? (route != null ? () => context.go(route) : null),
+    onTap: onTap ?? (route != null ? () => context.push(route) : null),
   );
 }

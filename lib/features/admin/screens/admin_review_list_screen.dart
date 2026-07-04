@@ -8,6 +8,7 @@ import '../../../data/repositories/admin_repository.dart';
 import '../../../routes/app_routes.dart';
 import '../providers/admin_providers.dart';
 import '../widgets/admin_scaffold.dart';
+import '../widgets/admin_search_field.dart';
 
 class AdminReviewListScreen extends ConsumerStatefulWidget {
   const AdminReviewListScreen({super.key});
@@ -18,47 +19,82 @@ class AdminReviewListScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminReviewListScreenState extends ConsumerState<AdminReviewListScreen> {
-  final _search = TextEditingController();
-  bool? _hidden;
+  static const _pageSize = 30;
 
-  AdminReviewQuery get _query =>
-      AdminReviewQuery(search: _search.text.trim(), hidden: _hidden, limit: 80);
+  final _search = TextEditingController();
+  final _scrollController = ScrollController();
+  bool? _hidden;
+  List<AdminReviewRecord> _items = [];
+  Object? _cursor;
+  bool _hasMore = true;
+  bool _loading = true;
+  Object? _error;
+
+  AdminReviewQuery get _query => AdminReviewQuery(
+    search: _search.text.trim(),
+    hidden: _hidden,
+    limit: _pageSize,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_loadMoreNearBottom);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reloadReviews());
+  }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _search.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final reviews = ref.watch(adminReviewsProvider(_query));
     return AdminScaffold(
       title: 'Quản lý đánh giá',
       backRoute: AppRoutes.admin,
       body: Column(
         children: [
           _filters(),
-          Expanded(
-            child: reviews.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => AdminError(
-                message: 'Không tải được đánh giá',
-                onRetry: () => ref.invalidate(adminReviewsProvider),
-              ),
-              data: (page) => page.items.isEmpty
-                  ? const AdminEmpty(
-                      message: 'Không có đánh giá',
-                      icon: Icons.rate_review_outlined,
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(AppDimens.screenPadding),
-                      itemCount: page.items.length,
-                      itemBuilder: (_, i) => _row(page.items[i]),
-                    ),
-            ),
-          ),
+          Expanded(child: _reviewList()),
         ],
+      ),
+    );
+  }
+
+  Widget _reviewList() {
+    if (_loading && _items.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null && _items.isEmpty) {
+      return AdminError(
+        message: 'Không tải được đánh giá',
+        onRetry: _reloadReviews,
+      );
+    }
+    if (_items.isEmpty) {
+      return const AdminEmpty(
+        message: 'Không có đánh giá',
+        icon: Icons.rate_review_outlined,
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _reloadReviews,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(AppDimens.screenPadding),
+        itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
+        itemBuilder: (_, i) {
+          if (i >= _items.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return _row(_items[i]);
+        },
       ),
     );
   }
@@ -69,13 +105,10 @@ class _AdminReviewListScreenState extends ConsumerState<AdminReviewListScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
       child: Column(
         children: [
-          TextField(
+          AdminSearchField(
             controller: _search,
-            decoration: const InputDecoration(
-              hintText: 'Tìm sản phẩm, người viết, nội dung',
-              prefixIcon: Icon(Icons.search),
-            ),
-            onChanged: (_) => setState(() {}),
+            hintText: 'Tìm sản phẩm, người viết, nội dung...',
+            onChanged: (_) => _reloadReviews(),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -84,17 +117,17 @@ class _AdminReviewListScreenState extends ConsumerState<AdminReviewListScreen> {
               ChoiceChip(
                 label: const Text('Tất cả'),
                 selected: _hidden == null,
-                onSelected: (_) => setState(() => _hidden = null),
+                onSelected: (_) => _setHiddenFilter(null),
               ),
               ChoiceChip(
                 label: const Text('Đang hiện'),
                 selected: _hidden == false,
-                onSelected: (_) => setState(() => _hidden = false),
+                onSelected: (_) => _setHiddenFilter(false),
               ),
               ChoiceChip(
                 label: const Text('Đã ẩn'),
                 selected: _hidden == true,
-                onSelected: (_) => setState(() => _hidden = true),
+                onSelected: (_) => _setHiddenFilter(true),
               ),
             ],
           ),
@@ -195,5 +228,89 @@ class _AdminReviewListScreenState extends ConsumerState<AdminReviewListScreen> {
           hidden: hidden,
         );
     invalidateAdminData(ref);
+    await _reloadReviews();
+  }
+
+  void _setHiddenFilter(bool? hidden) {
+    if (_hidden == hidden) return;
+    setState(() => _hidden = hidden);
+    _reloadReviews();
+  }
+
+  void _loadMoreNearBottom() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 320) {
+      _loadMoreReviews();
+    }
+  }
+
+  Future<void> _reloadReviews() async {
+    final query = _query;
+    setState(() {
+      _loading = true;
+      _error = null;
+      _hasMore = true;
+      _cursor = null;
+    });
+    try {
+      final page = await ref.read(adminRepositoryProvider).getReviews(query);
+      if (!mounted || query != _query) return;
+      setState(() {
+        _items = page.items;
+        _cursor = page.cursor;
+        _hasMore = page.hasMore;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted || query != _query) return;
+      setState(() {
+        _error = e;
+        _items = [];
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreReviews() async {
+    if (_loading || !_hasMore) return;
+    final query = AdminReviewQuery(
+      search: _search.text.trim(),
+      hidden: _hidden,
+      limit: _pageSize,
+      cursor: _cursor,
+    );
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final page = await ref.read(adminRepositoryProvider).getReviews(query);
+      if (!mounted ||
+          query.search != _query.search ||
+          query.hidden != _hidden) {
+        return;
+      }
+      final seen = _items
+          .map((r) => '${r.review.productId}:${r.review.id}')
+          .toSet();
+      setState(() {
+        _items = [
+          ..._items,
+          ...page.items.where(
+            (r) => seen.add('${r.review.productId}:${r.review.id}'),
+          ),
+        ];
+        _cursor = page.cursor;
+        _hasMore = page.hasMore;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _loading = false;
+      });
+    }
   }
 }

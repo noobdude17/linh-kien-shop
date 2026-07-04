@@ -73,10 +73,15 @@ class _FilterSheetState extends State<FilterSheet> {
             ),
             const SizedBox(height: 16),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Bộ lọc',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                const Flexible(
+                  child: Text(
+                    'Bộ lọc',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
                 ),
                 TextButton(
                   onPressed: () =>
@@ -108,19 +113,29 @@ class _FilterSheetState extends State<FilterSheet> {
                   setState(() => _opts = _opts.copyWith(priceRange: v)),
             ),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  Formatter.price(_opts.priceRange.start),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                Flexible(
+                  child: Text(
+                    Formatter.price(_opts.priceRange.start),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
-                Text(
-                  Formatter.price(_opts.priceRange.end),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                Flexible(
+                  child: Text(
+                    Formatter.price(_opts.priceRange.end),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ],
@@ -163,10 +178,15 @@ class _FilterSheetState extends State<FilterSheet> {
               ),
             const SizedBox(height: 16),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Chỉ hiện còn hàng',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                const Flexible(
+                  child: Text(
+                    'Chỉ hiện còn hàng',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
                 ),
                 Switch(
                   value: _opts.inStockOnly,
