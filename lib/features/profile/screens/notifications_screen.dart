@@ -17,7 +17,7 @@ class NotificationsScreen extends StatelessWidget {
     }
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => context.go(AppRoutes.home)),
+        leading: BackButton(onPressed: () => context.go(AppRoutes.profile)),
         title: const Text('Thông báo'),
       ),
       body: ListView(

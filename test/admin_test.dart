@@ -139,6 +139,37 @@ void main() {
     expect(hidden?.isActive, isFalse);
   });
 
+  test('admin search matches useful fields across management pages', () async {
+    final repo = MockAdminRepository();
+
+    final products = await repo.getProducts(
+      const AdminProductQuery(search: '192 bit'),
+    );
+    final storageProducts = await repo.getProducts(
+      const AdminProductQuery(search: '2tb'),
+    );
+    final cpuProducts = await repo.getProducts(
+      const AdminProductQuery(search: 'cpu'),
+    );
+    final orders = await repo.getOrders(
+      const AdminOrderQuery(search: '14700k'),
+    );
+    final users = await repo.getUsers(
+      const AdminUserQuery(search: '0900000000'),
+    );
+    final reviews = await repo.getReviews(
+      const AdminReviewQuery(search: 'boot windows'),
+    );
+
+    expect(products.items, isNotEmpty);
+    expect(storageProducts.items, isNotEmpty);
+    expect(cpuProducts.items, isNotEmpty);
+    expect(cpuProducts.items.every((p) => p.categoryId == 'cpu'), isTrue);
+    expect(orders.items, isNotEmpty);
+    expect(users.items, isNotEmpty);
+    expect(reviews.items, isNotEmpty);
+  });
+
   test('mock admin hides review and recomputes visible rating', () async {
     final repo = MockAdminRepository();
     final page = await repo.getReviews(const AdminReviewQuery(limit: 1));

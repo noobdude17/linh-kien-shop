@@ -163,17 +163,24 @@ class OrderHistoryScreen extends ConsumerWidget {
           ),
           const Divider(height: 20),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'Tổng tiền',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               ),
-              Text(
-                Formatter.price(o.totalAmount),
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  Formatter.price(o.totalAmount),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ],

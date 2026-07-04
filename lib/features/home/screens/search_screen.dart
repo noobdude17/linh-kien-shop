@@ -87,7 +87,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           if (recent.isNotEmpty) ...[
             Row(
               children: [
-                Text('Tìm kiếm gần đây', style: AppTextStyles.sectionHeading),
+                Expanded(
+                  child: Text(
+                    'Tìm kiếm gần đây',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.sectionHeading,
+                  ),
+                ),
+                const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () =>
                       ref.read(recentSearchesProvider.notifier).clear(),

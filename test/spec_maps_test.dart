@@ -34,4 +34,62 @@ void main() {
     expect(r.compatibility.containsKey('cpuSocket'), false);
     expect(r.specs.containsKey('cpuSocket'), false);
   });
+
+  test('normalizes compatibility-critical aliases on save', () {
+    final cpu = buildSpecMaps('cpu', {
+      'cpuSocket': 'Socket AM5',
+      'cpuMemoryType': 'DDR5 5600',
+    }, {});
+    final board = buildSpecMaps('mainboard', {
+      'mbSocket': 'LGA1700',
+      'mbFormFactor': 'Micro ATX',
+      'mbMemoryType': 'Supports JEDEC standard DDR5 5600+ MHz',
+    }, {});
+    final psu = buildSpecMaps('psu', {
+      'psuFormFactor': 'ATX12V',
+      'psuModular': 'Full',
+      'psuPowerConnectors': '3x8-pin, 1x16-pin 12VHPWR',
+    }, {});
+
+    expect(cpu.compatibility['cpuSocket'], 'AM5');
+    expect(cpu.compatibility['cpuMemoryType'], 'DDR5');
+    expect(board.compatibility['mbSocket'], 'LGA 1700');
+    expect(board.compatibility['mbFormFactor'], 'Micro-ATX');
+    expect(board.compatibility['mbMemoryType'], 'DDR5');
+    expect(psu.compatibility['psuFormFactor'], 'ATX');
+    expect(psu.compatibility['psuModular'], 'Fully modular');
+    expect(psu.compatibility['psuPowerConnectors'], '3x 8-pin, 1x 16-pin');
+  });
+
+  test('list specs save as normalized arrays for compatibility engine', () {
+    final r = buildSpecMaps('case', {
+      'caseSupportedMotherboardFormFactors': 'ATX / Micro ATX / Mini ITX',
+      'casePsuFormFactor': 'ATX/SFX-L',
+    }, {});
+
+    expect(r.compatibility['caseSupportedMotherboardFormFactors'], [
+      'ATX',
+      'Micro-ATX',
+      'Mini-ITX',
+    ]);
+    expect(r.compatibility['casePsuFormFactor'], ['ATX', 'SFX-L']);
+    expect(
+      r.specs['caseSupportedMotherboardFormFactors'],
+      'ATX, Micro-ATX, Mini-ITX',
+    );
+  });
+
+  test('os schema writes guided compatibility fields', () {
+    final r = buildSpecMaps('os', {
+      'osVersion': 'Windows 11 Pro',
+      'osArchitecture': '64 bit',
+      'osSupportStatus': 'Supported',
+      'osRequiresTpm2': 'true',
+    }, {});
+
+    expect(r.compatibility['osVersion'], 11);
+    expect(r.compatibility['osArchitecture'], '64-bit');
+    expect(r.compatibility['osSupportStatus'], 'supported');
+    expect(r.compatibility['osRequiresTpm2'], true);
+  });
 }

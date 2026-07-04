@@ -8,6 +8,7 @@ import '../models/order_model.dart';
 import '../models/product_model.dart';
 import '../models/review_model.dart';
 import '../models/user_model.dart';
+import 'product_repository.dart';
 
 class AdminDashboardStats {
   final int activeProducts;
@@ -270,11 +271,7 @@ class MockAdminRepository implements AdminRepository {
     final text = query.search.trim().toLowerCase();
     if (text.isNotEmpty) {
       list = list
-          .where(
-            (p) =>
-                p.name.toLowerCase().contains(text) ||
-                p.brand.toLowerCase().contains(text),
-          )
+          .where((p) => matchesProductSearchQuery(p, text))
           .toList();
     }
     if (query.categoryId != null) {
@@ -316,9 +313,18 @@ class MockAdminRepository implements AdminRepository {
     if (text.isNotEmpty) {
       list = list
           .where(
-            (o) =>
-                o.code.toLowerCase().contains(text) ||
-                o.customerName.toLowerCase().contains(text),
+            (o) => _matchesAdminSearch(text, [
+              o.id,
+              o.code,
+              o.userId,
+              o.customerName,
+              o.address,
+              o.paymentMethod,
+              o.status,
+              ...o.items.map((item) => item.productId),
+              ...o.items.map((item) => item.name),
+              ...o.items.map((item) => item.variant),
+            ]),
           )
           .toList();
     }
@@ -345,9 +351,18 @@ class MockAdminRepository implements AdminRepository {
     if (text.isNotEmpty) {
       list = list
           .where(
-            (u) =>
-                u.name.toLowerCase().contains(text) ||
-                u.email.toLowerCase().contains(text),
+            (u) => _matchesAdminSearch(text, [
+              u.id,
+              u.name,
+              u.email,
+              u.role,
+              u.phone,
+              u.address,
+              u.dob,
+              u.defaultAddress?.name,
+              u.defaultAddress?.phone,
+              u.defaultAddress?.detail,
+            ]),
           )
           .toList();
     }
@@ -383,11 +398,16 @@ class MockAdminRepository implements AdminRepository {
     if (text.isNotEmpty) {
       list = list
           .where(
-            (r) =>
-                r.userName.toLowerCase().contains(text) ||
-                r.comment.toLowerCase().contains(text) ||
-                (_products[r.productId]?.name.toLowerCase().contains(text) ??
-                    false),
+            (r) => _matchesAdminSearch(text, [
+              r.id,
+              r.productId,
+              r.userId,
+              r.userName,
+              r.comment,
+              _products[r.productId]?.name,
+              _products[r.productId]?.brand,
+              _products[r.productId]?.categoryName,
+            ]),
           )
           .toList();
     }
@@ -479,11 +499,7 @@ class FirestoreAdminRepository implements AdminRepository {
       final snap = await q.get();
       final items = snap.docs
           .map(ProductModel.fromFirestore)
-          .where(
-            (p) =>
-                p.name.toLowerCase().contains(text) ||
-                p.brand.toLowerCase().contains(text),
-          )
+          .where((p) => matchesProductSearchQuery(p, text))
           .toList();
       return _slice(items, query.limit, query.cursor);
     }
@@ -539,9 +555,18 @@ class FirestoreAdminRepository implements AdminRepository {
       if (text.isNotEmpty) {
         items = items
             .where(
-              (o) =>
-                  o.code.toLowerCase().contains(text) ||
-                  o.customerName.toLowerCase().contains(text),
+              (o) => _matchesAdminSearch(text, [
+                o.id,
+                o.code,
+                o.userId,
+                o.customerName,
+                o.address,
+                o.paymentMethod,
+                o.status,
+                ...o.items.map((item) => item.productId),
+                ...o.items.map((item) => item.name),
+                ...o.items.map((item) => item.variant),
+              ]),
             )
             .toList();
       }
@@ -586,9 +611,18 @@ class FirestoreAdminRepository implements AdminRepository {
       if (text.isNotEmpty) {
         items = items
             .where(
-              (u) =>
-                  u.name.toLowerCase().contains(text) ||
-                  u.email.toLowerCase().contains(text),
+              (u) => _matchesAdminSearch(text, [
+                u.id,
+                u.name,
+                u.email,
+                u.role,
+                u.phone,
+                u.address,
+                u.dob,
+                u.defaultAddress?.name,
+                u.defaultAddress?.phone,
+                u.defaultAddress?.detail,
+              ]),
             )
             .toList();
       }
@@ -662,10 +696,14 @@ class FirestoreAdminRepository implements AdminRepository {
     if (text.isNotEmpty) {
       filtered = filtered
           .where(
-            (r) =>
-                r.productName.toLowerCase().contains(text) ||
-                r.review.userName.toLowerCase().contains(text) ||
-                r.review.comment.toLowerCase().contains(text),
+            (r) => _matchesAdminSearch(text, [
+              r.productName,
+              r.review.id,
+              r.review.productId,
+              r.review.userId,
+              r.review.userName,
+              r.review.comment,
+            ]),
           )
           .toList();
     }
@@ -711,6 +749,39 @@ AdminPage<T> _slice<T>(List<T> list, int limit, Object? cursor) {
     cursor: end,
     hasMore: end < list.length,
   );
+}
+
+bool _matchesAdminSearch(String query, Iterable<Object?> values) {
+  final normalizedQuery = _normalizeAdminSearch(query);
+  if (normalizedQuery.isEmpty) return true;
+  final text = values.map(_normalizeAdminSearch).join(' ');
+  if (text.contains(normalizedQuery)) return true;
+
+  final tokens = normalizedQuery
+      .split(' ')
+      .where((token) => token.isNotEmpty)
+      .toList();
+  return tokens.isNotEmpty && tokens.every(text.contains);
+}
+
+String _normalizeAdminSearch(Object? value) {
+  final text = switch (value) {
+    null => '',
+    Iterable() => value.join(' '),
+    Map() => [...value.keys, ...value.values].join(' '),
+    _ => value.toString(),
+  };
+  return text
+      .toLowerCase()
+      .replaceAll(RegExp(r'[àáạảãâầấậẩẫăằắặẳẵ]'), 'a')
+      .replaceAll(RegExp(r'[èéẹẻẽêềếệểễ]'), 'e')
+      .replaceAll(RegExp(r'[ìíịỉĩ]'), 'i')
+      .replaceAll(RegExp(r'[òóọỏõôồốộổỗơờớợởỡ]'), 'o')
+      .replaceAll(RegExp(r'[ùúụủũưừứựửữ]'), 'u')
+      .replaceAll(RegExp(r'[ỳýỵỷỹ]'), 'y')
+      .replaceAll('đ', 'd')
+      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+      .trim();
 }
 
 ProductModel _copyProduct(
