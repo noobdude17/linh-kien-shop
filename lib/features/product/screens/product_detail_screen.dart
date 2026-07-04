@@ -127,20 +127,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(
-      SnackBar(
-        content: Text(isIn ? 'Đã xóa khỏi so sánh' : 'Đã thêm vào so sánh'),
-        duration: const Duration(seconds: 5),
-        action: isIn
-            ? null
-            : SnackBarAction(
-                label: 'Xem',
-                onPressed: () {
-                  if (!mounted) return;
-                  context.go(AppRoutes.compare);
-                },
-              ),
-      ),
-    );
+        SnackBar(
+          content: Text(isIn ? 'Đã xóa khỏi so sánh' : 'Đã thêm vào so sánh'),
+          duration: const Duration(seconds: 5),
+          action: isIn
+              ? null
+              : SnackBarAction(
+                  label: 'Xem',
+                  onPressed: () {
+                    if (!mounted) return;
+                    context.go(AppRoutes.compare);
+                  },
+                ),
+        ),
+      );
   }
 
   void _showWriteReview(ProductModel p) {
@@ -429,19 +429,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: 10),
-                        Row(
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             const Icon(
                               Icons.star,
                               color: AppColors.star,
                               size: 16,
                             ),
-                            const SizedBox(width: 4),
                             Text(
                               '${p.rating} (${p.reviewCount} đánh giá)',
                               style: AppTextStyles.meta,
                             ),
-                            const SizedBox(width: 12),
                             _stockBadge(
                               effectiveInStock,
                               effectiveStock,
@@ -463,8 +464,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           _buildSpecTable(specs),
                         ],
                         const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.spaceBetween,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             const Text(
                               'Số lượng',
@@ -545,7 +549,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             right: 0,
             child: Container(
               color: AppColors.surface,
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
               child: Row(
                 children: [
                   Expanded(

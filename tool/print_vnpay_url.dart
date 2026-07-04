@@ -8,5 +8,6 @@ void main() {
     amount: 50000,
     orderInfo: 'ThanhToanDonTEST',
   );
+  // ignore: avoid_print
   print(url);
 }

@@ -73,7 +73,6 @@ class _FilterSheetState extends State<FilterSheet> {
             ),
             const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Bộ lọc',
@@ -109,7 +108,6 @@ class _FilterSheetState extends State<FilterSheet> {
                   setState(() => _opts = _opts.copyWith(priceRange: v)),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   Formatter.price(_opts.priceRange.start),
@@ -133,7 +131,9 @@ class _FilterSheetState extends State<FilterSheet> {
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
               children: List.generate(5, (i) {
                 final star = (i + 1).toDouble();
                 return GestureDetector(
@@ -142,13 +142,10 @@ class _FilterSheetState extends State<FilterSheet> {
                       minRating: _opts.minRating == star ? 0 : star,
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Icon(
-                      star <= _opts.minRating ? Icons.star : Icons.star_border,
-                      size: 28,
-                      color: AppColors.star,
-                    ),
+                  child: Icon(
+                    star <= _opts.minRating ? Icons.star : Icons.star_border,
+                    size: 28,
+                    color: AppColors.star,
                   ),
                 );
               }),
@@ -166,7 +163,6 @@ class _FilterSheetState extends State<FilterSheet> {
               ),
             const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Chỉ hiện còn hàng',

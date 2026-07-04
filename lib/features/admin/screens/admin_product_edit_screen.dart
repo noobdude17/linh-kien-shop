@@ -39,7 +39,8 @@ class _AdminProductEditScreenState
   final _imageLabel = TextEditingController();
   final _imageUrl = TextEditingController();
   final _specs = <_Pair>[]; // dùng khi danh mục không có schema cố định
-  final _specValues = <String, String>{}; // giá trị ban đầu để đổ vào field cứng
+  final _specValues =
+      <String, String>{}; // giá trị ban đầu để đổ vào field cứng
   final _specControllers = <String, TextEditingController>{};
   // compatibility gốc: giữ key engine tự sinh không nằm trong schema (không xoá).
   final _originalCompatibility = <String, dynamic>{};
@@ -183,23 +184,34 @@ class _AdminProductEditScreenState
             },
           ),
           const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: _field('Giá', _price, number: true, isRequired: true),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: 560,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _field(
+                      'Giá',
+                      _price,
+                      number: true,
+                      isRequired: true,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: _field('Giá KM', _oldPrice, number: true)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _field(
+                      'Tồn kho',
+                      _stock,
+                      number: true,
+                      isRequired: true,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(child: _field('Giá KM', _oldPrice, number: true)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _field(
-                  'Tồn kho',
-                  _stock,
-                  number: true,
-                  isRequired: true,
-                ),
-              ),
-            ],
+            ),
           ),
           _field('Mô tả', _description, maxLines: 3),
           _field('Nhãn ảnh fallback', _imageLabel),
@@ -415,7 +427,10 @@ class _AdminProductEditScreenState
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.edit_outlined, size: 18),
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
+                                  ),
                                   onPressed: () => _renameBrand(b),
                                 ),
                                 IconButton(
@@ -514,7 +529,10 @@ class _AdminProductEditScreenState
     TextSpan(
       text: label,
       children: const [
-        TextSpan(text: ' *', style: TextStyle(color: AppColors.error)),
+        TextSpan(
+          text: ' *',
+          style: TextStyle(color: AppColors.error),
+        ),
       ],
     ),
   );

@@ -24,43 +24,54 @@ class ProfileScreen extends ConsumerWidget {
   Scaffold _loginView(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Tài khoản')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircleAvatar(
-                radius: 36,
-                backgroundColor: AppColors.surface,
-                child: Icon(
-                  Icons.person_outline,
-                  size: 40,
-                  color: AppColors.textSecondary,
+      body: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircleAvatar(
+                      radius: 36,
+                      backgroundColor: AppColors.surface,
+                      child: Icon(
+                        Icons.person_outline,
+                        size: 40,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Đăng nhập để tiếp tục',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Đăng nhập để xem đơn hàng, địa chỉ, sản phẩm yêu thích và thanh toán.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 24),
+                    PrimaryButton(
+                      label: 'Đăng nhập',
+                      onPressed: () => context.go(AppRoutes.login),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => context.go(AppRoutes.register),
+                      child: const Text('Chưa có tài khoản? Đăng ký'),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Đăng nhập để tiếp tục',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Đăng nhập để xem đơn hàng, địa chỉ, sản phẩm yêu thích và thanh toán.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 24),
-              PrimaryButton(
-                label: 'Đăng nhập',
-                onPressed: () => context.go(AppRoutes.login),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => context.go(AppRoutes.register),
-                child: const Text('Chưa có tài khoản? Đăng ký'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -177,46 +188,75 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                UserAvatar(photoUrl: photoUrl, radius: 30),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name?.isNotEmpty == true ? name! : 'Khách',
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        email ?? '',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                OutlinedButton(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final editButton = OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
                     side: const BorderSide(
                       color: AppColors.primary,
                       width: 1.5,
                     ),
-                    // Theme dùng minimumSize.fromHeight (width=∞) → vỡ layout trong Row. Ép về kích thước theo nội dung.
                     minimumSize: const Size(64, 40),
                   ),
                   onPressed: () => context.go(AppRoutes.editProfile),
-                  child: const Text('Chỉnh sửa'),
-                ),
-              ],
+                  child: const Text(
+                    'Chỉnh sửa',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+                final identity = Row(
+                  children: [
+                    UserAvatar(photoUrl: photoUrl, radius: 30),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name?.isNotEmpty == true ? name! : 'Khách',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            email ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+
+                if (constraints.maxWidth < 340) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      identity,
+                      const SizedBox(height: 12),
+                      editButton,
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    Expanded(child: identity),
+                    const SizedBox(width: 12),
+                    editButton,
+                  ],
+                );
+              },
             ),
           ],
         ),

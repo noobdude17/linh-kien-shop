@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -354,18 +355,19 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               ? const Center(child: Text('Không có sản phẩm'))
               : CustomScrollView(
                   controller: _scrollController,
-                  cacheExtent: 900,
+                  scrollCacheExtent: const ScrollCacheExtent.pixels(900),
                   slivers: [
                     SliverPadding(
                       padding: const EdgeInsets.all(AppDimens.screenPadding),
                       sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: AppDimens.gap,
-                              crossAxisSpacing: AppDimens.gap,
-                              childAspectRatio: 0.62,
-                            ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppDimens.gap,
+                          crossAxisSpacing: AppDimens.gap,
+                          childAspectRatio: AppDimens.productGridAspectRatio(
+                            context,
+                          ),
+                        ),
                         delegate: SliverChildBuilderDelegate((_, i) {
                           final product = filtered[i];
                           return ProductCard(

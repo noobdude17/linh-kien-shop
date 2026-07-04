@@ -82,6 +82,7 @@ class CartScreen extends ConsumerWidget {
     CartNotifier notifier,
     CartItemModel item,
   ) {
+    final narrow = AppDimens.isNarrowPhone(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(AppDimens.cardPadding),
@@ -103,8 +104,8 @@ class CartScreen extends ConsumerWidget {
           ImagePlaceholder(
             label: item.imageLabel,
             imageUrl: item.imageUrl,
-            width: 64,
-            height: 64,
+            width: narrow ? 56 : 64,
+            height: narrow ? 56 : 64,
             radius: 8,
           ),
           const SizedBox(width: 12),
@@ -150,6 +151,7 @@ class CartScreen extends ConsumerWidget {
             ),
           ),
           IconButton(
+            visualDensity: VisualDensity.compact,
             icon: const Icon(
               Icons.delete_outline,
               color: AppColors.textTertiary,
@@ -196,7 +198,7 @@ class CartScreen extends ConsumerWidget {
       color: AppColors.surface,
       boxShadow: AppDimens.bottomBarShadow,
     ),
-    padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
     child: SafeArea(
       top: false,
       child: Row(

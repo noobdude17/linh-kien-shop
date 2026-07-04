@@ -206,8 +206,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     )
                   : PrimaryButton(label: 'Đăng ký', onPressed: _submit),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Text('Đã có tài khoản? '),
                   GestureDetector(
