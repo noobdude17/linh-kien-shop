@@ -652,9 +652,8 @@ class FirestoreAdminRepository implements AdminRepository {
   }
 
   @override
-  Future<void> saveUser(UserModel user) => _users
-      .doc(user.id)
-      .set(user.toFirestore(), SetOptions(merge: true));
+  Future<void> saveUser(UserModel user) =>
+      _users.doc(user.id).set(user.toFirestore(), SetOptions(merge: true));
 
   @override
   Future<void> deleteUser(String id) async {
