@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'cart_item_model.dart';
+import 'firestore_date.dart';
 
 class OrderTimelineStep {
   final String label;
@@ -50,21 +51,21 @@ class OrderModel {
 
   int get itemCount => items.fold(0, (s, e) => s + e.quantity);
 
-  OrderModel copyWith({String? status}) => OrderModel(
-    id: id,
-    code: code,
-    userId: userId,
-    customerName: customerName,
-    items: items,
-    subtotal: subtotal,
-    discount: discount,
-    totalAmount: totalAmount,
-    status: status ?? this.status,
-    address: address,
-    paymentMethod: paymentMethod,
-    paid: paid,
-    createdAt: createdAt,
-  );
+  OrderModel copyWith({String? status, bool? paid}) => OrderModel(
+        id: id,
+        code: code,
+        userId: userId,
+        customerName: customerName,
+        items: items,
+        subtotal: subtotal,
+        discount: discount,
+        totalAmount: totalAmount,
+        status: status ?? this.status,
+        address: address,
+        paymentMethod: paymentMethod,
+        paid: paid ?? this.paid,
+        createdAt: createdAt,
+      );
 
   factory OrderModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -83,22 +84,22 @@ class OrderModel {
       address: data['address'] ?? '',
       paymentMethod: data['paymentMethod'] ?? 'vnpay',
       paid: data['paid'] ?? false,
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: parseFirestoreDate(data['createdAt']),
     );
   }
 
   Map<String, dynamic> toFirestore() => {
-    'code': code,
-    'userId': userId,
-    'customerName': customerName,
-    'items': items.map((e) => e.toMap()).toList(),
-    'subtotal': subtotal,
-    'discount': discount,
-    'totalAmount': totalAmount,
-    'status': status,
-    'address': address,
-    'paymentMethod': paymentMethod,
-    'paid': paid,
-    'createdAt': Timestamp.fromDate(createdAt),
-  };
+        'code': code,
+        'userId': userId,
+        'customerName': customerName,
+        'items': items.map((e) => e.toMap()).toList(),
+        'subtotal': subtotal,
+        'discount': discount,
+        'totalAmount': totalAmount,
+        'status': status,
+        'address': address,
+        'paymentMethod': paymentMethod,
+        'paid': paid,
+        'createdAt': Timestamp.fromDate(createdAt),
+      };
 }

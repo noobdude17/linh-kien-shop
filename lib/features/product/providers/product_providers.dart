@@ -4,7 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../data/models/category_model.dart';
 import '../../../data/models/product_model.dart';
+import '../../../data/repositories/brand_repository.dart';
 import '../../../data/repositories/product_repository.dart';
+
+final brandRepositoryProvider = Provider<BrandRepository>((ref) {
+  if (AppConfig.firebaseEnabled) {
+    return FirestoreBrandRepository(FirebaseFirestore.instance);
+  }
+  return MockBrandRepository();
+});
+
+final brandsProvider = FutureProvider<List<BrandModel>>((ref) {
+  return ref.watch(brandRepositoryProvider).getAll();
+});
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
   if (AppConfig.firebaseEnabled) {

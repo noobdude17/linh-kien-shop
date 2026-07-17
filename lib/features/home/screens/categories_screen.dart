@@ -8,8 +8,10 @@ import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../data/mock_data.dart';
 import '../../../data/models/category_model.dart';
+import '../../../data/repositories/brand_repository.dart';
 import '../../../features/product/providers/product_providers.dart';
 import '../../../routes/app_routes.dart';
 
@@ -22,6 +24,7 @@ class CategoriesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(categoriesProvider);
     final trending = ref.watch(featuredProductsProvider);
+    final brands = ref.watch(brandsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -36,24 +39,31 @@ class CategoriesScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          // 1 · Thương hiệu (logo, không tên)
-          _Slider(
+          // 1 · Thương hiệu (từ collection brands; logo asset nếu có sẵn)
+          _AsyncSlider(
             title: 'Thương hiệu',
             height: 96,
-            child: ListView.separated(
+            value: brands,
+            builder: (list) => ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimens.screenPadding,
               ),
-              itemCount: MockData.brands.length,
+              itemCount: list.length,
               separatorBuilder: (_, _) => const SizedBox(width: 12),
               itemBuilder: (_, i) {
-                final (name, logo) = MockData.brands[i];
+                final brand = list[i] as BrandModel;
+                final logo = MockData.brands
+                    .where(
+                      (b) => b.$1.toLowerCase() == brand.name.toLowerCase(),
+                    )
+                    .map((b) => b.$2)
+                    .firstOrNull;
                 return _BrandTile(
-                  name: name,
+                  name: brand.name,
                   logo: logo,
                   onTap: () => context.push(
-                    '${AppRoutes.results}?q=${Uri.encodeComponent(name)}',
+                    '${AppRoutes.results}?q=${Uri.encodeComponent(brand.name)}',
                   ),
                 );
               },
@@ -162,7 +172,7 @@ class _AsyncSlider extends StatelessWidget {
       title: title,
       height: height,
       child: value.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const CategoryRowSkeleton(),
         error: (e, _) => Center(child: Text('Lỗi: $e')),
         data: builder,
       ),
@@ -172,7 +182,7 @@ class _AsyncSlider extends StatelessWidget {
 
 class _BrandTile extends StatelessWidget {
   final String name;
-  final String logo;
+  final String? logo; // null: hãng mới chưa có logo asset → hiện tên
   final VoidCallback onTap;
 
   const _BrandTile({
@@ -183,6 +193,11 @@ class _BrandTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nameText = Text(
+      name,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+    );
     return InkWell(
       onTap: onTap,
       borderRadius: AppDimens.brCard,
@@ -196,19 +211,14 @@ class _BrandTile extends StatelessWidget {
           boxShadow: AppDimens.cardShadow,
         ),
         alignment: Alignment.center,
-        child: logo.endsWith('.svg')
-            ? SvgPicture.asset(logo, fit: BoxFit.contain)
+        child: logo == null
+            ? nameText
+            : logo!.endsWith('.svg')
+            ? SvgPicture.asset(logo!, fit: BoxFit.contain)
             : Image.asset(
-                logo,
+                logo!,
                 fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => Text(
-                  name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                errorBuilder: (_, _, _) => nameText,
               ),
       ),
     );

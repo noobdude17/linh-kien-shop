@@ -4,6 +4,7 @@ import 'package:linh_kien_shop/features/part_picker/models/compatibility_result.
 import 'package:linh_kien_shop/features/part_picker/models/pc_build_model.dart';
 import 'package:linh_kien_shop/features/part_picker/services/compatibility_engine.dart';
 import 'package:linh_kien_shop/features/part_picker/services/wattage_calculator.dart';
+import 'package:linh_kien_shop/features/product/utils/spec_display.dart';
 
 void main() {
   const engine = CompatibilityEngine();
@@ -21,6 +22,37 @@ void main() {
 
     expect(summary.severity, CompatibilitySeverity.incompatible);
     expect(summary.issues.any((issue) => issue.code == 'cpu_socket'), true);
+  });
+
+  test('normalized admin spec maps avoid alias compatibility mismatches', () {
+    final cpuMaps = buildSpecMaps('cpu', {'cpuSocket': 'LGA1700'}, {});
+    final boardMaps = buildSpecMaps('mainboard', {
+      'mbSocket': 'LGA 1700',
+      'mbMemoryType': 'Supports JEDEC standard DDR5 5600+ MHz',
+      'mbRamSlots': '4 slots',
+      'mbMaxRamGb': '128GB',
+      'mbFormFactor': 'Micro ATX',
+    }, {});
+    final caseMaps = buildSpecMaps('case', {
+      'caseSupportedMotherboardFormFactors': 'ATX / Micro ATX / Mini ITX',
+    }, {});
+    final build = const PcBuildModel()
+        .select('cpu', _product('cpu', cpuMaps.compatibility), multiple: false)
+        .select(
+          'mainboard',
+          _product('mainboard', boardMaps.compatibility),
+          multiple: false,
+        )
+        .select(
+          'case',
+          _product('case', caseMaps.compatibility),
+          multiple: false,
+        );
+
+    final codes = engine.evaluate(build).issues.map((issue) => issue.code);
+
+    expect(codes, isNot(contains('cpu_socket')));
+    expect(codes, isNot(contains('case_mainboard')));
   });
 
   test('counts slots and capacity across multiple RAM kits', () {

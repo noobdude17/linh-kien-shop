@@ -57,50 +57,68 @@ class CompareScreen extends ConsumerWidget {
                 ],
               ),
             )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimens.screenPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _ProductHeaderRow(products: products, ref: ref),
-                  const SizedBox(height: 16),
-                  _CompareRow(
-                    label: 'Giá',
-                    values: products
-                        .map((p) => Formatter.price(p.price))
-                        .toList(),
-                  ),
-                  _CompareRow(
-                    label: 'Đánh giá',
-                    values: products
-                        .map((p) => '${p.rating}★ (${p.reviewCount})')
-                        .toList(),
-                  ),
-                  _CompareRow(
-                    label: 'Tồn kho',
-                    values: products
-                        .map((p) => p.inStock ? 'Còn (${p.stock})' : 'Hết')
-                        .toList(),
-                  ),
-                  _CompareRow(
-                    label: 'Thương hiệu',
-                    values: products.map((p) => p.brand).toList(),
-                  ),
-                  if (products.any((p) => displaySpecs(p).isNotEmpty)) ...[
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        'Thông số kỹ thuật',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final tableWidth = (92 + products.length * 116).toDouble();
+                final width = tableWidth > constraints.maxWidth
+                    ? tableWidth
+                    : constraints.maxWidth;
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppDimens.screenPadding),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: width,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _ProductHeaderRow(products: products, ref: ref),
+                          const SizedBox(height: 16),
+                          _CompareRow(
+                            label: 'Giá',
+                            values: products
+                                .map((p) => Formatter.price(p.price))
+                                .toList(),
+                          ),
+                          _CompareRow(
+                            label: 'Đánh giá',
+                            values: products
+                                .map((p) => '${p.rating}★ (${p.reviewCount})')
+                                .toList(),
+                          ),
+                          _CompareRow(
+                            label: 'Tồn kho',
+                            values: products
+                                .map(
+                                  (p) => p.inStock ? 'Còn (${p.stock})' : 'Hết',
+                                )
+                                .toList(),
+                          ),
+                          _CompareRow(
+                            label: 'Thương hiệu',
+                            values: products.map((p) => p.brand).toList(),
+                          ),
+                          if (products.any(
+                            (p) => displaySpecs(p).isNotEmpty,
+                          )) ...[
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                'Thông số kỹ thuật',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            ..._buildSpecRows(products),
+                          ],
+                        ],
                       ),
                     ),
-                    ..._buildSpecRows(products),
-                  ],
-                ],
-              ),
+                  ),
+                );
+              },
             ),
     );
   }

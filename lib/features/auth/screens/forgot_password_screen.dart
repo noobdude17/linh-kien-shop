@@ -55,63 +55,65 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         title: const Text('Quên mật khẩu'),
         leading: BackButton(onPressed: () => context.go(AppRoutes.login)),
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: const BoxDecoration(
-                color: Color(0xFFEFF6FF),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                _sent ? '📬' : '🔑',
-                style: const TextStyle(fontSize: 32),
-              ),
-            ),
-            const SizedBox(height: 24),
-            if (_sent) ...[
-              Text(
-                'Đã gửi liên kết đặt lại mật khẩu tới ${_email.text.trim()}.\n'
-                'Mở email và làm theo hướng dẫn để đặt mật khẩu mới.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 20),
-              PrimaryButton(
-                label: 'Về đăng nhập',
-                onPressed: () => context.go(AppRoutes.login),
-              ),
-            ] else ...[
-              const Text(
-                'Nhập email để nhận liên kết đặt lại mật khẩu của bạn',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
+        children: [
+          Column(
+            children: [
               const SizedBox(height: 24),
-              TextField(
-                controller: _email,
-                keyboardType: TextInputType.emailAddress,
-                onSubmitted: (_) => _send(),
-                decoration: const InputDecoration(
-                  hintText: 'Email',
-                  prefixIcon: Icon(Icons.email_outlined),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  color: AppColors.accentBlueBg,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  _sent ? '📬' : '🔑',
+                  style: const TextStyle(fontSize: 32),
                 ),
               ),
-              const SizedBox(height: 20),
-              _loading
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(),
-                    )
-                  : PrimaryButton(label: 'Gửi liên kết', onPressed: _send),
+              const SizedBox(height: 24),
+              if (_sent) ...[
+                Text(
+                  'Đã gửi liên kết đặt lại mật khẩu tới ${_email.text.trim()}.\n'
+                  'Mở email và làm theo hướng dẫn để đặt mật khẩu mới.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 20),
+                PrimaryButton(
+                  label: 'Về đăng nhập',
+                  onPressed: () => context.go(AppRoutes.login),
+                ),
+              ] else ...[
+                const Text(
+                  'Nhập email để nhận liên kết đặt lại mật khẩu của bạn',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  onSubmitted: (_) => _send(),
+                  decoration: const InputDecoration(
+                    hintText: 'Email',
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _loading
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: CircularProgressIndicator(),
+                      )
+                    : PrimaryButton(label: 'Gửi liên kết', onPressed: _send),
+              ],
             ],
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

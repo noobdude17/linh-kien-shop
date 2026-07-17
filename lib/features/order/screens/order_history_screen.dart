@@ -7,6 +7,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/image_placeholder.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/order_model.dart';
 import '../../../routes/app_routes.dart';
@@ -43,7 +45,7 @@ class OrderHistoryScreen extends ConsumerWidget {
           ),
         ),
         body: ordersAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const ListTileSkeleton(),
           error: (e, _) => Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -72,11 +74,9 @@ class OrderHistoryScreen extends ConsumerWidget {
                   ? orders
                   : orders.where((o) => o.status == tab.$2).toList();
               return filtered.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Không có đơn hàng',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
+                  ? const EmptyState(
+                      icon: Icons.receipt_long_outlined,
+                      title: 'Không có đơn hàng',
                     )
                   : RefreshIndicator(
                       onRefresh: () => ref.refresh(userOrdersProvider.future),
@@ -108,15 +108,19 @@ class OrderHistoryScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                o.code,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
+              Expanded(
+                child: Text(
+                  o.code,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               StatusBadge(status: o.status),
             ],
           ),
@@ -165,12 +169,18 @@ class OrderHistoryScreen extends ConsumerWidget {
                 'Tổng tiền',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               ),
-              Text(
-                Formatter.price(o.totalAmount),
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  Formatter.price(o.totalAmount),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ],

@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/app_buttons.dart';
+import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/quantity_stepper.dart';
 import '../../../core/widgets/summary_row.dart';
@@ -28,7 +29,13 @@ class CartScreen extends ConsumerWidget {
         title: Text('Giỏ hàng (${items.length})'),
       ),
       body: items.isEmpty
-          ? const Center(child: Text('Giỏ hàng trống'))
+          ? EmptyState(
+              icon: Icons.shopping_cart_outlined,
+              title: 'Giỏ hàng trống',
+              message: 'Thêm sản phẩm để bắt đầu mua sắm',
+              actionLabel: 'Khám phá sản phẩm',
+              onAction: () => context.go(AppRoutes.home),
+            )
           : ListView(
               padding: const EdgeInsets.all(AppDimens.screenPadding),
               children: [
@@ -75,6 +82,7 @@ class CartScreen extends ConsumerWidget {
     CartNotifier notifier,
     CartItemModel item,
   ) {
+    final narrow = AppDimens.isNarrowPhone(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(AppDimens.cardPadding),
@@ -96,8 +104,8 @@ class CartScreen extends ConsumerWidget {
           ImagePlaceholder(
             label: item.imageLabel,
             imageUrl: item.imageUrl,
-            width: 64,
-            height: 64,
+            width: narrow ? 56 : 64,
+            height: narrow ? 56 : 64,
             radius: 8,
           ),
           const SizedBox(width: 12),
@@ -143,6 +151,7 @@ class CartScreen extends ConsumerWidget {
             ),
           ),
           IconButton(
+            visualDensity: VisualDensity.compact,
             icon: const Icon(
               Icons.delete_outline,
               color: AppColors.textTertiary,
@@ -189,7 +198,7 @@ class CartScreen extends ConsumerWidget {
       color: AppColors.surface,
       boxShadow: AppDimens.bottomBarShadow,
     ),
-    padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
     child: SafeArea(
       top: false,
       child: Row(

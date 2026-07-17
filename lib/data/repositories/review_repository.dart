@@ -19,7 +19,9 @@ class MockReviewRepository implements ReviewRepository {
 
   @override
   Future<List<ReviewModel>> getForProduct(String productId) => _delayed(
-    MockData.reviews.where((r) => r.productId == productId).toList()
+    MockData.reviews
+        .where((r) => r.productId == productId && !r.isHidden)
+        .toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
   );
 
@@ -44,7 +46,10 @@ class FirestoreReviewRepository implements ReviewRepository {
     final snap = await _col(
       productId,
     ).orderBy('createdAt', descending: true).get();
-    return snap.docs.map(ReviewModel.fromFirestore).toList();
+    return snap.docs
+        .map(ReviewModel.fromFirestore)
+        .where((review) => !review.isHidden)
+        .toList();
   }
 
   @override

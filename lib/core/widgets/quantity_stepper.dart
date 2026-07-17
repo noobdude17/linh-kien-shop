@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
 /// Bộ tăng/giảm số lượng (− value +). Min mặc định = 1.
@@ -23,9 +24,18 @@ class QuantityStepper extends StatelessWidget {
         Container(
           width: 40,
           alignment: Alignment.center,
-          child: Text(
-            '$value',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 150),
+            transitionBuilder: (child, anim) =>
+                FadeTransition(opacity: anim, child: child),
+            child: Text(
+              '$value',
+              key: ValueKey(value),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ),
         _btn('+', () => onChanged?.call(value + 1)),
@@ -35,7 +45,12 @@ class QuantityStepper extends StatelessWidget {
 
   Widget _btn(String glyph, VoidCallback onTap) {
     return InkWell(
-      onTap: onChanged == null ? null : onTap,
+      onTap: onChanged == null
+          ? null
+          : () {
+              HapticFeedback.selectionClick();
+              onTap();
+            },
       borderRadius: BorderRadius.circular(8),
       child: Container(
         width: 32,

@@ -7,9 +7,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/widgets/image_placeholder.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/models/product_variant.dart';
 import '../../../data/product_listing_adapter.dart';
+import '../../../data/repositories/product_repository.dart';
 import '../../../features/product/providers/product_providers.dart';
 import '../../../routes/app_routes.dart';
 import '../models/compatibility_result.dart';
@@ -110,7 +112,7 @@ class _PartSelectionScreenState extends ConsumerState<PartSelectionScreen> {
         title: Text('Chọn ${category.label}'),
       ),
       body: products.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListTileSkeleton(),
         error: (error, _) =>
             Center(child: Text('Không thể tải sản phẩm: $error')),
         data: (values) => Column(
@@ -389,211 +391,11 @@ class _PartSelectionScreenState extends ConsumerState<PartSelectionScreen> {
   }
 
   bool _matchesQuery(ProductModel product, String query) {
-    final normalizedQuery = _normalizeSearch(query);
-    if (normalizedQuery.isEmpty) return true;
-    final text = _searchText(product);
-    if (text.contains(normalizedQuery)) return true;
-
-    final compactText = text.replaceAll(' ', '');
-    final compactQuery = normalizedQuery.replaceAll(' ', '');
-    if (compactQuery.isNotEmpty && compactText.contains(compactQuery)) {
-      return true;
-    }
-
-    final tokens = normalizedQuery
-        .split(' ')
-        .where((token) => token.isNotEmpty)
-        .toList();
-    if (tokens.isEmpty) return true;
-    return tokens.every(
-      (token) => text.contains(token) || compactText.contains(token),
-    );
+    return query.trim().isEmpty || matchesProductSearchQuery(product, query);
   }
 
   int _queryScore(ProductModel product, String query) {
-    final normalizedQuery = _normalizeSearch(query);
-    if (normalizedQuery.isEmpty) return 0;
-    final text = _searchText(product);
-    final compactText = text.replaceAll(' ', '');
-    final compactQuery = normalizedQuery.replaceAll(' ', '');
-    var score = 0;
-
-    if (text.contains(normalizedQuery)) score += 80;
-    if (compactQuery.isNotEmpty && compactText.contains(compactQuery)) {
-      score += 100;
-    }
-    if (product.name.toLowerCase().contains(query.toLowerCase().trim())) {
-      score += 120;
-    }
-
-    final queryNumbers = _numbersFromText(normalizedQuery);
-    for (final number in queryNumbers) {
-      if (_productHasExactNumber(product, number)) score += 240;
-    }
-
-    final tokens = normalizedQuery
-        .split(' ')
-        .where((token) => token.isNotEmpty)
-        .toList();
-    for (final token in tokens) {
-      if (text.contains(token)) score += 12;
-      if (compactText.contains(token)) score += 16;
-    }
-
-    return score;
-  }
-
-  bool _productHasExactNumber(ProductModel product, num queryNumber) {
-    final dataMaps = <Map<String, dynamic>>[
-      product.compatibility,
-      if (!product.id.contains(productListingVariantSeparator))
-        for (final variant in product.variants) variant.attributes,
-    ];
-    for (final data in dataMaps) {
-      final relevantValues = [
-        data['ramCapacityGb'],
-        data['ramSpeedMhz'],
-        data['storageCapacityGb'],
-        data['gpuVramGb'],
-        data['psuWattage'],
-      ];
-      for (final value in relevantValues) {
-        final number = _numberFromValue(value);
-        if (number == null) continue;
-        if (_sameSearchNumber(number, queryNumber)) return true;
-        if (number >= 1000 && _sameSearchNumber(number / 1000, queryNumber)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  bool _sameSearchNumber(num a, num b) => (a - b).abs() < 0.001;
-
-  List<num> _numbersFromText(String value) {
-    return RegExp(r'\d+(?:\.\d+)?')
-        .allMatches(value)
-        .map((match) => num.tryParse(match.group(0)!))
-        .whereType<num>()
-        .toList();
-  }
-
-  String _searchText(ProductModel product) {
-    final parts = <String>[
-      product.name,
-      product.brand,
-      product.categoryId,
-      product.categoryName,
-      product.imageLabel,
-      ..._categorySearchAliases(product.categoryId),
-      _specLine(product),
-      ...product.specs.keys,
-      ...product.specs.values,
-      ...product.compatibility.keys,
-      ...product.compatibility.values.map(_value),
-      ..._compatibilitySearchAliases(product.compatibility),
-    ];
-    for (final variant in product.variants) {
-      parts
-        ..add(variant.id)
-        ..add(variant.name)
-        ..addAll(variant.attributes.keys)
-        ..addAll(variant.attributes.values.map(_value))
-        ..addAll(_compatibilitySearchAliases(variant.attributes));
-    }
-    return _normalizeSearch(parts.join(' '));
-  }
-
-  List<String> _categorySearchAliases(String categoryId) => switch (categoryId) {
-    'cpu' => ['processor', 'vi xu ly', 'bo xu ly'],
-    'mainboard' => ['motherboard', 'main', 'bo mach chu', 'socket'],
-    'ram' => ['memory', 'bo nho', 'ddr', 'gb ram'],
-    'storage' => ['ssd', 'hdd', 'o cung', 'nvme', 'm2', 'tb', 'gb'],
-    'gpu' => ['graphics card', 'vga', 'card man hinh', 'vram'],
-    'psu' => ['power supply', 'nguon', 'watt', 'watts', 'w'],
-    'case' => ['vo may', 'thung may', 'atx', 'micro atx', 'mini itx'],
-    'cooler' => ['tan nhiet', 'aio', 'air cooler', 'radiator'],
-    'monitor' => ['man hinh', 'hz', 'inch'],
-    'keyboard' => ['ban phim'],
-    'mouse' => ['chuot', 'dpi'],
-    _ => const [],
-  };
-
-  List<String> _compatibilitySearchAliases(Map<String, dynamic> data) {
-    final aliases = <String>[];
-
-    void addCapacityAliases(Object? value, {required String unitContext}) {
-      final number = _numberFromValue(value);
-      if (number == null) return;
-      aliases.add('${_formatNumber(number)}gb');
-      aliases.add('${_formatNumber(number)} gb');
-      aliases.add('${_formatNumber(number)}gb $unitContext');
-      if (number >= 1000) {
-        final tb = number / 1000;
-        aliases.add('${_formatNumber(tb)}tb');
-        aliases.add('${_formatNumber(tb)} tb');
-        aliases.add('${_formatNumber(tb)}tb $unitContext');
-      }
-    }
-
-    void addSpeedAliases(Object? value) {
-      final number = _numberFromValue(value);
-      if (number == null) return;
-      aliases.add('${_formatNumber(number)}mhz');
-      aliases.add('${_formatNumber(number)} mhz');
-      aliases.add('${_formatNumber(number)} mt s');
-      aliases.add('${_formatNumber(number)}mts');
-    }
-
-    void addWattAliases(Object? value) {
-      final number = _numberFromValue(value);
-      if (number == null) return;
-      aliases.add('${_formatNumber(number)}w');
-      aliases.add('${_formatNumber(number)} w');
-      aliases.add('${_formatNumber(number)}watt');
-      aliases.add('${_formatNumber(number)} watts');
-    }
-
-    addCapacityAliases(data['ramCapacityGb'], unitContext: 'ram');
-    addCapacityAliases(data['gpuVramGb'], unitContext: 'vram');
-    addCapacityAliases(data['storageCapacityGb'], unitContext: 'storage');
-    addSpeedAliases(data['ramSpeedMhz']);
-    addWattAliases(data['psuWattage']);
-    addWattAliases(data['gpuPowerWatts']);
-    addWattAliases(data['estimatedPowerWatts']);
-
-    final memoryType = _value(data['ramMemoryType']);
-    if (memoryType.isNotEmpty) {
-      aliases.add(memoryType);
-      aliases.add(memoryType.replaceAll(' ', ''));
-    }
-
-    final socket = _value(data['cpuSocket'] ?? data['mbSocket']);
-    if (socket.isNotEmpty) aliases.add(socket.replaceAll(' ', ''));
-
-    final storageInterface = _value(data['storageInterface']);
-    if (storageInterface.isNotEmpty) {
-      aliases.add(storageInterface);
-      aliases.add(storageInterface.replaceAll('.', ''));
-      aliases.add(storageInterface.replaceAll(' ', ''));
-    }
-
-    return aliases;
-  }
-
-  num? _numberFromValue(Object? value) {
-    if (value is num) return value;
-    final match = RegExp(r'\d+(?:\.\d+)?').firstMatch(_value(value));
-    return match == null ? null : num.tryParse(match.group(0)!);
-  }
-
-  String _normalizeSearch(String value) {
-    return value
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    return productSearchScore(product, query);
   }
 
   CompatibilitySummary _candidateSummary(

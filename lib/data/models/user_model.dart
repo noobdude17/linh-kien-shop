@@ -19,6 +19,8 @@ class UserModel {
   // Email đã xác nhận chưa. Mặc định true để Mock/Google/admin không bị chặn;
   // chỉ tài khoản đăng ký bằng email (Firebase) mới khởi đầu ở false.
   final bool emailVerified;
+  // Khóa mềm bởi admin. Không xóa Firebase Auth; app tự chặn sau đăng nhập.
+  final bool isLocked;
 
   const UserModel({
     required this.id,
@@ -31,6 +33,7 @@ class UserModel {
     this.photoUrl,
     this.defaultAddress,
     this.emailVerified = true,
+    this.isLocked = false,
   });
 
   bool get isAdmin => role == 'admin';
@@ -58,6 +61,7 @@ class UserModel {
               data['defaultAddress'] as Map<String, dynamic>,
             )
           : null,
+      isLocked: data['isLocked'] ?? false,
     );
   }
 
@@ -69,6 +73,7 @@ class UserModel {
     'phone': phone,
     'dob': dob,
     'defaultAddress': defaultAddress?.toFirestore(),
+    'isLocked': isLocked,
   };
 
   UserModel copyWith({
@@ -79,6 +84,7 @@ class UserModel {
     String? photoUrl,
     AddressModel? defaultAddress,
     bool? emailVerified,
+    bool? isLocked,
   }) => UserModel(
     id: id,
     name: name ?? this.name,
@@ -90,5 +96,6 @@ class UserModel {
     photoUrl: photoUrl ?? this.photoUrl,
     defaultAddress: defaultAddress ?? this.defaultAddress,
     emailVerified: emailVerified ?? this.emailVerified,
+    isLocked: isLocked ?? this.isLocked,
   );
 }

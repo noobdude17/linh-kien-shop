@@ -75,9 +75,13 @@ class _FilterSheetState extends State<FilterSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Bộ lọc',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                const Flexible(
+                  child: Text(
+                    'Bộ lọc',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
                 ),
                 TextButton(
                   onPressed: () =>
@@ -111,18 +115,27 @@ class _FilterSheetState extends State<FilterSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  Formatter.price(_opts.priceRange.start),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                Flexible(
+                  child: Text(
+                    Formatter.price(_opts.priceRange.start),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
-                Text(
-                  Formatter.price(_opts.priceRange.end),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                Flexible(
+                  child: Text(
+                    Formatter.price(_opts.priceRange.end),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ],
@@ -133,7 +146,9 @@ class _FilterSheetState extends State<FilterSheet> {
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
             const SizedBox(height: 8),
-            Row(
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
               children: List.generate(5, (i) {
                 final star = (i + 1).toDouble();
                 return GestureDetector(
@@ -142,13 +157,10 @@ class _FilterSheetState extends State<FilterSheet> {
                       minRating: _opts.minRating == star ? 0 : star,
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Icon(
-                      star <= _opts.minRating ? Icons.star : Icons.star_border,
-                      size: 28,
-                      color: AppColors.star,
-                    ),
+                  child: Icon(
+                    star <= _opts.minRating ? Icons.star : Icons.star_border,
+                    size: 28,
+                    color: AppColors.star,
                   ),
                 );
               }),
@@ -168,9 +180,13 @@ class _FilterSheetState extends State<FilterSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Chỉ hiện còn hàng',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                const Flexible(
+                  child: Text(
+                    'Chỉ hiện còn hàng',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
                 ),
                 Switch(
                   value: _opts.inStockOnly,

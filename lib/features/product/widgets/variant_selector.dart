@@ -192,10 +192,15 @@ class _GroupedRamVariantSelector extends StatelessWidget {
               runSpacing: 8,
               children: values.map((value) {
                 final matching = _bestVariantFor(attributeKey, value);
-                final isUnavailable = matching == null || !matching.isAvailable;
+                final isUnavailable = !_hasAvailableCombination(
+                  attributeKey,
+                  value,
+                );
                 final isSelected = value == selectedValue;
                 return GestureDetector(
-                  onTap: isUnavailable ? null : () => onSelect(matching),
+                  onTap: isUnavailable || matching == null
+                      ? null
+                      : () => onSelect(matching),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: maxChipWidth),
                     child: AnimatedContainer(
@@ -255,41 +260,51 @@ class _GroupedRamVariantSelector extends StatelessWidget {
     return values;
   }
 
-  ProductVariant? _bestVariantFor(String changedKey, String changedValue) {
+  // A chip greys out when its value, combined with the current selection on
+  // the other two axes, has no in-stock variant.
+  bool _hasAvailableCombination(String changedKey, String changedValue) {
     final current = selected ?? _firstAvailable;
-    final currentCapacity = _attr(current, 'ramCapacityLabel');
-    final currentSpeed = _attr(current, 'ramSpeedLabel');
-    final currentOption = _attr(current, 'ramTimingColorLabel');
+    final others = {
+      'ramCapacityLabel',
+      'ramSpeedLabel',
+      'ramTimingColorLabel',
+    }..remove(changedKey);
+    return variants.any((variant) {
+      if (!variant.isAvailable) return false;
+      if (_attr(variant, changedKey) != changedValue) return false;
+      return others.every((key) => _attr(variant, key) == _attr(current, key));
+    });
+  }
 
-    bool matches(ProductVariant variant, {required bool strict}) {
-      final attrs = {
-        'ramCapacityLabel': currentCapacity,
-        'ramSpeedLabel': currentSpeed,
-        'ramTimingColorLabel': currentOption,
-      };
-      attrs[changedKey] = changedValue;
-      return attrs.entries.every((entry) {
-        return !strict && entry.key != changedKey
-            ? true
-            : _attr(variant, entry.key) == entry.value;
-      });
-    }
+  ProductVariant? _bestVariantFor(String changedKey, String changedValue) {
+    // Keep the changed axis pinned to changedValue, then pick the candidate
+    // that preserves the most of the *other* current axes. This stops an
+    // exact-match miss from resetting unrelated axes (e.g. changing capacity
+    // shouldn't make CAS latency jump). Available variants always win.
+    final current = selected ?? _firstAvailable;
+    final others = {
+      'ramCapacityLabel',
+      'ramSpeedLabel',
+      'ramTimingColorLabel',
+    }..remove(changedKey);
+    final currentOthers = {
+      for (final key in others) key: _attr(current, key),
+    };
 
+    ProductVariant? best;
+    var bestScore = -1;
     for (final variant in variants) {
-      if (matches(variant, strict: true) && variant.isAvailable) return variant;
-    }
-    for (final variant in variants) {
-      if (_attr(variant, changedKey) == changedValue && variant.isAvailable) {
-        return variant;
+      if (_attr(variant, changedKey) != changedValue) continue;
+      var score = currentOthers.entries
+          .where((e) => _attr(variant, e.key) == e.value)
+          .length;
+      if (variant.isAvailable) score += 10; // available beats any axis match
+      if (score > bestScore) {
+        bestScore = score;
+        best = variant;
       }
     }
-    for (final variant in variants) {
-      if (matches(variant, strict: true)) return variant;
-    }
-    for (final variant in variants) {
-      if (_attr(variant, changedKey) == changedValue) return variant;
-    }
-    return null;
+    return best;
   }
 
   String _attr(ProductVariant? variant, String key) {

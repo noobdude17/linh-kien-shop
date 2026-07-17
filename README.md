@@ -3,7 +3,7 @@
 App thương mại điện tử bán **linh kiện & thiết bị máy tính, laptop** (CPU, RAM, GPU, SSD, Mainboard, Laptop, Màn hình, phụ kiện…).
 Đồ án cuối kỳ môn Lập trình Mobile — **Flutter + Firebase**, nhóm 5 người.
 
-> **31 màn hình** đầy đủ luồng: Auth → Duyệt/Tìm → Chi tiết → Giỏ hàng → Checkout (mock VNPay) → Tài khoản/Đơn hàng → Admin.
+> Đầy đủ luồng: Auth (email-link xác minh) → Duyệt/Tìm/So sánh → Chi tiết (biến thể + đánh giá) → PC Part Picker → Giỏ hàng → Checkout (VNPay sandbox / COD) → Tài khoản/Đơn hàng → Admin console.
 
 ---
 
@@ -27,9 +27,10 @@ App thương mại điện tử bán **linh kiện & thiết bị máy tính, la
 | Framework | Flutter (Dart, Material 3) |
 | State management | `flutter_riverpod` |
 | Routing | `go_router` |
-| Backend | Firebase (Auth + Firestore + Storage) |
+| Backend | Firebase (Auth email-link + Cloud Firestore) |
+| Upload ảnh | Cloudinary (unsigned) — avatar + ảnh sản phẩm (không dùng Firebase Storage) |
 | Bản đồ & geocoding | `flutter_map` (tiles OSM) + `latlong2` + `geocoding` — **không cần API key, không tính phí** (chỉ Android/iOS; web tự xuống chế độ nhập tay) |
-| Thanh toán | Mock VNPay (giả lập, không tích hợp SDK thật) |
+| Thanh toán | VNPay **sandbox thật** (webview + tự ký HMAC-SHA512) hoặc COD |
 
 Yêu cầu: Flutter SDK ≥ 3.11, Dart ≥ 3.11. Kiểm tra: `flutter --version`.
 
@@ -117,8 +118,12 @@ lib/
 │   │   ├── screens/              # home, categories, search, search_results, empty_results
 │   │   └── widgets/             # category_chip, promo_banner
 │   ├── product/
-│   │   ├── screens/             # product_list, product_detail
-│   │   └── providers/product_providers.dart   # ⭐ MẪU provider (FutureProvider)
+│   │   ├── screens/             # product_list, product_detail, compare
+│   │   ├── widgets/             # variant_selector, review_card, filter_sheet, image_gallery
+│   │   └── providers/           # ⭐ product_providers (FutureProvider), wishlist, compare, review
+│   ├── part_picker/            # PC Part Picker: chọn linh kiện + kiểm tra tương thích + tính watt
+│   │   ├── screens/            # part_picker, part_selection
+│   │   └── services/           # compatibility_engine, wattage_calculator
 │   ├── cart/
 │   │   ├── screens/             # cart_screen
 │   │   └── providers/cart_provider.dart        # ⭐ MẪU state (Notifier)
@@ -129,8 +134,8 @@ lib/
 │   │   └── geocode.dart                   # seam forward/reverse geocode (điểm nâng cấp web)
 │   ├── profile/screens/         # profile, edit_profile, address_list, add_address,
 │   │                            # wishlist, wishlist_empty, notifications
-│   └── admin/screens/           # admin_dashboard, admin_product_list, admin_product_edit,
-│                                # admin_order_management, admin_order_detail
+│   └── admin/screens/           # admin_dashboard, admin_product_list/edit, admin_order_management/detail,
+│                                # admin_user_list, admin_review_list
 │
 └── routes/
     ├── app_routes.dart           # Hằng số đường dẫn 31 route (KHÔNG gõ chuỗi path tay)
@@ -228,7 +233,7 @@ Component có sẵn trong `core/widgets/` — tái dùng, đừng viết lại: 
 ### 4 · Admin (`feature/admin`)
 - **Màn:** Dashboard, Product List, Product Edit, Order Management, Order Detail.
 - **Việc:**
-  - CRUD sản phẩm (thêm/sửa/xóa vào collection `products`, upload ảnh `firebase_storage`).
+  - CRUD sản phẩm (thêm/sửa/xóa vào collection `products`, upload ảnh qua Cloudinary).
   - Quản lý đơn: liệt kê, đổi trạng thái đơn (Chờ xác nhận → Xác nhận → Đang giao → Hoàn thành).
   - Dashboard: thống kê số liệu thật (đếm sản phẩm/đơn/doanh thu).
   - Chỉ user có `role == 'admin'` mới vào được (phối hợp với Lead về phân quyền).
@@ -290,7 +295,7 @@ dart pub global activate flutterfire_cli
 # Trong thư mục project — tạo project Firebase và lấy các giá trị cấu hình
 flutterfire configure
 ```
-Trên [Firebase Console](https://console.firebase.google.com): bật **Authentication** (Email/Password), **Cloud Firestore**, **Storage**.
+Trên [Firebase Console](https://console.firebase.google.com): bật **Authentication** (Email/Password + email link xác minh) và **Cloud Firestore**. Ảnh upload qua Cloudinary nên **không cần Firebase Storage**.
 
 > 🔒 **Repo này PUBLIC** → không commit file config Firebase thật. Gửi riêng
 > `assets/config/firebase_config.json` qua kênh an toàn. File
@@ -310,8 +315,9 @@ service cloud.firestore {
 **Firestore collections:** `users`, `products`, `categories`, `orders` (tên đã định nghĩa trong `AppConstants`).
 
 ### Bật backend thật (sau khi configure xong)
-1. Mở `lib/core/config/app_config.dart` → đổi `useFirebase = false` thành **`true`**.
-   → Toàn bộ repository tự chuyển từ Mock sang Firebase/Firestore (không cần sửa từng provider).
+1. **Tự động** — không cần đổi cờ tay. Khi có `assets/config/firebase_config.json`, `main.dart`
+   khởi tạo Firebase thành công và set `AppConfig.firebaseEnabled = true`; mọi repository tự
+   chuyển Mock → Firestore. Thiếu file config → app rơi về mock qua `try/catch`.
 2. Seed dữ liệu mẫu lên Firestore (12 danh mục + sản phẩm) để app có data ngay:
    ```bash
    flutter run -t tool/seed_firestore.dart
@@ -329,7 +335,7 @@ service cloud.firestore {
 2. **Chỉ sửa trong phạm vi của thành viên** (xem cột "Khu vực sở hữu"). **Không** sửa file của feature khác hay `core/widgets/`, `core/theme/`, `routes/` mà chưa được thống nhất — đó là vùng dùng chung dễ gây conflict.
 3. **Tuân theo luồng** `Screen → Provider → Repository → Data source`. Không gọi `FirebaseFirestore` trực tiếp trong screen.
 4. **Dùng tokens & hằng số:** `AppColors`, `AppDimens`, `AppTextStyles`, `AppRoutes`, `Formatter` — không hard-code.
-5. **Bật backend thật:** chỉ cần đổi `AppConfig.useFirebase = true` trong `lib/core/config/app_config.dart` (1 chỗ duy nhất) — mọi repository tự chuyển Mock → Firebase. Không sửa từng provider.
+5. **Backend tự chuyển:** `AppConfig.firebaseEnabled` được `main.dart` set ở runtime (true khi init Firebase thành công). Không đổi cờ tay; mọi repository tự chọn Mock ↔ Firestore.
 6. **Trước khi báo hoàn thành:** chạy `flutter analyze` (phải 0 issues) và `flutter test`. Mô tả ngắn gọn đã đổi gì.
 7. **Tiếng Việt** cho mọi text hiển thị trên UI. Giá tiền định dạng VNĐ.
 8. **Git:** commit theo quy ước `type(scope): mô tả`; không push thẳng `develop`/`master`, mở PR.
@@ -344,12 +350,16 @@ service cloud.firestore {
 | Hạng mục | Trạng thái |
 |---|---|
 | Cấu trúc project + design system | ✅ Xong |
-| 31 màn skeleton (UI + điều hướng) | ✅ Chạy được |
-| Repository + Riverpod (mẫu Product, Cart) | ✅ Xong |
-| Dữ liệu mẫu (mock) | ✅ Xong |
+| Auth (email-link xác minh, Google Sign-In) | ✅ Xong |
+| Product / Home / Search / So sánh / Biến thể / Đánh giá | ✅ Xong |
+| Cart + Order (Firestore thật) | ✅ Xong |
+| Checkout VNPay sandbox + COD | ✅ Xong |
+| PC Part Picker (compatibility + wattage) | ✅ Xong |
+| Profile / Address (bản đồ) / Wishlist | ✅ Xong |
+| Admin console (sản phẩm, đơn, user, đánh giá) | ✅ Xong |
+| Cloudinary upload ảnh | ✅ Xong |
+| Firebase backend thật (tự bật khi có config) | ✅ Xong |
 | `flutter analyze` | ✅ 0 issues |
-| Firebase backend thật | ⏳ Chờ Lead cấu hình |
-| Logic nghiệp vụ từng feature | ⏳ Đang phân công |
 
 ---
 

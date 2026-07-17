@@ -33,47 +33,52 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            SizedBox(
-              width: 48,
-              height: 48,
-              child: CircularProgressIndicator(color: AppColors.primary),
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Đang xử lý thanh toán...',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Vui lòng không tắt ứng dụng',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-            SizedBox(height: 32),
-            Text.rich(
-              TextSpan(
-                children: [
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  'Đang xử lý thanh toán...',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Vui lòng không tắt ứng dụng',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+                SizedBox(height: 32),
+                Text.rich(
                   TextSpan(
-                    text: 'VN',
-                    style: TextStyle(
-                      color: AppColors.vnpBlue,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    children: [
+                      TextSpan(
+                        text: 'VN',
+                        style: TextStyle(
+                          color: AppColors.vnpBlue,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'PAY',
+                        style: TextStyle(
+                          color: AppColors.vnpOrange,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
                   ),
-                  TextSpan(
-                    text: 'PAY',
-                    style: TextStyle(
-                      color: AppColors.vnpOrange,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

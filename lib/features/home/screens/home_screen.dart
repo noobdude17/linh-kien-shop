@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -8,8 +9,10 @@ import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../../core/widgets/skeletons.dart';
 import '../../../data/models/product_model.dart';
 import '../../../features/cart/providers/cart_provider.dart';
+import '../../../features/product/providers/compare_provider.dart';
 import '../../../features/product/providers/product_providers.dart';
 import '../../../routes/app_routes.dart';
 import '../widgets/category_chip.dart';
@@ -207,7 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                cacheExtent: 900,
+                scrollCacheExtent: const ScrollCacheExtent.pixels(900),
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
@@ -241,8 +244,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: SizedBox(
                       height: 92,
                       child: categories.when(
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
+                        loading: () => const CategoryRowSkeleton(),
                         error: (e, _) => Center(child: Text('Lỗi: $e')),
                         data: (list) => ListView.separated(
                           scrollDirection: Axis.horizontal,
@@ -277,10 +279,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   if (_isInitialLoading)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(40),
-                        child: Center(child: CircularProgressIndicator()),
+                    SliverPadding(
+                      padding: const EdgeInsets.all(AppDimens.screenPadding),
+                      sliver: SliverGrid(
+                        delegate: SliverChildBuilderDelegate(
+                          (_, _) => const ProductCardSkeleton(),
+                          childCount: 4,
+                        ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppDimens.gap,
+                          crossAxisSpacing: AppDimens.gap,
+                          childAspectRatio: AppDimens.productGridAspectRatio(
+                            context,
+                          ),
+                        ),
                       ),
                     )
                   else if (_error != null)
@@ -298,19 +311,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           (_, i) => ProductCard(
                             key: ValueKey(_products[i].id),
                             product: _products[i],
+                            heroEnabled: true,
                             onTap: () => context.push(
                               '${AppRoutes.detail}/${_products[i].id}',
                             ),
                           ),
                           childCount: _products.length,
                         ),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: AppDimens.gap,
-                              crossAxisSpacing: AppDimens.gap,
-                              childAspectRatio: 0.62,
-                            ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppDimens.gap,
+                          crossAxisSpacing: AppDimens.gap,
+                          childAspectRatio: AppDimens.productGridAspectRatio(
+                            context,
+                          ),
+                        ),
                       ),
                     ),
                   if (_isLoadingMore)
@@ -376,11 +391,9 @@ class _HomeHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cartCount = ref.watch(cartCountProvider);
+    final compareCount = ref.watch(compareProvider).length;
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.divider)),
-      ),
+      decoration: const BoxDecoration(color: AppColors.primary),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -389,25 +402,66 @@ class _HomeHeader extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.bolt_rounded,
-                        color: AppColors.primary,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 4),
-                      const Text(
-                        'Linh Kiện Shop',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.bolt_rounded,
+                          color: Colors.white,
+                          size: 22,
                         ),
+                        const SizedBox(width: 4),
+                        const Flexible(
+                          child: Text(
+                            'Linh Kiện Shop',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      IconButton(
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.inputFill,
+                          minimumSize: const Size.square(44),
+                        ),
+                        icon: const Icon(
+                          Icons.compare_arrows,
+                          color: AppColors.bodyText,
+                        ),
+                        onPressed: () => context.go(AppRoutes.compare),
                       ),
+                      if (compareCount > 0)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(
+                              color: AppColors.accent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '$compareCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
-                  const Spacer(),
                   IconButton(
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.inputFill,
@@ -476,11 +530,15 @@ class _HomeHeader extends ConsumerWidget {
                         size: 20,
                       ),
                       SizedBox(width: 8),
-                      Text(
-                        'Tìm kiếm CPU, RAM, Laptop...',
-                        style: TextStyle(
-                          color: AppColors.textTertiary,
-                          fontSize: 14,
+                      Expanded(
+                        child: Text(
+                          'Tìm kiếm CPU, RAM, Laptop...',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],

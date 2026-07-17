@@ -1,11 +1,172 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../routes/app_routes.dart';
+import 'dart:async';
 
-/// Mock cổng thanh toán VNPay. KHÔNG phải tích hợp thật — chỉ giả lập luồng.
-class VnpayGatewayScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
+import '../../../core/constants/app_constants.dart';
+import '../../../core/services/vnpay.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../data/models/order_model.dart';
+import '../../../routes/app_routes.dart';
+import '../providers/order_providers.dart';
+
+/// Cổng thanh toán VNPay — mở trang SANDBOX (TEST) thật của VNPAY trong webview.
+///
+/// URL thanh toán được ký HMAC-SHA512 bằng [buildVnpayUrl]. Nếu đơn dùng
+/// `payVnpayQr` thì truyền `vnp_BankCode=VNPAYQR` để vào thẳng màn QR.
+/// Khi VNPay redirect về URL chứa `vnp_ResponseCode`, ta bắt lại: `00` → đánh
+/// dấu đơn đã thanh toán và sang màn thành công; khác → báo lỗi, quay về giỏ.
+class VnpayGatewayScreen extends ConsumerStatefulWidget {
   const VnpayGatewayScreen({super.key});
+
+  @override
+  ConsumerState<VnpayGatewayScreen> createState() => _VnpayGatewayScreenState();
+}
+
+class _VnpayGatewayScreenState extends ConsumerState<VnpayGatewayScreen> {
+  WebViewController? _controller;
+  bool _loading = true;
+  bool _handled = false; // tránh xử lý return 2 lần
+  String? _error; // hiện lỗi thay vì spinner treo mãi
+  String? _cancelMsg; // != null → hiện màn huỷ + nút thử lại
+  String? _paymentUrl; // giữ lại để thử lại
+  Timer? _watchdog;
+
+  void _d(String s) {
+    debugPrint('[VNPAY] $s');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final order = ref.read(orderCreationProvider).valueOrNull;
+    if (order == null) {
+      _d('initState: order == null (không có đơn để thanh toán)');
+      return;
+    }
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.white)
+      // ponytail: một số trang cổng (VNPay) render trắng cho WebView vì UA mặc
+      // định có token "; wv)". Ép UA Chrome thường để trang phục vụ như Chrome PC.
+      ..setUserAgent(
+        'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
+        '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+      )
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (p) => _d('progress=$p%'),
+          onPageStarted: (u) {
+            _d('pageStarted: ${_short(u)}');
+            if (mounted) setState(() => _loading = true);
+          },
+          onPageFinished: (u) {
+            _d('pageFinished: ${_short(u)}');
+            if (mounted) setState(() => _loading = false);
+          },
+          onUrlChange: (c) {
+            _d('urlChange: ${_short(c.url ?? "")}');
+            if (c.url != null && c.url!.contains('vnp_ResponseCode')) {
+              _onReturn(c.url!);
+            }
+          },
+          onWebResourceError: (e) {
+            _d(
+              'ERR code=${e.errorCode} type=${e.errorType} '
+              'mainFrame=${e.isForMainFrame} ${e.description}',
+            );
+            if ((e.isForMainFrame ?? true) && mounted) {
+              setState(() {
+                _loading = false;
+                _error =
+                    'Không tải được trang VNPay: ${e.description} '
+                    '(code ${e.errorCode})';
+              });
+            }
+          },
+          onHttpError: (e) => _d(
+            'httpError status=${e.response?.statusCode} ${e.request?.uri}',
+          ),
+          onNavigationRequest: (req) {
+            _d('navRequest: ${_short(req.url)}');
+            if (req.url.contains('vnp_ResponseCode')) {
+              _onReturn(req.url);
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      );
+    _loadPayment(order);
+
+    // Nếu sau 25s vẫn quay tròn → bỏ spinner để lộ trang (giúp chẩn đoán).
+    _watchdog = Timer(const Duration(seconds: 25), () {
+      if (mounted && _loading) {
+        _d('watchdog: vẫn loading sau 25s → ẩn spinner');
+        setState(() => _loading = false);
+      }
+    });
+  }
+
+  /// Dựng URL ký HMAC (txnRef mới mỗi lần để VNPay không báo trùng) rồi nạp vào
+  /// webview. Dùng cho cả lần đầu và khi bấm "Thử thanh toán lại".
+  void _loadPayment(OrderModel order) {
+    final isQr = order.paymentMethod == AppConstants.payVnpayQr;
+    final url = buildVnpayUrl(
+      txnRef: DateTime.now().millisecondsSinceEpoch.toString(),
+      amount: order.totalAmount,
+      orderInfo: 'ThanhToanDon${order.code}',
+      bankCode: isQr ? 'VNPAYQR' : null,
+    );
+    _paymentUrl = url;
+    _handled = false;
+    _d('order=${order.code} amount=${order.totalAmount} isQr=$isQr');
+    _controller?.loadRequest(Uri.parse(url));
+  }
+
+  void _retry() {
+    final order = ref.read(orderCreationProvider).valueOrNull;
+    if (order == null) return;
+    setState(() {
+      _cancelMsg = null;
+      _error = null;
+      _loading = true;
+    });
+    _loadPayment(order);
+  }
+
+  String _short(String u) => u.length > 60 ? '${u.substring(0, 60)}…' : u;
+
+  @override
+  void dispose() {
+    _watchdog?.cancel();
+    super.dispose();
+  }
+
+  void _onReturn(String url) {
+    if (_handled) return;
+    _handled = true;
+    final code = Uri.parse(url).queryParameters['vnp_ResponseCode'];
+    _d('return: code=$code');
+    if (code == '00') {
+      ref.read(orderCreationProvider.notifier).markCurrentPaid();
+      if (mounted) context.go(AppRoutes.success);
+    } else {
+      // Huỷ/thất bại: KHÔNG đẩy về checkout (giỏ đã xoá → không trả lại được).
+      // Hiện màn huỷ ngay tại đây để khách bấm thử thanh toán lại đơn đã tạo.
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _cancelMsg =
+              'Thanh toán chưa hoàn tất (mã $code). '
+              'Đơn đã được tạo và đang chờ thanh toán.';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,132 +175,25 @@ class VnpayGatewayScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                gradient: AppColors.vnpayGatewayGradient,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'VN',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 20,
-                          ),
-                        ),
-                        TextSpan(
-                          text: 'PAY',
-                          style: TextStyle(
-                            color: AppColors.vnpOrange,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => context.go(AppRoutes.checkout),
-                    child: const Text(
-                      'Hủy giao dịch',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _header(),
+            if (_controller != null && _error == null && _cancelMsg == null)
+              _testCardStrip(),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  _card(
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Thanh toán cho',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          'Linh Kiện Shop',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Mã đơn: LKS-2024061601',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          '29.800.000đ',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          '⏱ Hết hạn sau 14:59',
-                          style: TextStyle(
-                            color: AppColors.accentBlue,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _card(
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              child: _controller == null
+                  ? _noOrder()
+                  : _error != null
+                  ? _errorView()
+                  : _cancelMsg != null
+                  ? _cancelledView()
+                  : Stack(
                       children: [
-                        Row(
-                          children: const [
-                            _Tab('Thẻ ATM', true),
-                            SizedBox(width: 8),
-                            _Tab('Thẻ quốc tế', false),
-                            SizedBox(width: 8),
-                            _Tab('QR Code', false),
-                          ],
+                        Positioned.fill(
+                          child: WebViewWidget(controller: _controller!),
                         ),
-                        const SizedBox(height: 16),
-                        _input('Ngân hàng', 'Vietcombank ▾'),
-                        _input('Số thẻ', '9704 •••• •••• ••••'),
-                        _input('Tên chủ thẻ', 'NGUYEN VAN AN'),
-                        _input('Ngày phát hành', 'MM/YY'),
+                        if (_loading)
+                          const Center(child: CircularProgressIndicator()),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                      ),
-                      onPressed: () => context.go(AppRoutes.processing),
-                      child: const Text('Thanh toán 29.800.000đ'),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -147,63 +201,144 @@ class VnpayGatewayScreen extends StatelessWidget {
     );
   }
 
-  Widget _card(Widget child) => Container(
+  Widget _header() => Container(
+    width: double.infinity,
     padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: child,
-  );
-
-  Widget _input(String label, String value) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    decoration: const BoxDecoration(gradient: AppColors.vnpayGatewayGradient),
+    child: Row(
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: AppColors.inputFill,
-            borderRadius: BorderRadius.circular(12),
+        const Expanded(
+          child: Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: 'VN',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                  ),
+                ),
+                TextSpan(
+                  text: 'PAY',
+                  style: TextStyle(
+                    color: AppColors.vnpOrange,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: Text(
-            value,
-            style: const TextStyle(color: AppColors.textTertiary),
+        ),
+        GestureDetector(
+          onTap: () {
+            _handled = true; // chặn return đang chờ
+            setState(() {
+              _loading = false;
+              _cancelMsg =
+                  'Bạn đã huỷ giao dịch. '
+                  'Đơn vẫn được giữ và đang chờ thanh toán.';
+            });
+          },
+          child: const Text(
+            'Huỷ giao dịch',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
           ),
         ),
       ],
     ),
   );
-}
 
-class _Tab extends StatelessWidget {
-  final String label;
-  final bool active;
-  const _Tab(this.label, this.active);
+  /// Gợi ý thẻ test sandbox (chọn ngân hàng NCB trên trang VNPay).
+  Widget _testCardStrip() => Container(
+    width: double.infinity,
+    color: const Color(0xFFFFF7E6),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    child: const Text(
+      'Thẻ test (NCB): 9704198526191432198 · NGUYEN VAN A · 07/15 · OTP 123456',
+      style: TextStyle(fontSize: 11, color: AppColors.textPrimary),
+    ),
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: active ? AppColors.primary : AppColors.inputFill,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: active ? Colors.white : AppColors.bodyText,
-          fontWeight: FontWeight.w500,
+  /// Màn lỗi khi không tải được cổng thanh toán.
+  Widget _errorView() => Padding(
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _error!,
+          style: const TextStyle(color: AppColors.error, fontSize: 13),
         ),
-      ),
-    );
-  }
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _error = null;
+                  _loading = true;
+                });
+                if (_paymentUrl != null) {
+                  _controller?.loadRequest(Uri.parse(_paymentUrl!));
+                }
+              },
+              child: const Text('Thử lại'),
+            ),
+            TextButton(
+              onPressed: () => context.go(AppRoutes.checkout),
+              child: const Text('Về giỏ hàng'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+
+  /// Màn huỷ/thất bại — cho phép thử thanh toán lại đúng đơn đã tạo.
+  Widget _cancelledView() => Padding(
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.cancel_outlined, size: 56, color: AppColors.vnpOrange),
+        const SizedBox(height: 16),
+        Text(
+          _cancelMsg ?? 'Giao dịch chưa hoàn tất.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _retry,
+            child: const Text('Thử thanh toán lại'),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: () => context.go(AppRoutes.orders),
+          child: const Text('Xem đơn hàng của tôi'),
+        ),
+      ],
+    ),
+  );
+
+  Widget _noOrder() => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('Không tìm thấy đơn hàng để thanh toán'),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: () => context.go(AppRoutes.cart),
+          child: const Text('Về giỏ hàng'),
+        ),
+      ],
+    ),
+  );
 }

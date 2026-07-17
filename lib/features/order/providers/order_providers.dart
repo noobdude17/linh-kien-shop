@@ -47,6 +47,14 @@ class OrderCreationNotifier extends AsyncNotifier<OrderModel?> {
       rethrow;
     }
   }
+
+  /// Đánh dấu đơn hiện tại đã thanh toán (gọi sau khi VNPay trả về thành công).
+  Future<void> markCurrentPaid() async {
+    final order = state.valueOrNull;
+    if (order == null) return;
+    await ref.read(orderRepositoryProvider).markPaid(order.id);
+    state = AsyncData(order.copyWith(paid: true));
+  }
 }
 
 final orderCreationProvider =

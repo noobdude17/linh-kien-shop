@@ -38,9 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đăng nhập thất bại: ${_friendly(e)}'),
-          ),
+          SnackBar(content: Text('Đăng nhập thất bại: ${_friendly(e)}')),
         );
       }
     } finally {
@@ -60,9 +58,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (mounted) await _linkGoogle();
       } else if (mounted && !s.contains('cancelled')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đăng nhập Google thất bại: ${_friendly(e)}'),
-          ),
+          SnackBar(content: Text('Đăng nhập Google thất bại: ${_friendly(e)}')),
         );
       }
     } finally {
@@ -222,8 +218,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     const Text('Chưa có tài khoản? '),
                     GestureDetector(

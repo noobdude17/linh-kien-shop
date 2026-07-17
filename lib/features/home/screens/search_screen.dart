@@ -65,8 +65,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               GestureDetector(
                 onTap: () {
-                  if (_controller.text.trim().isNotEmpty) {
-                    _submit(_controller.text);
+                  if (_controller.text.isNotEmpty) {
+                    setState(() => _controller.clear());
                   } else {
                     context.go(AppRoutes.home);
                   }
@@ -86,9 +86,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         children: [
           if (recent.isNotEmpty) ...[
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Tìm kiếm gần đây', style: AppTextStyles.sectionHeading),
+                Expanded(
+                  child: Text(
+                    'Tìm kiếm gần đây',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.sectionHeading,
+                  ),
+                ),
+                const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () =>
                       ref.read(recentSearchesProvider.notifier).clear(),

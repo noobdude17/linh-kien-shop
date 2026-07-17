@@ -89,6 +89,7 @@ UserModel _merge(
     address: mergedAddress,
     dob: keep(dob, cur.dob),
     photoUrl: cur.photoUrl, // giữ avatar khi sửa hồ sơ (tên/SĐT/ngày sinh)
+    isLocked: cur.isLocked,
     // Chốt một lần: chỉ tạo địa chỉ giao hàng mặc định khi chưa có. Sửa hồ sơ
     // (đổi tên/SĐT) KHÔNG lan sang địa chỉ giao hàng.
     defaultAddress:
@@ -156,6 +157,16 @@ class FirebaseAuthRepository implements AuthRepository {
     _controller.add(u);
   }
 
+  Future<UserModel> _ensureNotLocked(UserModel user) async {
+    if (!user.isLocked) return user;
+    await _auth.signOut();
+    _emit(null);
+    throw fb.FirebaseAuthException(
+      code: 'user-disabled',
+      message: 'Tài khoản đã bị khóa bởi quản trị viên',
+    );
+  }
+
   @override
   UserModel? get currentUser => _cached;
 
@@ -210,7 +221,7 @@ class FirebaseAuthRepository implements AuthRepository {
       email: email.trim(),
       password: password,
     );
-    _emit(await _loadOrCreateProfile(cred.user!));
+    _emit(await _ensureNotLocked(await _loadOrCreateProfile(cred.user!)));
     return _cached!;
   }
 
@@ -280,7 +291,7 @@ class FirebaseAuthRepository implements AuthRepository {
     );
     try {
       final cred = await _auth.signInWithCredential(credential);
-      _emit(await _loadOrCreateProfile(cred.user!));
+      _emit(await _ensureNotLocked(await _loadOrCreateProfile(cred.user!)));
       return _cached!;
     } on fb.FirebaseAuthException catch (e) {
       // Email này đã đăng ký bằng mật khẩu (Scenario B). Firebase bắt xác minh
@@ -308,7 +319,9 @@ class FirebaseAuthRepository implements AuthRepository {
     // ném 'credential-already-in-use'/'provider-already-linked'.
     await _auth.signInWithEmailAndPassword(email: email, password: password);
     await _auth.currentUser!.linkWithCredential(cred);
-    _emit(await _loadOrCreateProfile(_auth.currentUser!));
+    _emit(
+      await _ensureNotLocked(await _loadOrCreateProfile(_auth.currentUser!)),
+    );
     _pendingGoogleCred = null;
     _pendingLinkEmail = null;
     return _cached!;
@@ -444,6 +457,12 @@ class MockAuthRepository implements AuthRepository {
       throw fb.FirebaseAuthException(
         code: 'wrong-password',
         message: 'Sai mật khẩu',
+      );
+    }
+    if (acc.user.isLocked) {
+      throw fb.FirebaseAuthException(
+        code: 'user-disabled',
+        message: 'Tài khoản đã bị khóa bởi quản trị viên',
       );
     }
     _current = acc.user;

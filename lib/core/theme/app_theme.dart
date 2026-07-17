@@ -218,5 +218,20 @@ class AppTheme {
       thickness: 1,
       space: 1,
     ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: AppColors.primary,
+      contentTextStyle: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 14,
+        color: Colors.white,
+      ),
+      actionTextColor: AppColors.accent,
+      shape: RoundedRectangleBorder(borderRadius: AppDimens.brInfoCard),
+      insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+    ),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: AppColors.accentBlue,
+    ),
   );
 }

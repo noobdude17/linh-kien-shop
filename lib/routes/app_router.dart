@@ -43,10 +43,22 @@ import '../features/admin/screens/admin_product_list_screen.dart';
 import '../features/admin/screens/admin_product_edit_screen.dart';
 import '../features/admin/screens/admin_order_management_screen.dart';
 import '../features/admin/screens/admin_order_detail_screen.dart';
+import '../features/admin/screens/admin_user_list_screen.dart';
+import '../features/admin/screens/admin_review_list_screen.dart';
 import 'app_routes.dart';
 import 'auth_guard.dart';
 
 Widget _withBackScope(Widget child) => AppBackScope(child: child);
+
+/// Fade nhanh cho 5 tab bottom-nav — chuyển tab không nên trượt cả trang.
+CustomTransitionPage<void> _fadeTabPage(GoRouterState state, Widget child) =>
+    CustomTransitionPage(
+      key: state.pageKey,
+      child: _withBackScope(child),
+      transitionDuration: const Duration(milliseconds: 180),
+      transitionsBuilder: (_, anim, _, child) =>
+          FadeTransition(opacity: anim, child: child),
+    );
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authRepo = ref.watch(authRepositoryProvider);
@@ -60,6 +72,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         loggedIn: user != null,
         emailVerified: user?.emailVerified ?? true,
         profileComplete: user?.profileComplete ?? false,
+        isAdmin: user?.isAdmin ?? false,
+        isLocked: user?.isLocked ?? false,
       );
     },
     routes: [
@@ -96,11 +110,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // B · Home & Browse
       GoRoute(
         path: AppRoutes.home,
-        builder: (_, _) => _withBackScope(const HomeScreen()),
+        pageBuilder: (_, state) => _fadeTabPage(state, const HomeScreen()),
       ),
       GoRoute(
         path: AppRoutes.categories,
-        builder: (_, _) => _withBackScope(const CategoriesScreen()),
+        pageBuilder: (_, state) =>
+            _fadeTabPage(state, const CategoriesScreen()),
       ),
       GoRoute(
         path: AppRoutes.search,
@@ -126,7 +141,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.partPicker,
-        builder: (_, _) => _withBackScope(const PartPickerScreen()),
+        pageBuilder: (_, state) =>
+            _fadeTabPage(state, const PartPickerScreen()),
       ),
       GoRoute(
         path: '${AppRoutes.partPickerSelect}/:categoryId',
@@ -150,7 +166,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // D · Cart & Checkout
       GoRoute(
         path: AppRoutes.cart,
-        builder: (_, _) => _withBackScope(const CartScreen()),
+        pageBuilder: (_, state) => _fadeTabPage(state, const CartScreen()),
       ),
       GoRoute(
         path: AppRoutes.checkout,
@@ -172,7 +188,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // E · Account & Orders
       GoRoute(
         path: AppRoutes.profile,
-        builder: (_, _) => _withBackScope(const ProfileScreen()),
+        pageBuilder: (_, state) => _fadeTabPage(state, const ProfileScreen()),
       ),
       GoRoute(
         path: AppRoutes.editProfile,
@@ -225,12 +241,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => _withBackScope(const AdminProductEditScreen()),
       ),
       GoRoute(
+        path: '${AppRoutes.adminProductEdit}/:id',
+        builder: (_, state) => _withBackScope(
+          AdminProductEditScreen(productId: state.pathParameters['id']),
+        ),
+      ),
+      GoRoute(
         path: AppRoutes.adminOrders,
         builder: (_, _) => _withBackScope(const AdminOrderManagementScreen()),
       ),
       GoRoute(
-        path: AppRoutes.adminOrderDetail,
-        builder: (_, _) => _withBackScope(const AdminOrderDetailScreen()),
+        path: '${AppRoutes.adminOrderDetail}/:id',
+        builder: (_, state) => _withBackScope(
+          AdminOrderDetailScreen(orderId: state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.adminUsers,
+        builder: (_, _) => _withBackScope(const AdminUserListScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.adminReviews,
+        builder: (_, _) => _withBackScope(const AdminReviewListScreen()),
       ),
     ],
   );

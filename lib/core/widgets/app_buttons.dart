@@ -114,9 +114,28 @@ class AccentButton extends StatelessWidget {
 }
 
 Widget _content(String label, IconData? icon) {
-  if (icon == null) return Text(label);
+  if (icon == null) {
+    return Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+    );
+  }
   return Row(
     mainAxisAlignment: MainAxisAlignment.center,
-    children: [Icon(icon, size: 18), const SizedBox(width: 8), Text(label)],
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 18),
+      const SizedBox(width: 8),
+      Flexible(
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    ],
   );
 }

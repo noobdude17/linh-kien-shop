@@ -25,12 +25,17 @@ class SummaryRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: isTotal
-                ? AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)
-                : AppTextStyles.meta.copyWith(fontSize: 13),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              style: isTotal
+                  ? AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)
+                  : AppTextStyles.meta.copyWith(fontSize: 13),
+            ),
           ),
+          const SizedBox(width: 12),
           Flexible(
             child: Text(
               value,

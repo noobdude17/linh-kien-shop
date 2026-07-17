@@ -18,6 +18,9 @@ const _protectedPrefixes = <String>[
 bool needsAuth(String loc) =>
     _protectedPrefixes.any((p) => loc == p || loc.startsWith('$p/'));
 
+bool needsAdmin(String loc) =>
+    loc == AppRoutes.admin || loc.startsWith('${AppRoutes.admin}/');
+
 /// Quyết định điều hướng theo trạng thái — tách thuần (không phụ thuộc context)
 /// để test được. Trả `null` = cho phép ở lại [loc].
 String? authRedirect({
@@ -25,6 +28,8 @@ String? authRedirect({
   required bool loggedIn,
   required bool emailVerified,
   required bool profileComplete,
+  bool isAdmin = false,
+  bool isLocked = false,
 }) {
   // Splash & onboarding tự điều hướng, không chặn.
   if (loc == AppRoutes.splash || loc == AppRoutes.onboarding) return null;
@@ -36,6 +41,13 @@ String? authRedirect({
   }
   // Đã xác nhận mà còn nán ở màn xác nhận → vào Home.
   if (loggedIn && loc == AppRoutes.verifyEmail) return AppRoutes.home;
+
+  // Tài khoản bị khóa mềm: không cho đi tiếp vào app.
+  if (loggedIn && isLocked) {
+    return loc == AppRoutes.login ? null : AppRoutes.login;
+  }
+
+  if (loggedIn && needsAdmin(loc) && !isAdmin) return AppRoutes.home;
 
   // Đã đăng nhập nhưng thiếu thông tin (vd: đăng nhập Google) → buộc hoàn tất.
   if (loggedIn && !profileComplete && loc != AppRoutes.completeProfile) {

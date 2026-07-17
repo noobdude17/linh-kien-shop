@@ -1,10 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/config/app_config.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_dimens.dart';
 import '../../../core/widgets/app_buttons.dart';
@@ -36,9 +32,6 @@ class AddressListScreen extends ConsumerWidget {
                 child: Center(child: Text('Chưa có địa chỉ')),
               ),
             ...list.map((a) => _addressCard(context, ref, a)),
-            // Bảng debug (chỉ hiện ở bản debug) để soi dữ liệu đã lưu — step 4.
-            if (kDebugMode)
-              _DebugPanel(list: list, uid: ref.watch(currentUserProvider)?.id),
           ],
         ),
       ),
@@ -54,7 +47,6 @@ class AddressListScreen extends ConsumerWidget {
 
   Widget _addressCard(BuildContext context, WidgetRef ref, AddressModel a) =>
       GestureDetector(
-        // Chạm vào thẻ không phải mặc định → đặt làm mặc định.
         onTap: a.isDefault ? null : () => _setDefault(context, ref, a),
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -67,13 +59,22 @@ class AddressListScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text(
-                    '${a.name} · ${a.phone}',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.sizeOf(context).width - 96,
+                    ),
+                    child: Text(
+                      '${a.name} · ${a.phone}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ),
-                  const SizedBox(width: 8),
                   if (a.isDefault)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -81,7 +82,7 @@ class AddressListScreen extends ConsumerWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        color: AppColors.accentBlueBg,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
@@ -104,7 +105,10 @@ class AddressListScreen extends ConsumerWidget {
                 ),
               ),
               const Divider(height: 20),
-              Row(
+              Wrap(
+                spacing: 20,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   GestureDetector(
                     onTap: () => context.go(AppRoutes.addAddress, extra: a),
@@ -113,7 +117,6 @@ class AddressListScreen extends ConsumerWidget {
                       style: TextStyle(color: AppColors.primary, fontSize: 13),
                     ),
                   ),
-                  const SizedBox(width: 20),
                   GestureDetector(
                     onTap: () => _confirmDelete(context, ref, a),
                     child: const Text(
@@ -121,8 +124,7 @@ class AddressListScreen extends ConsumerWidget {
                       style: TextStyle(color: AppColors.error, fontSize: 13),
                     ),
                   ),
-                  if (!a.isDefault) ...[
-                    const Spacer(),
+                  if (!a.isDefault)
                     Text(
                       'Đặt mặc định',
                       style: TextStyle(
@@ -131,7 +133,6 @@ class AddressListScreen extends ConsumerWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ],
                 ],
               ),
             ],
@@ -175,86 +176,5 @@ class AddressListScreen extends ConsumerWidget {
     final uid = ref.read(currentUserProvider)?.id;
     if (uid == null) return;
     await ref.read(addressRepositoryProvider).delete(uid, a.id);
-  }
-}
-
-/// Bảng kiểm tra trực quan cho step 4 (chỉ bản debug). Hiện:
-/// - backend đang dùng (Firebase vs Mock),
-/// - từng địa chỉ trong subcollection kèm lat/lng/isDefault,
-/// - mirror `users/{uid}.defaultAddress` ĐỌC TRỰC TIẾP từ Firestore (không lấy
-///   từ currentUser vì bản cache có thể cũ) để đối chiếu khớp địa chỉ mặc định.
-/// Mở rộng/thu lại để đọc lại mirror sau khi đổi mặc định.
-class _DebugPanel extends StatelessWidget {
-  final List<AddressModel> list;
-  final String? uid;
-  const _DebugPanel({required this.list, required this.uid});
-
-  static const _mono = TextStyle(fontFamily: 'monospace', fontSize: 11);
-
-  @override
-  Widget build(BuildContext context) {
-    final fb = AppConfig.firebaseEnabled;
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF7ED),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFFB923C)),
-      ),
-      child: ExpansionTile(
-        title: const Text(
-          '🐞 DEBUG · dữ liệu địa chỉ đã lưu (step 4)',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-        ),
-        subtitle: Text(
-          'Backend: ${fb ? "Firebase (Firestore)" : "Mock (in-memory, không lưu Firebase)"}',
-          style: const TextStyle(fontSize: 11),
-        ),
-        childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-        expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'users/{uid}/addresses:',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-          ),
-          if (list.isEmpty) const Text('— trống —', style: _mono),
-          ...list.map(
-            (a) => Text(
-              '• id=${a.id} default=${a.isDefault} lat=${a.latitude} lng=${a.longitude}',
-              style: _mono,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Mirror users/{uid}.defaultAddress:',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-          ),
-          if (!fb)
-            const Text('— Mock: không ghi Firebase —', style: _mono)
-          else if (uid == null)
-            const Text('— chưa đăng nhập —', style: _mono)
-          else
-            FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-              future: FirebaseFirestore.instance
-                  .collection(AppConstants.colUsers)
-                  .doc(uid)
-                  .get(),
-              builder: (_, snap) {
-                if (!snap.hasData) {
-                  return const Text('đang tải…', style: _mono);
-                }
-                final def = snap.data!.data()?['defaultAddress'];
-                if (def is! Map) {
-                  return const Text('— chưa có mirror —', style: _mono);
-                }
-                return Text(
-                  'detail=${def['detail']}\nlat=${def['latitude']} lng=${def['longitude']} default=${def['isDefault']}',
-                  style: _mono,
-                );
-              },
-            ),
-        ],
-      ),
-    );
   }
 }

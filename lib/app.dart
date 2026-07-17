@@ -16,7 +16,8 @@ class App extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      // ponytail: khoá light — nhiều màn hình hard-code màu light, dark mode là dự án riêng
+      themeMode: ThemeMode.light,
       routerConfig: router,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
