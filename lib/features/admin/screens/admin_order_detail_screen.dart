@@ -43,7 +43,9 @@ class _AdminOrderDetailScreenState
 
   Widget _body(OrderModel order) {
     final options = _allowedNextStatuses(order.status);
-    _nextStatus ??= options.isEmpty ? null : options.first;
+    if (_nextStatus == null || !options.contains(_nextStatus)) {
+      _nextStatus = options.isEmpty ? null : options.first;
+    }
     return ListView(
       padding: const EdgeInsets.all(AppDimens.screenPadding),
       children: [
